@@ -9,7 +9,8 @@ export const EVENTS = [
   'XMA Forms',
   'XMA Weapons',
   'Team Sparring - Combat',
-  'Team Sparring - Traditional'
+  'Team Sparring - Traditional',
+  'Judges Needed!'
 ]
 
 export const GENDERS = ['Male', 'Female']

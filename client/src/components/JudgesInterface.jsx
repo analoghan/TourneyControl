@@ -93,7 +93,7 @@ const JudgesInterface = () => {
   const updateDivision = (division) => updateRingField('division', division)
   
   const isTeamSparring = selectedRing?.current_event?.startsWith('Team Sparring')
-  const isOpen = selectedRing?.current_event === 'Open'
+  const isOpen = selectedRing?.current_event === 'Open' || selectedRing?.current_event === 'Judges Needed!'
 
   return (
     <div className="container">

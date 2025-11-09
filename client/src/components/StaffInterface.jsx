@@ -108,6 +108,38 @@ const StaffInterface = () => {
     }
   }
 
+  const getEventColorClass = (event) => {
+    switch (event) {
+      case 'Open': return 'event-open'
+      case 'Judges Needed!': return 'event-judges-needed'
+      case 'Forms': return 'event-forms'
+      case 'Weapons': return 'event-weapons'
+      case 'Combat Sparring': return 'event-combat-sparring'
+      case 'Traditional Sparring': return 'event-traditional-sparring'
+      case 'Creative Forms': return 'event-creative-forms'
+      case 'Creative Weapons': return 'event-creative-weapons'
+      case 'XMA Forms': return 'event-xma-forms'
+      case 'XMA Weapons': return 'event-xma-weapons'
+      case 'Team Sparring - Combat': return 'event-team-combat'
+      case 'Team Sparring - Traditional': return 'event-team-traditional'
+      default: return ''
+    }
+  }
+
+  const getRankColorClass = (rank) => {
+    if (rank === 'Color Belts') {
+      return 'rank-color-belts'
+    }
+    return 'rank-black-belts'
+  }
+
+  const getGenderColorClass = (gender) => {
+    if (gender === 'Male') {
+      return 'category-male'
+    }
+    return 'category-female'
+  }
+
   return (
     <div className="container">
       <h2>Staff Dashboard</h2>
@@ -194,30 +226,55 @@ const StaffInterface = () => {
             </select>
           </div>
 
+          {rings.filter(r => r.current_event === 'Judges Needed!').length > 0 && (
+            <div className="judges-needed-alert">
+              <h3>⚠️ Rings Needing Judges</h3>
+              <div className="judges-needed-list">
+                {rings
+                  .filter(r => r.current_event === 'Judges Needed!')
+                  .map(ring => (
+                    <div key={ring.id} className="judges-needed-item">
+                      Ring {ring.ring_number}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <div className="rings-grid">
             {rings.map(ring => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isOpen = ring.current_event === 'Open'
+              const isJudgesNeeded = ring.current_event === 'Judges Needed!'
               return (
-                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''}`}>
+                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''}`}>
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-info">
-                    <div className={`event-display ${isOpen ? 'event-display-open' : ''}`}>
-                      {ring.current_event}
-                    </div>
-                    {!isOpen && (
+                    {isTeamSparring && (
+                      <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
+                        {ring.current_event}
+                      </div>
+                    )}
+                    {!isOpen && !isJudgesNeeded && (
                       isTeamSparring ? (
                         <div className="division-info">{ring.division || 'Bantam'}</div>
                       ) : (
                         <>
-                          <div className="category-info">
+                          <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
                             <span className="category-item">{ring.gender || 'Male'}</span>
                             <span className="category-divider">|</span>
                             <span className="category-item">{ring.age_bracket || 'Tigers'}</span>
                           </div>
-                          <div className="rank-info">{ring.rank || 'Color Belts'}</div>
+                          <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
+                            {ring.rank || 'Color Belts'}
+                          </div>
                         </>
                       )
+                    )}
+                    {!isTeamSparring && (
+                      <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
+                        {ring.current_event}
+                      </div>
                     )}
                   </div>
                 </div>

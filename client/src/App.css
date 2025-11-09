@@ -198,9 +198,35 @@
 }
 
 .ring-card-open {
-  background: #f0f9ff;
-  border: 2px solid #3b82f6;
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+  background: #f0fdf4;
+  border: 2px solid #22c55e;
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.2);
+}
+
+.ring-card-team {
+  background: #fff7ed;
+  border: 2px solid #f97316;
+  box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
+}
+
+.ring-card-judges-needed {
+  background: #fef2f2;
+  border: 2px solid #dc2626;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  animation: flash-red 1.5s ease-in-out infinite;
+}
+
+@keyframes flash-red {
+  0%, 100% {
+    background: #fef2f2;
+    border-color: #dc2626;
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  }
+  50% {
+    background: #fee2e2;
+    border-color: #ef4444;
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.5);
+  }
 }
 
 .ring-card h3 {
@@ -216,17 +242,63 @@
 }
 
 .event-display {
-  background: #3498db;
   color: white;
   padding: 1rem;
   border-radius: 4px;
   font-size: 1.1rem;
   font-weight: 600;
+  border: 1px solid #000;
 }
 
-.event-display-open {
-  background: #3b82f6;
+/* Event Type Colors */
+.event-open {
+  background: #22c55e;
   animation: pulse-open 2s ease-in-out infinite;
+}
+
+.event-judges-needed {
+  background: #dc2626;
+  animation: pulse-open 2s ease-in-out infinite;
+}
+
+.event-forms {
+  background: #3b82f6;
+}
+
+.event-weapons {
+  background: #8b5cf6;
+}
+
+.event-combat-sparring {
+  background: #ef4444;
+}
+
+.event-traditional-sparring {
+  background: #f59e0b;
+}
+
+.event-creative-forms {
+  background: #06b6d4;
+}
+
+.event-creative-weapons {
+  background: #0891b2;
+}
+
+.event-xma-forms {
+  background: #10b981;
+}
+
+.event-xma-weapons {
+  background: #8b5cf6;
+}
+
+.event-team-combat {
+  background: #f97316;
+}
+
+.event-team-traditional {
+  background: #ea580c;
 }
 
 @keyframes pulse-open {
@@ -246,10 +318,18 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #ecf0f1;
   border-radius: 4px;
   font-size: 0.95rem;
   color: #2c3e50;
+  border: 1px solid #000;
+}
+
+.category-male {
+  background: #dbeafe;
+}
+
+.category-female {
+  background: #fce7f3;
 }
 
 .category-item {
@@ -263,12 +343,21 @@
 
 .rank-info {
   padding: 0.75rem;
-  background: #e8f5e9;
   border-radius: 4px;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #27ae60;
   text-align: center;
+  border: 1px solid #000;
+}
+
+.rank-color-belts {
+  background: #fff7ed;
+  color: #f97316;
+}
+
+.rank-black-belts {
+  background: #1f2937;
+  color: #d1d5db;
 }
 
 .division-info {
@@ -279,6 +368,7 @@
   font-weight: 500;
   color: #f39c12;
   text-align: center;
+  border: 1px solid #000;
 }
 
 .tournament-select {
@@ -292,6 +382,51 @@
   padding: 0.5rem;
   font-size: 1rem;
   margin-left: 0.5rem;
+}
+
+.judges-needed-alert {
+  background: #fef2f2;
+  border: 2px solid #dc2626;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  animation: flash-alert 2s ease-in-out infinite;
+}
+
+.judges-needed-alert h3 {
+  margin: 0 0 1rem 0;
+  color: #dc2626;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.judges-needed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.judges-needed-item {
+  background: white;
+  color: #dc2626;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid #dc2626;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+@keyframes flash-alert {
+  0%, 100% {
+    background: #fef2f2;
+  }
+  50% {
+    background: #fee2e2;
+  }
 }
 
 .tournament-management {
