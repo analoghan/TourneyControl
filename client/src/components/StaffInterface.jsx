@@ -7,6 +7,46 @@ const StaffInterface = () => {
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(4)
+  const [setupExpanded, setSetupExpanded] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [authError, setAuthError] = useState('')
+
+  const STAFF_PASSWORD = 'compete2win'
+
+  const handleLogin = (e) => {
+    e.preventDefault()
+    if (password === STAFF_PASSWORD) {
+      setIsAuthenticated(true)
+      setAuthError('')
+    } else {
+      setAuthError('Incorrect password')
+      setPassword('')
+    }
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container">
+        <div className="auth-container">
+          <h2>Staff Dashboard</h2>
+          <p>Please enter the password to access the staff dashboard.</p>
+          <form onSubmit={handleLogin} className="auth-form">
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="auth-input"
+              autoFocus
+            />
+            <button type="submit" className="auth-button">Login</button>
+          </form>
+          {authError && <p className="auth-error">{authError}</p>}
+        </div>
+      </div>
+    )
+  }
 
   useWebSocket((data) => {
     if (data.type === 'ring_update') {
@@ -144,32 +184,43 @@ const StaffInterface = () => {
     <div className="container">
       <h2>Staff Dashboard</h2>
       
-      <div className="tournament-management">
-        <h3>Create Tournament</h3>
-        <form onSubmit={createTournament} className="setup-form">
-          <input
-            type="text"
-            placeholder="Tournament Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <select
-            value={numRings}
-            onChange={(e) => setNumRings(parseInt(e.target.value))}
-            required
-          >
-            {Array.from({ length: 40 }, (_, i) => i + 1).map(num => (
-              <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
-            ))}
-          </select>
-          <button type="submit">Create Tournament</button>
-        </form>
-      </div>
+      <div className="tournament-setup-section">
+        <div className="setup-header" onClick={() => setSetupExpanded(!setupExpanded)}>
+          <div className="setup-header-content">
+            <h3>Tournament Setup</h3>
+            <span className="setup-hint">click to show/hide</span>
+          </div>
+          <span className="toggle-icon">{setupExpanded ? '▼' : '▶'}</span>
+        </div>
+        
+        {setupExpanded && (
+          <div className="setup-content">
+            <div className="tournament-management">
+              <h4>Create Tournament</h4>
+              <form onSubmit={createTournament} className="setup-form">
+                <input
+                  type="text"
+                  placeholder="Tournament Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <select
+                  value={numRings}
+                  onChange={(e) => setNumRings(parseInt(e.target.value))}
+                  required
+                >
+                  {Array.from({ length: 40 }, (_, i) => i + 1).map(num => (
+                    <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
+                  ))}
+                </select>
+                <button type="submit">Create Tournament</button>
+              </form>
+            </div>
 
-      <div className="tournaments-section">
-        <h3>Tournaments</h3>
-        <div className="tournaments-list">
+            <div className="tournaments-section">
+              <h4>Tournaments</h4>
+              <div className="tournaments-list">
           {tournaments.map(t => (
             <div key={t.id} className="tournament-card">
               <div className="tournament-info">
@@ -210,6 +261,9 @@ const StaffInterface = () => {
             </div>
           ))}
         </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {tournaments.length > 0 && (
@@ -228,14 +282,29 @@ const StaffInterface = () => {
 
           {rings.filter(r => r.current_event === 'Judges Needed!').length > 0 && (
             <div className="judges-needed-alert">
-              <h3>⚠️ Rings Needing Judges</h3>
-              <div className="judges-needed-list">
+              <h4>⚠️ Rings Needing Judges:</h4>
+              <div className="alert-list">
                 {rings
                   .filter(r => r.current_event === 'Judges Needed!')
                   .map(ring => (
-                    <div key={ring.id} className="judges-needed-item">
+                    <span key={ring.id} className="alert-item alert-item-urgent">
                       Ring {ring.ring_number}
-                    </div>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {rings.filter(r => r.current_event === 'Open').length > 0 && (
+            <div className="open-rings-alert">
+              <h4>✓ Open Rings:</h4>
+              <div className="alert-list">
+                {rings
+                  .filter(r => r.current_event === 'Open')
+                  .map(ring => (
+                    <span key={ring.id} className="alert-item alert-item-open">
+                      Ring {ring.ring_number}
+                    </span>
                   ))}
               </div>
             </div>
