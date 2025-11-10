@@ -3,6 +3,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import JudgesInterface from './components/JudgesInterface'
 import StaffInterface from './components/StaffInterface'
+import StaffRingConfig from './components/StaffRingConfig'
 import LoginPage from './components/LoginPage'
 import './App.css'
 
@@ -24,6 +25,8 @@ function NavBar() {
       return 'ATA Region 102 Tournament Control - Judges Dashboard'
     } else if (location.pathname === '/staff') {
       return 'ATA Region 102 Tournament Control - Staff Dashboard'
+    } else if (location.pathname.startsWith('/staff/ring/')) {
+      return 'ATA Region 102 Tournament Control - Ring Configuration'
     }
     return 'ATA Region 102 Tournament Control'
   }
@@ -113,6 +116,11 @@ function NavBar() {
       <nav className="navbar">
         <h1>{getTitle()}</h1>
         <div className="nav-links">
+          {location.pathname.startsWith('/staff/ring/') && (
+            <Link to="/staff" className="nav-button">
+              Return to Tournament Overview
+            </Link>
+          )}
           {location.pathname === '/judges' && (
             <button onClick={() => handleSwitchRole('staff', '/staff')} className="nav-button">
               Switch to Staff
@@ -181,6 +189,7 @@ function AppContent() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/judges" element={<JudgesInterface />} />
         <Route path="/staff" element={<StaffInterface />} />
+        <Route path="/staff/ring/:ringId" element={<StaffRingConfig />} />
       </Routes>
     </div>
   )

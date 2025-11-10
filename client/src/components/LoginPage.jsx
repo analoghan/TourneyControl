@@ -114,11 +114,13 @@ const LoginPage = () => {
             className="role-button"
             onClick={() => handleRoleSelect('staff')}
           >
-            <div className="role-icon">👥</div>
+            <div className="role-icon">🥋</div>
             <div className="role-title">Tournament Staff Login</div>
             <div className="role-description">Manage tournaments and monitor rings</div>
           </button>
         </div>
+
+        <p className="landing-quote">"To Compete Is To Win"</p>
 
         {showPasswordModal && (
           <div className="modal-overlay" onClick={handleCancel}>

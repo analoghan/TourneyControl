@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 
 const StaffInterface = () => {
   useAuth('staff') // Check authentication
   
+  const navigate = useNavigate()
   const [rings, setRings] = useState([])
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(24)
   const [setupExpanded, setSetupExpanded] = useState(false)
+  const [editingRingCount, setEditingRingCount] = useState(null)
+  const [newRingCount, setNewRingCount] = useState(0)
 
 
   useWebSocket((data) => {
@@ -20,6 +24,14 @@ const StaffInterface = () => {
       setTournaments(prev => prev.map(t => 
         t.id === data.data.id ? data.data : t
       ))
+    } else if (data.type === 'tournament_rings_updated') {
+      setTournaments(prev => prev.map(t => 
+        t.id === data.data.id ? data.data : t
+      ))
+      // Refresh rings if this is the selected tournament
+      if (selectedTournament === data.data.id) {
+        fetchRings()
+      }
     }
   })
 
@@ -102,6 +114,41 @@ const StaffInterface = () => {
     } else {
       const error = await res.json()
       alert(error.error || 'Failed to delete tournament')
+    }
+  }
+
+  const startEditingRingCount = (tournamentId, currentRings) => {
+    setEditingRingCount(tournamentId)
+    setNewRingCount(currentRings)
+  }
+
+  const cancelEditingRingCount = () => {
+    setEditingRingCount(null)
+    setNewRingCount(0)
+  }
+
+  const updateRingCount = async (tournamentId) => {
+    if (newRingCount < 1 || newRingCount > 70) {
+      alert('Ring count must be between 1 and 70')
+      return
+    }
+
+    const res = await fetch(`/api/tournaments/${tournamentId}/rings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ num_rings: newRingCount })
+    })
+
+    if (res.ok) {
+      setEditingRingCount(null)
+      setNewRingCount(0)
+      fetchTournaments()
+      if (selectedTournament === tournamentId) {
+        fetchRings()
+      }
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update ring count')
     }
   }
 
@@ -203,7 +250,44 @@ const StaffInterface = () => {
                     {getStatusText(t.status)}
                   </span>
                 </div>
-                <div className="tournament-meta">{t.num_rings} rings</div>
+                {editingRingCount === t.id ? (
+                  <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <select
+                      value={newRingCount}
+                      onChange={(e) => setNewRingCount(parseInt(e.target.value))}
+                      style={{ padding: '0.25rem', fontSize: '0.9rem' }}
+                    >
+                      {Array.from({ length: 70 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
+                      ))}
+                    </select>
+                    <button 
+                      className="btn-save-small"
+                      onClick={() => updateRingCount(t.id)}
+                    >
+                      Save
+                    </button>
+                    <button 
+                      className="btn-cancel-small"
+                      onClick={cancelEditingRingCount}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="tournament-meta">
+                    {t.num_rings} rings
+                    {t.status === 'active' && (
+                      <button 
+                        className="btn-edit-small"
+                        onClick={() => startEditingRingCount(t.id, t.num_rings)}
+                        style={{ marginLeft: '0.5rem' }}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="tournament-actions">
                 {t.status === 'not_started' && (
@@ -306,7 +390,12 @@ const StaffInterface = () => {
               const blackBelts = isBlackBelts && ring.black_belts ? JSON.parse(ring.black_belts) : []
               
               return (
-                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}>
+                <div 
+                  key={ring.id} 
+                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}
+                  onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-badges">
                     {isOpen && (

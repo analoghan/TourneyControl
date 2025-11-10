@@ -93,10 +93,10 @@ app.post('/api/tournaments', (req, res) => {
     
     const tournamentId = this.lastID;
     
-    // Create rings for the tournament
-    const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event) VALUES (?, ?, ?)');
+    // Create rings for the tournament with is_open = 1 by default
+    const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open) VALUES (?, ?, ?, ?)');
     for (let i = 1; i <= num_rings; i++) {
-      stmt.run(tournamentId, i, 'Forms');
+      stmt.run(tournamentId, i, 'Forms', 1);
     }
     stmt.finalize();
     
@@ -151,6 +151,69 @@ app.put('/api/tournaments/:id/status', (req, res) => {
   });
 });
 
+app.put('/api/tournaments/:id/rings', (req, res) => {
+  const { num_rings } = req.body;
+  const tournamentId = req.params.id;
+  
+  if (!num_rings || num_rings < 1 || num_rings > 70) {
+    return res.status(400).json({ error: 'Invalid number of rings (must be 1-70)' });
+  }
+  
+  // Get current tournament
+  db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, tournament) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!tournament) return res.status(404).json({ error: 'Tournament not found' });
+    
+    const currentRings = tournament.num_rings;
+    
+    // Update tournament ring count
+    db.run('UPDATE tournaments SET num_rings = ? WHERE id = ?', [num_rings, tournamentId], (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      if (num_rings > currentRings) {
+        // Add new rings with is_open = 1 by default
+        const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open) VALUES (?, ?, ?, ?)');
+        for (let i = currentRings + 1; i <= num_rings; i++) {
+          stmt.run(tournamentId, i, 'Forms', 1);
+        }
+        stmt.finalize(() => {
+          // Get updated tournament
+          db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            broadcast({ 
+              type: 'tournament_rings_updated', 
+              data: updatedTournament 
+            });
+            
+            res.json(updatedTournament);
+          });
+        });
+      } else if (num_rings < currentRings) {
+        // Remove excess rings
+        db.run('DELETE FROM rings WHERE tournament_id = ? AND ring_number > ?', [tournamentId, num_rings], (err) => {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          // Get updated tournament
+          db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            broadcast({ 
+              type: 'tournament_rings_updated', 
+              data: updatedTournament 
+            });
+            
+            res.json(updatedTournament);
+          });
+        });
+      } else {
+        // No change in ring count
+        res.json(tournament);
+      }
+    });
+  });
+});
+
 app.delete('/api/tournaments/:id', (req, res) => {
   const tournamentId = req.params.id;
   
@@ -187,6 +250,15 @@ app.get('/api/tournaments/:id/rings', (req, res) => {
   db.all('SELECT * FROM rings WHERE tournament_id = ? ORDER BY ring_number', [req.params.id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
+  });
+});
+
+// Get single ring by ID
+app.get('/api/rings/:id', (req, res) => {
+  db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, ring) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!ring) return res.status(404).json({ error: 'Ring not found' });
+    res.json(ring);
   });
 });
 

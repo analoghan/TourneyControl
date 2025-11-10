@@ -33,6 +33,10 @@ const JudgesInterface = () => {
   useWebSocket((data) => {
     if (data.type === 'ring_update') {
       setRings(prev => prev.map(r => r.id === data.data.id ? data.data : r))
+      // Also update selectedRing if it's the one that changed
+      if (selectedRing && selectedRing.id === data.data.id) {
+        setSelectedRing(data.data)
+      }
     } else if (data.type === 'tournament_ended') {
       if (data.data.tournament_id === selectedTournament) {
         setTournamentEnded(true)
@@ -254,7 +258,9 @@ const JudgesInterface = () => {
 
           {selectedRing && (
             <div className="event-selector">
-              <h3>Ring {selectedRing.ring_number}</h3>
+              <div className="ring-number-header">
+                <h2>Ring {selectedRing.ring_number}</h2>
+              </div>
               <div className="current-status">
                 <p className="current-event">
                   <strong>Current:</strong> 
