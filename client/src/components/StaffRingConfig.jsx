@@ -190,19 +190,21 @@ const StaffRingConfig = () => {
             </div>
           </div>
 
-          <div className="category-selector">
-            <label>Select Event:</label>
-            <select 
-              value={ring.current_event}
-              onChange={(e) => updateEvent(e.target.value)}
-              className="category-dropdown"
-              disabled={tournamentEnded}
-            >
-              {EVENTS.map(event => (
-                <option key={event} value={event}>{event}</option>
-              ))}
-            </select>
-          </div>
+          {!isOpen && (
+            <div className="category-selector">
+              <label>Select Event:</label>
+              <select 
+                value={ring.current_event}
+                onChange={(e) => updateEvent(e.target.value)}
+                className="category-dropdown"
+                disabled={tournamentEnded}
+              >
+                {EVENTS.map(event => (
+                  <option key={event} value={event}>{event}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {!isOpen && (
             isTeamSparring ? (

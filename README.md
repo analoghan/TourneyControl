@@ -24,9 +24,9 @@ A comprehensive web application for managing martial arts tournaments with real-
   - Visual ring selector with collapsible tournament/ring selection
   - Current status display showing event and categories
   
-- **Ring Status Controls** (Toggle Buttons):
-  - **Ring Open**: Mark ring as available (light green/dark green)
-  - **Judges Needed**: Alert staff for judge assistance (light red/red)
+- **Ring Status Controls** (Toggle Buttons with Black Borders):
+  - **Ring Open**: Mark ring as available (light green/green with black border when active)
+  - **Judges Needed**: Alert staff for judge assistance (light red/red with black border when active)
   
 - **Event Selection**:
   - Dropdown menu with 10 event types
@@ -43,20 +43,23 @@ A comprehensive web application for managing martial arts tournaments with real-
   - **Division**: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive
   
 - **Additional Options** (for standard events):
-  - **Stacked Ring**: Toggle button (light blue/blue)
-  - **Special Abilities**: Physical (green), Cognitive (orange), Autistic (purple)
+  - **Stacked Ring**: Toggle button (light blue/blue with black border when active)
+  - **Special Abilities**: Physical (green), Cognitive (orange), Autistic (purple) - all with black borders when active
   
 - **Smart UI**:
-  - When "Ring Open" is selected, all category options are hidden
+  - When "Ring Open" is selected, event dropdown and all category options are hidden
   - Color belt buttons show actual belt colors with light/dark states
   - Black belt buttons with gray theme
   - Age-based restrictions (Tigers can't select Black Belts, younger ages can't select Masters)
+  - Current status box with centered text and consistent border styling
 
 ### Staff Dashboard
 - **Tournament Management Section** (Collapsible):
-  - Create new tournaments with custom ring counts
+  - Create new tournaments with custom ring counts (1-70)
+  - Edit ring count for active tournaments with inline dropdown
   - View all tournaments with status badges
   - Start/End/Restart/Delete tournaments with status-based controls
+  - New rings default to "Open" status when created or added
   
 - **Alert Sections**:
   - **Judges Needed Alert**: Red flashing section listing rings needing judges
@@ -88,13 +91,13 @@ A comprehensive web application for managing martial arts tournaments with real-
 
 **Standard Events:**
 - Forms (Blue)
-- Weapons (Purple)
+- Weapons (Light Purple)
 - Combat Sparring (Red)
 - Traditional Sparring (Amber)
 - Creative Forms (Cyan)
 - Creative Weapons (Dark Cyan)
-- XMA Forms (Green)
-- XMA Weapons (Purple)
+- XMA Forms (Pink/Magenta)
+- XMA Weapons (Dark Purple)
 
 **Team Events:**
 - Team Sparring - Combat (Orange)
@@ -159,22 +162,30 @@ NODE_ENV=production node server/index.js
    - Enter tournament name
    - Select number of rings (1-70)
    - Click "Create Tournament"
+   - All rings default to "Open" status
 
-3. **Start Tournament**:
+3. **Edit Ring Count** (Active Tournaments):
+   - Click "Edit" button next to ring count
+   - Select new ring count from dropdown
+   - Click "Save" to apply or "Cancel" to discard
+   - New rings are automatically added as "Open"
+   - Excess rings are removed from the end
+
+4. **Start Tournament**:
    - Click "Start" button on tournament
    - Tournament becomes active and visible to judges
 
-4. **Monitor Rings**:
+5. **Monitor Rings**:
    - View all rings in color-coded grid
    - Check "Rings Needing Judges" alert for urgent requests
    - Check "Open Rings" section for available rings
    - Monitor event types, categories, and special statuses
 
-5. **End Tournament**:
+6. **End Tournament**:
    - Click "End" button when tournament is complete
    - Rings become read-only for judges
 
-6. **Restart/Delete Tournament**:
+7. **Restart/Delete Tournament**:
    - Click "Restart" to reactivate an ended tournament
    - Click "Delete" to permanently remove ended tournaments
 
@@ -208,8 +219,9 @@ NODE_ENV=production node server/index.js
    - Choose Division instead of Gender/Age/Rank
 
 7. **Open Ring Mode**:
-   - When "Ring Open" is toggled, all category options are hidden
+   - When "Ring Open" is toggled, event dropdown and all category options are hidden
    - Only "Judges Needed" toggle remains available
+   - Current status displays "Open"
 
 ## Technology Stack
 
@@ -223,11 +235,13 @@ NODE_ENV=production node server/index.js
 
 ## Design & Branding
 
-- **Color Scheme**: ATA Red (#c8102e) and Blue (#003087) with dark theme (#242424)
-- **Login Page**: Dark background with white card, ATA-branded buttons
-- **Navigation**: Dark navbar (#242424) with white text
+- **Color Scheme**: ATA Red (#c8102e) and Dark Gray (#242424) theme throughout
+- **Login Page**: Dark background (#242424) with white card, martial arts gi icon (🥋) for staff, scales icon (⚖️) for judges
+- **Motto**: "To Compete Is To Win" displayed in bold italic at bottom of login page
+- **Navigation**: Dark navbar (#242424) with white text and red logout buttons
+- **Ring Number Display**: Large centered ring number with dark gray background and red border (#c91010)
 - **Responsive**: Mobile-friendly design with adaptive layouts
-- **Accessibility**: High contrast, bold text, clear visual indicators
+- **Accessibility**: High contrast, bold text, clear visual indicators with black borders
 
 ## Color Coding Guide
 
@@ -251,17 +265,17 @@ NODE_ENV=production node server/index.js
 - **Pink background**: Female divisions
 - **Orange background**: Color Belts rank
 - **Black background**: Black Belts rank
-- **Orange background**: Team Sparring divisions
+- **White background**: Team Sparring divisions
 - **Yellow background**: Specific color belt selections
 - **Gray background**: Specific black belt selections
 
-### Toggle Buttons (Judges Page)
-- **Light Green → Dark Green**: Ring Open
-- **Light Red → Red**: Judges Needed
-- **Light Blue → Blue**: Stacked Ring
-- **Light Green → Green**: Special Abilities - Physical
-- **Light Orange → Orange**: Special Abilities - Cognitive
-- **Light Purple → Purple**: Special Abilities - Autistic
+### Toggle Buttons (Judges & Staff Pages)
+- **Light Green → Green (Black Border)**: Ring Open
+- **Light Red → Red (Black Border)**: Judges Needed
+- **Light Blue → Blue (Black Border)**: Stacked Ring
+- **Light Green → Green (Black Border)**: Special Abilities - Physical
+- **Light Orange → Orange (Black Border)**: Special Abilities - Cognitive
+- **Light Purple → Purple (Black Border)**: Special Abilities - Autistic
 - **Belt Colors → Darker**: Color belt rank buttons (actual belt colors)
 - **Light Gray → Dark Gray**: Black belt rank buttons
 
@@ -270,6 +284,7 @@ NODE_ENV=production node server/index.js
 - `ring_update`: Ring data changed
 - `tournament_ended`: Tournament ended by staff
 - `tournament_status_change`: Tournament status updated
+- `tournament_rings_updated`: Ring count changed for tournament
 
 ## Security Notes
 
