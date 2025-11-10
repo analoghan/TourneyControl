@@ -1,55 +1,88 @@
-# Tournament Control
+# ATA Region 102 Tournament Control
 
-A comprehensive web application for managing martial arts tournaments with real-time ring and event tracking, designed for tournament staff and judges.
+A comprehensive web application for managing martial arts tournaments with real-time ring and event tracking, designed for ATA tournament staff and judges.
 
 ## Features
 
+### Authentication & Session Management
+- Role-based login (Judge/Tournament Staff)
+- Password-protected access with server-side validation
+- 48-hour session persistence with automatic credential caching
+- Seamless role switching with session validation
+- ATA-branded login page with dark theme
+
 ### Tournament Management
-- Create tournaments with 1-40 adjustable rings
+- Create tournaments with 1-70 adjustable rings
 - Tournament lifecycle management (Not Started → Active → Ended)
-- Start and end tournaments with status controls
+- Start, end, and restart tournaments with status controls
 - Delete ended tournaments to keep interface clean
 - Real-time WebSocket updates across all connected clients
+- Collapsible tournament setup section for clean interface
 
 ### Judges Interface
-- Select assigned ring from visual ring selector
-- Choose current event from dropdown menu
-- Set competition categories:
+- **Ring Selection**:
+  - Visual ring selector with collapsible tournament/ring selection
+  - Current status display showing event and categories
+  
+- **Ring Status Controls** (Toggle Buttons):
+  - **Ring Open**: Mark ring as available (light green/dark green)
+  - **Judges Needed**: Alert staff for judge assistance (light red/red)
+  
+- **Event Selection**:
+  - Dropdown menu with 10 event types
+  - Automatic category display based on event type
+  
+- **Competition Categories** (for standard events):
   - **Gender**: Male or Female
   - **Age Bracket**: Tigers, 8 and Under, 9-10, 11-12, 13-14, 15-17, 18-29, 30-39, 40-49, 50-59, 60+
-  - **Rank**: Color Belts, 1st Degree, 2nd-3rd Degree, 4th-5th Degree, Masters
-- Team Sparring events use Division instead of Gender/Age/Rank:
-  - **Divisions**: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive
-- Special status options:
-  - **Open**: Ring available for assignment (no categories required)
-  - **Judges Needed!**: Alert staff that judges are needed
-- Real-time status updates with optimistic UI
-- Automatic disabling when tournament ends
+  - **Rank**: Color Belts or Black Belts
+  - **Color Belt Selection**: Individual belt buttons (White, Orange, Yellow, Camo, Green, Purple, Blue, Brown, Red, Red/Black)
+  - **Black Belt Selection**: Degree buttons (1st, 2nd-3rd, 4th-5th, Masters) with age-based filtering
+  
+- **Team Sparring Categories**:
+  - **Division**: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive
+  
+- **Additional Options** (for standard events):
+  - **Stacked Ring**: Toggle button (light blue/blue)
+  - **Special Abilities**: Physical (green), Cognitive (orange), Autistic (purple)
+  
+- **Smart UI**:
+  - When "Ring Open" is selected, all category options are hidden
+  - Color belt buttons show actual belt colors with light/dark states
+  - Black belt buttons with gray theme
+  - Age-based restrictions (Tigers can't select Black Belts, younger ages can't select Masters)
 
 ### Staff Dashboard
-- **Tournament Management Section**:
+- **Tournament Management Section** (Collapsible):
   - Create new tournaments with custom ring counts
   - View all tournaments with status badges
-  - Start/End/Delete tournaments with status-based controls
+  - Start/End/Restart/Delete tournaments with status-based controls
   
-- **Judges Needed Alert**:
-  - Prominent red flashing alert when any ring needs judges
-  - Lists all rings currently requesting judges
-  - Automatically appears/disappears based on ring status
-
+- **Alert Sections**:
+  - **Judges Needed Alert**: Red flashing section listing rings needing judges
+  - **Open Rings Alert**: Green section listing available rings
+  - Both sections auto-show/hide based on ring status
+  
 - **Ring Monitoring Grid**:
+  - Full-width badges and information boxes
   - Color-coded event displays for quick identification
   - Real-time updates of all ring information
   - Visual highlighting for special ring statuses:
-    - **Green border**: Open rings (available)
-    - **Orange border**: Team Sparring events
-    - **Red flashing border**: Judges Needed! (urgent)
-  - Gender-based category highlighting:
-    - **Blue background**: Male divisions
-    - **Pink background**: Female divisions
-  - Rank-based highlighting:
-    - **Orange background**: Color Belts
-    - **Black background**: Black Belt ranks (1st-Masters)
+    - **Green background**: Open rings (overrides all other styling)
+    - **Orange background**: Team Sparring events
+    - **Red flashing background**: Judges Needed! (urgent)
+    - **Blue background**: Stacked rings (hidden when open)
+  - Status badges with black borders:
+    - **Open Badge**: Large green badge
+    - **Judges Needed Badge**: Large red badge
+    - **Stacked Ring Badge**: Blue badge
+    - **Special Abilities Badges**: Color-coded (Physical-green, Cognitive-orange, Autistic-purple)
+  - Category displays with black borders:
+    - **Gender/Age**: Blue (Male) or Pink (Female) background
+    - **Rank**: Orange (Color Belts) or Black (Black Belts) background
+    - **Division**: Orange background for team events
+    - **Specific Belts**: Yellow background for color belts, gray for black belts
+  - All text in bold black for maximum readability
 
 ### Event Types
 
@@ -67,11 +100,9 @@ A comprehensive web application for managing martial arts tournaments with real-
 - Team Sparring - Combat (Orange)
 - Team Sparring - Traditional (Dark Orange)
 
-**Special Status:**
-- Open (Green with pulse animation)
-- Judges Needed! (Red with pulse animation)
-
 ## Setup
+
+### Development
 
 1. Install dependencies:
 ```bash
@@ -79,7 +110,15 @@ npm install
 cd client && npm install && cd ..
 ```
 
-2. Run the application:
+2. Set environment variables (optional):
+```bash
+# Create .env file in root directory
+JUDGES_PASSWORD=your_judge_password
+STAFF_PASSWORD=your_staff_password
+PORT=3001
+```
+
+3. Run the application:
 ```bash
 npm run dev
 ```
@@ -87,79 +126,161 @@ npm run dev
 This will start:
 - Backend server on http://localhost:3001
 - Frontend on http://localhost:3000
+- WebSocket connection on port 3001
+
+### Production
+
+1. Build the client:
+```bash
+cd client && npm run build && cd ..
+```
+
+2. Start the server:
+```bash
+NODE_ENV=production node server/index.js
+```
+
+### Default Credentials
+- **Judges**: `ata`
+- **Staff**: `compete2win`
+
+(Change these via environment variables in production)
 
 ## Usage
 
 ### For Staff
 
-1. **Create Tournament**:
+1. **Login**:
+   - Click "Tournament Staff Login"
+   - Enter password (or auto-login if session is cached)
+
+2. **Create Tournament**:
+   - Expand "Tournament Setup" section
    - Enter tournament name
-   - Select number of rings (1-40)
+   - Select number of rings (1-70)
    - Click "Create Tournament"
 
-2. **Start Tournament**:
+3. **Start Tournament**:
    - Click "Start" button on tournament
    - Tournament becomes active and visible to judges
 
-3. **Monitor Rings**:
+4. **Monitor Rings**:
    - View all rings in color-coded grid
    - Check "Rings Needing Judges" alert for urgent requests
-   - Monitor event types, gender divisions, age brackets, and ranks
+   - Check "Open Rings" section for available rings
+   - Monitor event types, categories, and special statuses
 
-4. **End Tournament**:
+5. **End Tournament**:
    - Click "End" button when tournament is complete
    - Rings become read-only for judges
 
-5. **Delete Tournament**:
-   - Click "Delete" button on ended tournaments
-   - Removes tournament and all associated ring data
+6. **Restart/Delete Tournament**:
+   - Click "Restart" to reactivate an ended tournament
+   - Click "Delete" to permanently remove ended tournaments
 
 ### For Judges
 
-1. **Select Ring**:
+1. **Login**:
+   - Click "Judge Login"
+   - Enter password (or auto-login if session is cached)
+
+2. **Select Ring**:
    - Choose your assigned ring from the ring selector
+   - Selection area collapses after selection for cleaner interface
 
-2. **Set Event**:
+3. **Set Ring Status**:
+   - Toggle "Ring Open" if ring is available
+   - Toggle "Judges Needed" if you need assistance
+
+4. **Set Event**:
    - Select current event from dropdown
+   - UI automatically adjusts based on event type
 
-3. **Set Categories** (for standard events):
+5. **Set Categories** (for standard events):
    - Choose Gender (Male/Female)
    - Select Age Bracket
-   - Select Rank
+   - Select Rank (Color Belts or Black Belts)
+   - Click specific belt rank buttons to indicate which belts are competing
+   - Toggle "Stacked Ring" if applicable
+   - Select Special Abilities if applicable
 
-4. **Set Division** (for Team Sparring):
+6. **Set Division** (for Team Sparring):
    - Choose Division instead of Gender/Age/Rank
 
-5. **Special Status**:
-   - Select "Open" when ring is available
-   - Select "Judges Needed!" to alert staff
+7. **Open Ring Mode**:
+   - When "Ring Open" is toggled, all category options are hidden
+   - Only "Judges Needed" toggle remains available
 
 ## Technology Stack
 
-- **Frontend**: React with Vite
+- **Frontend**: React 18 with Vite
 - **Backend**: Node.js with Express
-- **Database**: SQLite
-- **Real-time**: WebSocket (ws library)
-- **Styling**: Custom CSS with animations
+- **Database**: SQLite with automatic migrations
+- **Real-time**: WebSocket (ws library) with automatic reconnection
+- **Authentication**: Server-side validation with JWT-style tokens
+- **Styling**: Custom CSS with ATA branding and animations
+- **Routing**: React Router v6
+
+## Design & Branding
+
+- **Color Scheme**: ATA Red (#c8102e) and Blue (#003087) with dark theme (#242424)
+- **Login Page**: Dark background with white card, ATA-branded buttons
+- **Navigation**: Dark navbar (#242424) with white text
+- **Responsive**: Mobile-friendly design with adaptive layouts
+- **Accessibility**: High contrast, bold text, clear visual indicators
 
 ## Color Coding Guide
 
-### Ring Card Borders
+### Ring Card Backgrounds (Staff Page)
 - **White**: Standard events
-- **Green**: Open (available)
+- **Green**: Open (available) - overrides all other styling
 - **Orange**: Team Sparring
-- **Red (flashing)**: Judges Needed!
+- **Red (flashing)**: Judges Needed! (urgent)
+- **Blue**: Stacked rings (hidden when open)
 
-### Event Colors
-- **Blue**: Forms
-- **Purple**: Weapons, XMA Weapons
-- **Red**: Combat Sparring, Judges Needed!
-- **Amber/Orange**: Traditional Sparring, Team events
-- **Cyan**: Creative Forms/Weapons
-- **Green**: XMA Forms, Open
+### Badges (Staff Page)
+- **Green**: Open badge (large, full-width)
+- **Red**: Judges Needed badge (large, full-width)
+- **Blue**: Stacked Ring badge
+- **Green**: Special Abilities - Physical
+- **Orange**: Special Abilities - Cognitive
+- **Purple**: Special Abilities - Autistic
 
-### Category Colors
-- **Blue tint**: Male divisions
-- **Pink tint**: Female divisions
-- **Orange**: Color Belts
-- **Black**: Black Belt ranks
+### Category Displays (Staff Page)
+- **Blue background**: Male divisions
+- **Pink background**: Female divisions
+- **Orange background**: Color Belts rank
+- **Black background**: Black Belts rank
+- **Orange background**: Team Sparring divisions
+- **Yellow background**: Specific color belt selections
+- **Gray background**: Specific black belt selections
+
+### Toggle Buttons (Judges Page)
+- **Light Green → Dark Green**: Ring Open
+- **Light Red → Red**: Judges Needed
+- **Light Blue → Blue**: Stacked Ring
+- **Light Green → Green**: Special Abilities - Physical
+- **Light Orange → Orange**: Special Abilities - Cognitive
+- **Light Purple → Purple**: Special Abilities - Autistic
+- **Belt Colors → Darker**: Color belt rank buttons (actual belt colors)
+- **Light Gray → Dark Gray**: Black belt rank buttons
+
+## WebSocket Events
+
+- `ring_update`: Ring data changed
+- `tournament_ended`: Tournament ended by staff
+- `tournament_status_change`: Tournament status updated
+
+## Security Notes
+
+- Passwords are validated server-side
+- Sessions expire after 48 hours
+- Tokens are stored in localStorage
+- Environment variables recommended for production passwords
+- CORS enabled for development
+
+## Browser Support
+
+- Modern browsers with WebSocket support
+- Chrome, Firefox, Safari, Edge (latest versions)
+- Mobile browsers supported

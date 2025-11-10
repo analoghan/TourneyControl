@@ -123,7 +123,7 @@ function NavBar() {
               Switch to Judge
             </button>
           )}
-          <Link to="/" onClick={handleLogout}>Logout</Link>
+          <Link to="/" onClick={handleLogout} className="nav-button">Logout</Link>
         </div>
       </nav>
       

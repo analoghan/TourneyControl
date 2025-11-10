@@ -9,7 +9,7 @@ const StaffInterface = () => {
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [name, setName] = useState('')
-  const [numRings, setNumRings] = useState(4)
+  const [numRings, setNumRings] = useState(24)
   const [setupExpanded, setSetupExpanded] = useState(false)
 
 
@@ -183,7 +183,7 @@ const StaffInterface = () => {
                   onChange={(e) => setNumRings(parseInt(e.target.value))}
                   required
                 >
-                  {Array.from({ length: 40 }, (_, i) => i + 1).map(num => (
+                  {Array.from({ length: 70 }, (_, i) => i + 1).map(num => (
                     <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
                   ))}
                 </select>
@@ -306,7 +306,7 @@ const StaffInterface = () => {
               const blackBelts = isBlackBelts && ring.black_belts ? JSON.parse(ring.black_belts) : []
               
               return (
-                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing ? 'ring-card-stacked' : ''}`}>
+                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}>
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-badges">
                     {isOpen && (

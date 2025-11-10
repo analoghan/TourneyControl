@@ -53,17 +53,17 @@ body.login-body {
   font-weight: 600;
   padding: 0.6rem 1.25rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: #c91010;
+  border: 2px solid #a00d0d;
   transition: all 0.2s ease;
   font-size: 0.95rem;
 }
 
 .nav-links a:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #a00d0d;
+  border-color: #8a0b0b;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(201, 16, 16, 0.4);
 }
 
 .nav-button {
@@ -72,8 +72,8 @@ body.login-body {
   font-weight: 600;
   padding: 0.6rem 1.25rem;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: #c91010;
+  border: 2px solid #a00d0d;
   transition: all 0.2s ease;
   font-size: 0.95rem;
   cursor: pointer;
@@ -81,10 +81,10 @@ body.login-body {
 }
 
 .nav-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #a00d0d;
+  border-color: #8a0b0b;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(201, 16, 16, 0.4);
 }
 
 .modal-overlay {
