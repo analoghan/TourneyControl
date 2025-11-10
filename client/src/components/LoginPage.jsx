@@ -122,6 +122,15 @@ const LoginPage = () => {
 
         <p className="landing-quote">"To Compete Is To Win"</p>
 
+        <a 
+          href="/user-guide.html" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="user-guide-link"
+        >
+          Click Here For User Guide
+        </a>
+
         {showPasswordModal && (
           <div className="modal-overlay" onClick={handleCancel}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>

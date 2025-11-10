@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATA Region 102 Tournament Control - User Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: #242424;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #c8102e;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .nav-menu {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+        }
+
+        .nav-menu h3 {
+            color: #c8102e;
+            margin-bottom: 1rem;
+        }
+
+        .nav-menu ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nav-menu a {
+            color: #242424;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: #ecf0f1;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .nav-menu a:hover {
+            background: #c8102e;
+            color: white;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: #c8102e;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #c8102e;
+        }
+
+        h3 {
+            color: #242424;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .tip-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .tip-box.do {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+
+        .tip-box.dont {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+
+        .tip-box h4 {
+            margin-top: 0;
+            color: #065f46;
+        }
+
+        .tip-box.dont h4 {
+            color: #991b1b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0.25rem;
+        }
+
+        .badge-green {
+            background: #22c55e;
+            color: white;
+        }
+
+        .badge-red {
+            background: #dc2626;
+            color: white;
+        }
+
+        .badge-blue {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge-orange {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-purple {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #242424;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .password-box {
+            background: #fff7ed;
+            border: 2px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .password-box strong {
+            color: #c8102e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #c8102e;
+        }
+
+        .footer {
+            background: #242424;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer p {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #ecf0f1;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .nav-menu ul {
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🥋 ATA Region 102 Tournament Control</h1>
+        <p>User Guide</p>
+    </div>
+
+    <div class="container">
+        <div class="nav-menu">
+            <h3>Quick Navigation</h3>
+            <ul>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#judge-guide">Judge Guide</a></li>
+                <li><a href="#staff-guide">Staff Guide</a></li>
+                <li><a href="#quick-reference">Quick Reference</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </div>
+
+        <!-- Getting Started -->
+        <div id="getting-started" class="section">
+            <h2>Getting Started</h2>
+            
+            <h3>Logging In</h3>
+            <ol>
+                <li>Open the Tournament Control application in your web browser</li>
+                <li>You'll see two login options:
+                    <ul>
+                        <li><strong>Judge Login</strong> (⚖️) - For ring judges</li>
+                        <li><strong>Tournament Staff Login</strong> (🥋) - For tournament organizers</li>
+                    </ul>
+                </li>
+                <li>Click your role and enter your password</li>
+                <li>Your login will be remembered for 48 hours</li>
+            </ol>
+
+            <div class="password-box">
+                <strong>Need Login Credentials?</strong><br>
+                Contact your tournament staff for login passwords.
+            </div>
+        </div>
+
+        <!-- Judge Guide -->
+        <div id="judge-guide" class="section">
+            <h2>Judge Guide</h2>
+
+            <h3>First Time Setup</h3>
+            
+            <h4>1. Select Your Tournament</h4>
+            <p>After logging in, you'll see active tournaments. Select the tournament you're judging from the dropdown.</p>
+
+            <h4>2. Select Your Ring</h4>
+            <p>Click on your assigned ring number. The ring selector will collapse to give you more space.</p>
+
+            <h3>Managing Your Ring</h3>
+
+            <h4>Ring Status Buttons</h4>
+            <p>At the top of your ring controls, you'll see two important buttons:</p>
+
+            <p><span class="badge badge-green">Ring Open</span></p>
+            <ul>
+                <li>Click this when your ring is available and not running an event</li>
+                <li>When active, all event options will be hidden</li>
+                <li>Use this during breaks or when waiting for competitors</li>
+            </ul>
+
+            <p><span class="badge badge-red">Judges Needed</span></p>
+            <ul>
+                <li>Click this if you need assistance from tournament staff</li>
+                <li>This will alert staff on their dashboard</li>
+                <li>Staff will see your ring highlighted in red</li>
+            </ul>
+
+            <h4>Setting Up an Event</h4>
+            <p>When you're ready to run an event:</p>
+
+            <ol>
+                <li><strong>Make sure "Ring Open" is OFF</strong> (not green)</li>
+                <li><strong>Select Event Type</strong> - Choose from the dropdown: Forms, Weapons, Sparring, etc.</li>
+                <li><strong>For Standard Events</strong> (Forms, Weapons, Sparring):
+                    <ul>
+                        <li><strong>Select Gender:</strong> Male or Female</li>
+                        <li><strong>Select Age Bracket:</strong> Tigers, 8 and Under, 9-10, 11-12, 13-14, 15-17, 18-29, 30-39, 40-49, 50-59, 60+</li>
+                        <li><strong>Select Rank:</strong> Color Belts or Black Belts (Note: Tigers cannot select Black Belts)</li>
+                        <li><strong>Select Specific Belt Ranks:</strong> Click the buttons for which belt ranks are competing
+                            <ul>
+                                <li>For Color Belts: White, Orange, Yellow, Camo, Green, Purple, Blue, Brown, Red, Red/Black</li>
+                                <li>For Black Belts: 1st Degree, 2nd-3rd Degree, 4th-5th Degree, Masters</li>
+                                <li>You can select multiple belts - Click again to deselect</li>
+                            </ul>
+                        </li>
+                        <li><strong>Optional Settings:</strong>
+                            <ul>
+                                <li><span class="badge badge-blue">Stacked Ring</span> - Toggle if multiple age groups are combined</li>
+                                <li><strong>Special Abilities:</strong> Select if applicable
+                                    <ul>
+                                        <li><span class="badge badge-green">Physical</span></li>
+                                        <li><span class="badge badge-orange">Cognitive</span></li>
+                                        <li><span class="badge badge-purple">Autistic</span></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>For Team Sparring Events:</strong>
+                    <ul>
+                        <li>Select Division: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>Current Status Display</h4>
+            <p>At the top of your screen, you'll see a gray box showing your current ring configuration:</p>
+            <ul>
+                <li><strong>Current: Open</strong> - When ring is open</li>
+                <li><strong>Current: [Event] | [Categories]</strong> - When running an event</li>
+            </ul>
+
+            <div class="tip-box do">
+                <h4>✅ DO:</h4>
+                <ul>
+                    <li>Set "Ring Open" during breaks</li>
+                    <li>Update your event and categories before each division</li>
+                    <li>Use "Judges Needed" if you need help</li>
+                    <li>Select all applicable belt ranks for combined divisions</li>
+                </ul>
+            </div>
+
+            <div class="tip-box dont">
+                <h4>❌ DON'T:</h4>
+                <ul>
+                    <li>Leave "Judges Needed" on after help arrives</li>
+                    <li>Forget to turn off "Ring Open" when starting an event</li>
+                    <li>Change settings while competitors are performing</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Staff Guide -->
+        <div id="staff-guide" class="section">
+            <h2>Tournament Staff Guide</h2>
+
+            <h3>Setting Up a Tournament</h3>
+
+            <h4>1. Create a New Tournament</h4>
+            <ul>
+                <li>Click to expand "Tournament Setup" section</li>
+                <li>Enter a tournament name (e.g., "Spring Championship 2024")</li>
+                <li>Select number of rings (1-70)</li>
+                <li>Click "Create Tournament"</li>
+                <li>All rings will start as "Open"</li>
+            </ul>
+
+            <h4>2. Start the Tournament</h4>
+            <ul>
+                <li>Find your tournament in the list</li>
+                <li>Click the "Start" button</li>
+                <li>Tournament becomes active and visible to judges</li>
+                <li>Status badge changes to green "Active"</li>
+            </ul>
+
+            <h3>Managing Active Tournaments</h3>
+
+            <h4>Editing Ring Count</h4>
+            <p>Need to add or remove rings during an active tournament?</p>
+            <ol>
+                <li>Find your active tournament in the list</li>
+                <li>Click "Edit" next to the ring count</li>
+                <li>Select new number of rings from dropdown</li>
+                <li>Click "Save" to apply changes
+                    <ul>
+                        <li>New rings are added as "Open"</li>
+                        <li>Excess rings are removed from the highest numbers</li>
+                    </ul>
+                </li>
+                <li>Click "Cancel" to discard changes</li>
+            </ol>
+
+            <h4>Monitoring Rings</h4>
+            <p>Your dashboard shows all rings in a grid layout with color-coded information:</p>
+
+            <p><strong>Alert Sections</strong> (at top):</p>
+            <ul>
+                <li><strong>Red Flashing Section:</strong> "Rings Needing Judges" - Urgent attention required</li>
+                <li><strong>Green Section:</strong> "Open Rings" - Available rings</li>
+            </ul>
+
+            <p><strong>Ring Cards</strong> show:</p>
+            <ul>
+                <li>Ring number</li>
+                <li>Current status badges</li>
+                <li>Event type (color-coded)</li>
+                <li>Categories (Gender, Age, Rank, Division)</li>
+                <li>Special indicators (Stacked Ring, Special Abilities)</li>
+            </ul>
+
+            <p><strong>Ring Card Colors:</strong></p>
+            <ul>
+                <li><strong>Green Background:</strong> Ring is Open (available)</li>
+                <li><strong>Orange Background:</strong> Team Sparring event</li>
+                <li><strong>Red Flashing:</strong> Judges Needed! (urgent)</li>
+                <li><strong>Blue Background:</strong> Stacked Ring</li>
+                <li><strong>White Background:</strong> Standard event</li>
+            </ul>
+
+            <p><strong>Click any ring card</strong> to open detailed configuration for that ring</p>
+
+            <h3>Ring Configuration (Staff)</h3>
+            <p>When you click a ring card, you can configure it just like judges do:</p>
+            <ol>
+                <li>Set ring status (Open, Judges Needed)</li>
+                <li>Select event type</li>
+                <li>Choose categories</li>
+                <li>Set special options</li>
+            </ol>
+
+            <p>This is useful for:</p>
+            <ul>
+                <li>Pre-configuring rings before judges arrive</li>
+                <li>Fixing incorrect settings</li>
+                <li>Managing rings without assigned judges</li>
+            </ul>
+
+            <h3>Ending a Tournament</h3>
+            <ol>
+                <li>Click "End" button on your active tournament</li>
+                <li>Tournament status changes to "Ended"</li>
+                <li>Judges can no longer modify ring settings</li>
+                <li>All ring data is preserved</li>
+            </ol>
+
+            <h3>After Tournament Ends</h3>
+            <p><strong>Restart:</strong></p>
+            <ul>
+                <li>Click "Restart" to reactivate the tournament</li>
+                <li>Judges can modify rings again</li>
+                <li>All previous settings are preserved</li>
+            </ul>
+
+            <p><strong>Delete:</strong></p>
+            <ul>
+                <li>Click "Delete" to permanently remove the tournament</li>
+                <li>This cannot be undone</li>
+                <li>Only ended tournaments can be deleted</li>
+            </ul>
+
+            <div class="tip-box do">
+                <h4>✅ DO:</h4>
+                <ul>
+                    <li>Monitor the "Judges Needed" alert section regularly</li>
+                    <li>Pre-configure rings if you have time before judges arrive</li>
+                    <li>Edit ring count if you need more or fewer rings</li>
+                    <li>Keep tournament names clear and descriptive</li>
+                </ul>
+            </div>
+
+            <div class="tip-box dont">
+                <h4>❌ DON'T:</h4>
+                <ul>
+                    <li>Delete tournaments until you're sure you don't need the data</li>
+                    <li>Start a tournament before judges are ready</li>
+                    <li>Forget to end the tournament when complete</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Quick Reference -->
+        <div id="quick-reference" class="section">
+            <h2>Quick Reference</h2>
+
+            <h3>Event Colors (Staff Dashboard)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Color</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Forms</td><td>Blue</td></tr>
+                    <tr><td>Weapons</td><td>Light Purple</td></tr>
+                    <tr><td>Combat Sparring</td><td>Red</td></tr>
+                    <tr><td>Traditional Sparring</td><td>Amber/Orange</td></tr>
+                    <tr><td>Creative Forms</td><td>Cyan</td></tr>
+                    <tr><td>Creative Weapons</td><td>Dark Cyan</td></tr>
+                    <tr><td>XMA Forms</td><td>Pink/Magenta</td></tr>
+                    <tr><td>XMA Weapons</td><td>Dark Purple</td></tr>
+                    <tr><td>Team Sparring - Combat</td><td>Orange</td></tr>
+                    <tr><td>Team Sparring - Traditional</td><td>Dark Orange</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Age Brackets</h3>
+            <ul>
+                <li>Tigers (Color Belts only)</li>
+                <li>8 and Under</li>
+                <li>9-10</li>
+                <li>11-12</li>
+                <li>13-14</li>
+                <li>15-17</li>
+                <li>18-29</li>
+                <li>30-39</li>
+                <li>40-49</li>
+                <li>50-59</li>
+                <li>60+</li>
+            </ul>
+
+            <h3>Team Sparring Divisions</h3>
+            <ul>
+                <li>Bantam</li>
+                <li>Rookie</li>
+                <li>Junior Varsity</li>
+                <li>Varsity</li>
+                <li>Elite</li>
+                <li>Premier</li>
+                <li>Legends</li>
+                <li>Executive</li>
+            </ul>
+
+            <h3>Color Belt Ranks</h3>
+            <ul>
+                <li>White</li>
+                <li>Orange</li>
+                <li>Yellow</li>
+                <li>Camo</li>
+                <li>Green</li>
+                <li>Purple</li>
+                <li>Blue</li>
+                <li>Brown</li>
+                <li>Red</li>
+                <li>Red/Black</li>
+            </ul>
+
+            <h3>Black Belt Ranks</h3>
+            <ul>
+                <li>1st Degree</li>
+                <li>2nd-3rd Degree</li>
+                <li>4th-5th Degree (not available for younger age brackets)</li>
+                <li>Masters (not available for younger age brackets)</li>
+            </ul>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div id="troubleshooting" class="section">
+            <h2>Troubleshooting</h2>
+
+            <h3>"I can't see any tournaments" (Judge)</h3>
+            <p><strong>Solution:</strong> Only active tournaments are visible to judges. Ask staff to start the tournament.</p>
+
+            <h3>"I can't change my ring settings" (Judge)</h3>
+            <p><strong>Possible causes:</strong></p>
+            <ol>
+                <li>Tournament has ended - Ask staff to restart it</li>
+                <li>Connection issue - Refresh your browser</li>
+                <li>Session expired - Log out and log back in</li>
+            </ol>
+
+            <h3>"My changes aren't showing up on staff dashboard"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Check your internet connection</li>
+                <li>Refresh the page</li>
+                <li>Make sure you're not in "Ring Open" mode (which hides event details)</li>
+            </ol>
+
+            <h3>"I accidentally selected the wrong ring"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Expand the "Tournament & Ring Selection" section at the top</li>
+                <li>Click on the correct ring number</li>
+                <li>Your previous ring will be released</li>
+            </ol>
+
+            <h3>"The ring count edit isn't working" (Staff)</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Make sure the tournament is active (not "Not Started" or "Ended")</li>
+                <li>Check that you clicked "Save" after selecting the new count</li>
+                <li>Refresh the page if changes don't appear</li>
+            </ol>
+
+            <h3>"I need to switch between Judge and Staff views"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Click "Switch to Staff" or "Switch to Judge" in the navigation bar</li>
+                <li>If you haven't logged into that role recently, you'll need to enter the password</li>
+                <li>Your session will be remembered for 48 hours</li>
+            </ol>
+
+            <h3>"The page isn't updating in real-time"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Check your internet connection</li>
+                <li>Refresh the browser page</li>
+                <li>The system uses WebSocket for real-time updates - some networks may block this</li>
+                <li>Try a different browser or network if issues persist</li>
+            </ol>
+
+            <h3>"I forgot my password"</h3>
+            <p><strong>Solution:</strong> Contact your tournament director or system administrator for login credentials.</p>
+
+            <h3>Need More Help?</h3>
+            <p>If you encounter issues not covered in this guide:</p>
+            <ol>
+                <li><strong>Refresh your browser</strong> - This solves most issues</li>
+                <li><strong>Check your internet connection</strong> - Real-time updates require stable connection</li>
+                <li><strong>Try a different browser</strong> - Chrome, Firefox, Safari, or Edge (latest versions)</li>
+                <li><strong>Contact tournament staff</strong> - They can help with system-specific questions</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>"To Compete Is To Win"</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; font-style: normal;">ATA Region 102 Tournament Control System</p>
+    </div>
+</body>
+</html>

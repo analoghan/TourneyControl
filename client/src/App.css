@@ -267,9 +267,25 @@ body.login-body {
   color: #000000;
   font-size: 1.3rem;
   margin-top: 2.5rem;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
   font-weight: 700;
   font-style: italic;
+}
+
+.user-guide-link {
+  display: inline-block;
+  color: #c8102e;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.user-guide-link:hover {
+  color: #242424;
+  text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .role-selection {
