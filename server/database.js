@@ -122,6 +122,64 @@ function initDatabase() {
           }
         });
       }
+      
+      const hasStackedRingColumn = columns.some(col => col.name === 'stacked_ring');
+      
+      if (!hasStackedRingColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN stacked_ring INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding stacked_ring column:', err);
+          } else {
+            console.log('Successfully added stacked_ring column to rings table');
+          }
+        });
+      }
+      
+      const hasSpecialAbilitiesPhysicalColumn = columns.some(col => col.name === 'special_abilities_physical');
+      const hasSpecialAbilitiesCognitiveColumn = columns.some(col => col.name === 'special_abilities_cognitive');
+      const hasSpecialAbilitiesAutisticColumn = columns.some(col => col.name === 'special_abilities_autistic');
+      
+      if (!hasSpecialAbilitiesPhysicalColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN special_abilities_physical INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding special_abilities_physical column:', err);
+          } else {
+            console.log('Successfully added special_abilities_physical column to rings table');
+          }
+        });
+      }
+      
+      if (!hasSpecialAbilitiesCognitiveColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN special_abilities_cognitive INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding special_abilities_cognitive column:', err);
+          } else {
+            console.log('Successfully added special_abilities_cognitive column to rings table');
+          }
+        });
+      }
+      
+      if (!hasSpecialAbilitiesAutisticColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN special_abilities_autistic INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding special_abilities_autistic column:', err);
+          } else {
+            console.log('Successfully added special_abilities_autistic column to rings table');
+          }
+        });
+      }
+      
+      const hasAgeBracketsColumn = columns.some(col => col.name === 'age_brackets');
+      
+      if (!hasAgeBracketsColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN age_brackets TEXT DEFAULT '["Tigers"]'`, (err) => {
+          if (err) {
+            console.error('Error adding age_brackets column:', err);
+          } else {
+            console.log('Successfully added age_brackets column to rings table');
+          }
+        });
+      }
     });
   });
 }

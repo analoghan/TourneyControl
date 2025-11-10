@@ -153,7 +153,7 @@ app.get('/api/tournaments/:id/rings', (req, res) => {
 });
 
 app.put('/api/rings/:id', (req, res) => {
-  const { current_event, gender, age_bracket, rank, division, color_belts, black_belts } = req.body;
+  const { current_event, gender, age_bracket, age_brackets, rank, division, color_belts, black_belts, stacked_ring, special_abilities_physical, special_abilities_cognitive, special_abilities_autistic } = req.body;
   
   // First, get the ring to find its tournament_id
   db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, ring) => {
@@ -188,6 +188,10 @@ app.put('/api/rings/:id', (req, res) => {
         updates.push('age_bracket = ?');
         values.push(age_bracket);
       }
+      if (age_brackets !== undefined) {
+        updates.push('age_brackets = ?');
+        values.push(age_brackets);
+      }
       if (rank !== undefined) {
         updates.push('rank = ?');
         values.push(rank);
@@ -203,6 +207,22 @@ app.put('/api/rings/:id', (req, res) => {
       if (black_belts !== undefined) {
         updates.push('black_belts = ?');
         values.push(black_belts);
+      }
+      if (stacked_ring !== undefined) {
+        updates.push('stacked_ring = ?');
+        values.push(stacked_ring ? 1 : 0);
+      }
+      if (special_abilities_physical !== undefined) {
+        updates.push('special_abilities_physical = ?');
+        values.push(special_abilities_physical ? 1 : 0);
+      }
+      if (special_abilities_cognitive !== undefined) {
+        updates.push('special_abilities_cognitive = ?');
+        values.push(special_abilities_cognitive ? 1 : 0);
+      }
+      if (special_abilities_autistic !== undefined) {
+        updates.push('special_abilities_autistic = ?');
+        values.push(special_abilities_autistic ? 1 : 0);
       }
       
       if (updates.length === 0) {

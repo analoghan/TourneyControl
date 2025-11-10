@@ -427,6 +427,12 @@
   animation: flash-red 1.5s ease-in-out infinite;
 }
 
+.ring-card-stacked {
+  background: #eff6ff;
+  border: 3px solid #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
 @keyframes flash-red {
   0%, 100% {
     background: #fef2f2;
@@ -444,6 +450,48 @@
   margin: 0 0 1rem 0;
   color: #2c3e50;
   font-size: 1.5rem;
+}
+
+.ring-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stacked-ring-badge {
+  background: #3b82f6;
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.special-abilities-badge {
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.special-abilities-physical {
+  background: #10b981;
+}
+
+.special-abilities-cognitive {
+  background: #f59e0b;
+}
+
+.special-abilities-autistic {
+  background: #8b5cf6;
 }
 
 .ring-info {

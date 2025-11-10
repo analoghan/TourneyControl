@@ -277,12 +277,30 @@ const StaffInterface = () => {
               const isJudgesNeeded = ring.current_event === 'Judges Needed!'
               const isColorBelts = ring.rank === 'Color Belts'
               const isBlackBelts = ring.rank === 'Black Belts'
+              const isStackedRing = ring.stacked_ring === 1
+              const hasSpecialAbilitiesPhysical = ring.special_abilities_physical === 1
+              const hasSpecialAbilitiesCognitive = ring.special_abilities_cognitive === 1
+              const hasSpecialAbilitiesAutistic = ring.special_abilities_autistic === 1
               const colorBelts = isColorBelts && ring.color_belts ? JSON.parse(ring.color_belts) : []
               const blackBelts = isBlackBelts && ring.black_belts ? JSON.parse(ring.black_belts) : []
               
               return (
-                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''}`}>
+                <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing ? 'ring-card-stacked' : ''}`}>
                   <h3>Ring {ring.ring_number}</h3>
+                  <div className="ring-badges">
+                    {isStackedRing && (
+                      <div className="stacked-ring-badge">Stacked Ring</div>
+                    )}
+                    {hasSpecialAbilitiesPhysical && (
+                      <div className="special-abilities-badge special-abilities-physical">SA - Physical</div>
+                    )}
+                    {hasSpecialAbilitiesCognitive && (
+                      <div className="special-abilities-badge special-abilities-cognitive">SA - Cognitive</div>
+                    )}
+                    {hasSpecialAbilitiesAutistic && (
+                      <div className="special-abilities-badge special-abilities-autistic">SA - Autistic</div>
+                    )}
+                  </div>
                   <div className="ring-info">
                     {isTeamSparring && (
                       <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
