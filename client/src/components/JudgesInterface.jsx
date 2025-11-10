@@ -9,45 +9,7 @@ const JudgesInterface = () => {
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [tournamentEnded, setTournamentEnded] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState('')
 
-  const JUDGES_PASSWORD = 'ata'
-
-  const handleLogin = (e) => {
-    e.preventDefault()
-    if (password === JUDGES_PASSWORD) {
-      setIsAuthenticated(true)
-      setAuthError('')
-    } else {
-      setAuthError('Incorrect password')
-      setPassword('')
-    }
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="container">
-        <div className="auth-container">
-          <h2>Judges Interface</h2>
-          <p>Please enter the password to access the judges interface.</p>
-          <form onSubmit={handleLogin} className="auth-form">
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="auth-input"
-              autoFocus
-            />
-            <button type="submit" className="auth-button">Login</button>
-          </form>
-          {authError && <p className="auth-error">{authError}</p>}
-        </div>
-      </div>
-    )
-  }
 
   useWebSocket((data) => {
     if (data.type === 'ring_update') {
@@ -136,8 +98,6 @@ const JudgesInterface = () => {
 
   return (
     <div className="container">
-      <h2>Judges Interface</h2>
-      
       {tournaments.length === 0 ? (
         <div className="no-tournaments-message">
           <p>No active tournaments available. Please contact staff to start a tournament.</p>
@@ -151,7 +111,7 @@ const JudgesInterface = () => {
           )}
           
           <div className="ring-selector">
-            <label>Select Ring:</label>
+            <label>Select Your Ring</label>
             <div className="ring-buttons">
               {rings.map(ring => (
                 <button

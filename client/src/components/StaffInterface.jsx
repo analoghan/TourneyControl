@@ -8,45 +8,7 @@ const StaffInterface = () => {
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(4)
   const [setupExpanded, setSetupExpanded] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState('')
 
-  const STAFF_PASSWORD = 'compete2win'
-
-  const handleLogin = (e) => {
-    e.preventDefault()
-    if (password === STAFF_PASSWORD) {
-      setIsAuthenticated(true)
-      setAuthError('')
-    } else {
-      setAuthError('Incorrect password')
-      setPassword('')
-    }
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="container">
-        <div className="auth-container">
-          <h2>Staff Dashboard</h2>
-          <p>Please enter the password to access the staff dashboard.</p>
-          <form onSubmit={handleLogin} className="auth-form">
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="auth-input"
-              autoFocus
-            />
-            <button type="submit" className="auth-button">Login</button>
-          </form>
-          {authError && <p className="auth-error">{authError}</p>}
-        </div>
-      </div>
-    )
-  }
 
   useWebSocket((data) => {
     if (data.type === 'ring_update') {
@@ -182,8 +144,6 @@ const StaffInterface = () => {
 
   return (
     <div className="container">
-      <h2>Staff Dashboard</h2>
-      
       <div className="tournament-setup-section">
         <div className="setup-header" onClick={() => setSetupExpanded(!setupExpanded)}>
           <div className="setup-header-content">
