@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import React from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import JudgesInterface from './components/JudgesInterface'
 import StaffInterface from './components/StaffInterface'
@@ -159,6 +160,19 @@ function NavBar() {
 function AppContent() {
   const location = useLocation()
   const isLoginPage = location.pathname === '/'
+  
+  // Update body class based on current page
+  React.useEffect(() => {
+    if (isLoginPage) {
+      document.body.classList.add('login-body')
+    } else {
+      document.body.classList.remove('login-body')
+    }
+    
+    return () => {
+      document.body.classList.remove('login-body')
+    }
+  }, [isLoginPage])
   
   return (
     <div className={`app ${isLoginPage ? 'login-page-container' : ''}`}>
