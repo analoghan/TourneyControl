@@ -6,7 +6,7 @@ export const useWebSocket = (onMessage) => {
     const isDevelopment = import.meta.env.DEV
     const protocol = 'ws:'
     const host = 'localhost'
-    const port = '8080'
+    const port = '3001'
     const wsUrl = `${protocol}//${host}:${port}`
     
     console.log('Connecting to WebSocket:', wsUrl)
