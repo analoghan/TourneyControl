@@ -31,6 +31,10 @@ export const AGE_BRACKETS = [
 
 export const RANKS = [
   'Color Belts',
+  'Black Belts'
+]
+
+export const BLACK_BELT_RANKS = [
   '1st Degree',
   '2nd-3rd Degree',
   '4th-5th Degree',

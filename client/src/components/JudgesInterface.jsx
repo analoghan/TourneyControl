@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS } from '../constants/categories'
+import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -23,6 +23,7 @@ const JudgesInterface = () => {
   const [tournamentEnded, setTournamentEnded] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
+  const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
 
 
   useWebSocket((data) => {
@@ -50,15 +51,33 @@ const JudgesInterface = () => {
   }, [selectedTournament])
 
   useEffect(() => {
-    if (selectedRing && selectedRing.color_belts) {
-      try {
-        const parsedBelts = JSON.parse(selectedRing.color_belts)
-        setSelectedColorBelts(parsedBelts)
-      } catch (e) {
+    if (selectedRing) {
+      // Load color belts
+      if (selectedRing.color_belts) {
+        try {
+          const parsedBelts = JSON.parse(selectedRing.color_belts)
+          setSelectedColorBelts(parsedBelts)
+        } catch (e) {
+          setSelectedColorBelts([])
+        }
+      } else {
         setSelectedColorBelts([])
+      }
+      
+      // Load black belts
+      if (selectedRing.black_belts) {
+        try {
+          const parsedBelts = JSON.parse(selectedRing.black_belts)
+          setSelectedBlackBelts(parsedBelts)
+        } catch (e) {
+          setSelectedBlackBelts([])
+        }
+      } else {
+        setSelectedBlackBelts([])
       }
     } else {
       setSelectedColorBelts([])
+      setSelectedBlackBelts([])
     }
   }, [selectedRing])
 
@@ -116,7 +135,13 @@ const JudgesInterface = () => {
 
   const updateEvent = (event) => updateRingField('current_event', event)
   const updateGender = (gender) => updateRingField('gender', gender)
-  const updateAgeBracket = (ageBracket) => updateRingField('age_bracket', ageBracket)
+  const updateAgeBracket = (ageBracket) => {
+    updateRingField('age_bracket', ageBracket)
+    // If Tigers is selected, automatically set rank to Color Belts
+    if (ageBracket === 'Tigers' && selectedRing.rank === 'Black Belts') {
+      updateRingField('rank', 'Color Belts')
+    }
+  }
   const updateRank = (rank) => updateRingField('rank', rank)
   const updateDivision = (division) => updateRingField('division', division)
   
@@ -235,7 +260,13 @@ const JudgesInterface = () => {
                         className="category-dropdown"
                         disabled={tournamentEnded}
                       >
-                        {RANKS.map(rank => (
+                        {RANKS.filter(rank => {
+                          // Hide Black Belts option if Tigers age bracket is selected
+                          if (selectedRing.age_bracket === 'Tigers' && rank === 'Black Belts') {
+                            return false
+                          }
+                          return true
+                        }).map(rank => (
                           <option key={rank} value={rank}>{rank}</option>
                         ))}
                       </select>
@@ -245,6 +276,24 @@ const JudgesInterface = () => {
                       <div className="color-belt-selector">
                         <label>Select Color Belt Ranks:</label>
                         <div className="checkbox-grid">
+                          <label key="all-ranks" className="checkbox-label checkbox-label-all">
+                            <input
+                              type="checkbox"
+                              checked={selectedColorBelts.includes('All Color Belt Ranks')}
+                              onChange={(e) => {
+                                let newColorBelts
+                                if (e.target.checked) {
+                                  newColorBelts = ['All Color Belt Ranks']
+                                } else {
+                                  newColorBelts = []
+                                }
+                                setSelectedColorBelts(newColorBelts)
+                                updateRingField('color_belts', JSON.stringify(newColorBelts))
+                              }}
+                              disabled={tournamentEnded}
+                            />
+                            <span>All Color Belt Ranks</span>
+                          </label>
                           {COLOR_BELT_RANKS.map(belt => (
                             <label key={belt} className="checkbox-label">
                               <input
@@ -253,14 +302,62 @@ const JudgesInterface = () => {
                                 onChange={(e) => {
                                   let newColorBelts
                                   if (e.target.checked) {
-                                    newColorBelts = [...selectedColorBelts, belt]
+                                    // Remove "All Color Belt Ranks" if selecting individual belts
+                                    newColorBelts = [...selectedColorBelts.filter(b => b !== 'All Color Belt Ranks'), belt]
                                   } else {
                                     newColorBelts = selectedColorBelts.filter(b => b !== belt)
                                   }
                                   setSelectedColorBelts(newColorBelts)
                                   updateRingField('color_belts', JSON.stringify(newColorBelts))
                                 }}
-                                disabled={tournamentEnded}
+                                disabled={tournamentEnded || selectedColorBelts.includes('All Color Belt Ranks')}
+                              />
+                              <span>{belt}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedRing.rank === 'Black Belts' && (
+                      <div className="color-belt-selector">
+                        <label>Select Black Belt Ranks:</label>
+                        <div className="checkbox-grid">
+                          <label key="all-black-ranks" className="checkbox-label checkbox-label-all">
+                            <input
+                              type="checkbox"
+                              checked={selectedBlackBelts.includes('All Black Belt Ranks')}
+                              onChange={(e) => {
+                                let newBlackBelts
+                                if (e.target.checked) {
+                                  newBlackBelts = ['All Black Belt Ranks']
+                                } else {
+                                  newBlackBelts = []
+                                }
+                                setSelectedBlackBelts(newBlackBelts)
+                                updateRingField('black_belts', JSON.stringify(newBlackBelts))
+                              }}
+                              disabled={tournamentEnded}
+                            />
+                            <span>All Black Belt Ranks</span>
+                          </label>
+                          {BLACK_BELT_RANKS.map(belt => (
+                            <label key={belt} className="checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={selectedBlackBelts.includes(belt)}
+                                onChange={(e) => {
+                                  let newBlackBelts
+                                  if (e.target.checked) {
+                                    // Remove "All Black Belt Ranks" if selecting individual belts
+                                    newBlackBelts = [...selectedBlackBelts.filter(b => b !== 'All Black Belt Ranks'), belt]
+                                  } else {
+                                    newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
+                                  }
+                                  setSelectedBlackBelts(newBlackBelts)
+                                  updateRingField('black_belts', JSON.stringify(newBlackBelts))
+                                }}
+                                disabled={tournamentEnded || selectedBlackBelts.includes('All Black Belt Ranks')}
                               />
                               <span>{belt}</span>
                             </label>

@@ -110,6 +110,18 @@ function initDatabase() {
           }
         });
       }
+      
+      const hasBlackBeltsColumn = columns.some(col => col.name === 'black_belts');
+      
+      if (!hasBlackBeltsColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN black_belts TEXT DEFAULT '[]'`, (err) => {
+          if (err) {
+            console.error('Error adding black_belts column:', err);
+          } else {
+            console.log('Successfully added black_belts column to rings table');
+          }
+        });
+      }
     });
   });
 }

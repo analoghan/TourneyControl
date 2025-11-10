@@ -153,7 +153,7 @@ app.get('/api/tournaments/:id/rings', (req, res) => {
 });
 
 app.put('/api/rings/:id', (req, res) => {
-  const { current_event, gender, age_bracket, rank, division } = req.body;
+  const { current_event, gender, age_bracket, rank, division, color_belts, black_belts } = req.body;
   
   // First, get the ring to find its tournament_id
   db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, ring) => {
@@ -195,6 +195,14 @@ app.put('/api/rings/:id', (req, res) => {
       if (division !== undefined) {
         updates.push('division = ?');
         values.push(division);
+      }
+      if (color_belts !== undefined) {
+        updates.push('color_belts = ?');
+        values.push(color_belts);
+      }
+      if (black_belts !== undefined) {
+        updates.push('black_belts = ?');
+        values.push(black_belts);
       }
       
       if (updates.length === 0) {
