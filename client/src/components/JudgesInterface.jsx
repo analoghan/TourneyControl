@@ -215,47 +215,64 @@ const JudgesInterface = () => {
               </div>
               
               <div className="category-selector">
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                  <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRing.stacked_ring === 1}
-                      onChange={(e) => updateRingField('stacked_ring', e.target.checked ? 1 : 0)}
-                      disabled={tournamentEnded}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    <span style={{ fontWeight: '500' }}>Stacked Ring</span>
-                  </label>
-                  <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRing.special_abilities_physical === 1}
-                      onChange={(e) => updateRingField('special_abilities_physical', e.target.checked ? 1 : 0)}
-                      disabled={tournamentEnded}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    <span style={{ fontWeight: '500' }}>Special Abilities - Physical</span>
-                  </label>
-                  <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRing.special_abilities_cognitive === 1}
-                      onChange={(e) => updateRingField('special_abilities_cognitive', e.target.checked ? 1 : 0)}
-                      disabled={tournamentEnded}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    <span style={{ fontWeight: '500' }}>Special Abilities - Cognitive</span>
-                  </label>
-                  <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRing.special_abilities_autistic === 1}
-                      onChange={(e) => updateRingField('special_abilities_autistic', e.target.checked ? 1 : 0)}
-                      disabled={tournamentEnded}
-                      style={{ marginRight: '0.5rem' }}
-                    />
-                    <span style={{ fontWeight: '500' }}>Special Abilities - Autistic</span>
-                  </label>
+                <div className="ring-status-box">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRing.stacked_ring === 1}
+                        onChange={(e) => updateRingField('stacked_ring', e.target.checked ? 1 : 0)}
+                        disabled={tournamentEnded}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontWeight: '500' }}>Stacked Ring</span>
+                    </label>
+                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRing.judges_needed === 1}
+                        onChange={(e) => updateRingField('judges_needed', e.target.checked ? 1 : 0)}
+                        disabled={tournamentEnded}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontWeight: '500' }}>Judges Needed</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="special-abilities-box">
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Special Abilities:</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRing.special_abilities_physical === 1}
+                        onChange={(e) => updateRingField('special_abilities_physical', e.target.checked ? 1 : 0)}
+                        disabled={tournamentEnded}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontWeight: '500' }}>Physical</span>
+                    </label>
+                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRing.special_abilities_cognitive === 1}
+                        onChange={(e) => updateRingField('special_abilities_cognitive', e.target.checked ? 1 : 0)}
+                        disabled={tournamentEnded}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontWeight: '500' }}>Cognitive</span>
+                    </label>
+                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRing.special_abilities_autistic === 1}
+                        onChange={(e) => updateRingField('special_abilities_autistic', e.target.checked ? 1 : 0)}
+                        disabled={tournamentEnded}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      <span style={{ fontWeight: '500' }}>Autistic</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 

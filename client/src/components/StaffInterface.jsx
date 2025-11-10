@@ -261,12 +261,12 @@ const StaffInterface = () => {
             </select>
           </div>
 
-          {rings.filter(r => r.current_event === 'Judges Needed!').length > 0 && (
+          {rings.filter(r => r.judges_needed === 1).length > 0 && (
             <div className="judges-needed-alert">
               <h4>⚠️ Rings Needing Judges:</h4>
               <div className="alert-list">
                 {rings
-                  .filter(r => r.current_event === 'Judges Needed!')
+                  .filter(r => r.judges_needed === 1)
                   .map(ring => (
                     <span key={ring.id} className="alert-item alert-item-urgent">
                       Ring {ring.ring_number}
@@ -295,7 +295,7 @@ const StaffInterface = () => {
             {rings.map(ring => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isOpen = ring.current_event === 'Open'
-              const isJudgesNeeded = ring.current_event === 'Judges Needed!'
+              const isJudgesNeeded = ring.judges_needed === 1
               const isColorBelts = ring.rank === 'Color Belts'
               const isBlackBelts = ring.rank === 'Black Belts'
               const isStackedRing = ring.stacked_ring === 1
@@ -311,6 +311,9 @@ const StaffInterface = () => {
                   <div className="ring-badges">
                     {isStackedRing && (
                       <div className="stacked-ring-badge">Stacked Ring</div>
+                    )}
+                    {isJudgesNeeded && (
+                      <div className="judges-needed-badge">Judges Needed</div>
                     )}
                     {hasSpecialAbilitiesPhysical && (
                       <div className="special-abilities-badge special-abilities-physical">SA - Physical</div>
@@ -328,7 +331,7 @@ const StaffInterface = () => {
                         {ring.current_event}
                       </div>
                     )}
-                    {!isOpen && !isJudgesNeeded && (
+                    {!isOpen && (
                       isTeamSparring ? (
                         <div className="division-info">{ring.division || 'Bantam'}</div>
                       ) : (

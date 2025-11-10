@@ -427,6 +427,21 @@
   border: 1px solid #f97316;
 }
 
+.special-abilities-box {
+  padding: 1rem;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border: 2px solid #3b82f6;
+}
+
+.ring-status-box {
+  padding: 1rem;
+  background: #fef3c7;
+  border-radius: 6px;
+  border: 2px solid #f59e0b;
+  margin-bottom: 0.75rem;
+}
+
 .color-belt-selector label {
   display: block;
   margin-bottom: 0.75rem;
@@ -552,6 +567,18 @@
 
 .stacked-ring-badge {
   background: #3b82f6;
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.judges-needed-badge {
+  background: #dc2626;
   color: white;
   padding: 0.4rem 0.75rem;
   border-radius: 4px;

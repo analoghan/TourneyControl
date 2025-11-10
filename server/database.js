@@ -169,6 +169,18 @@ function initDatabase() {
         });
       }
       
+      const hasJudgesNeededColumn = columns.some(col => col.name === 'judges_needed');
+      
+      if (!hasJudgesNeededColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN judges_needed INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding judges_needed column:', err);
+          } else {
+            console.log('Successfully added judges_needed column to rings table');
+          }
+        });
+      }
+      
       const hasAgeBracketsColumn = columns.some(col => col.name === 'age_brackets');
       
       if (!hasAgeBracketsColumn) {
