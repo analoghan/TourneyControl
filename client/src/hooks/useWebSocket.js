@@ -2,11 +2,11 @@ import { useEffect } from 'react'
 
 export const useWebSocket = (onMessage) => {
   useEffect(() => {
-    // Force localhost connection for WebSocket
+    // Use current hostname for WebSocket connection
     const isDevelopment = import.meta.env.DEV
-    const protocol = 'ws:'
-    const host = 'localhost'
-    const port = '3001'
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.hostname
+    const port = isDevelopment ? '3001' : (window.location.port || '3001')
     const wsUrl = `${protocol}//${host}:${port}`
     
     console.log('Connecting to WebSocket:', wsUrl)
