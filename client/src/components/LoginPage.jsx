@@ -7,11 +7,7 @@ const LoginPage = () => {
   const [authError, setAuthError] = useState('')
   const navigate = useNavigate()
 
-  const JUDGES_PASSWORD = 'ata'
-  const STAFF_PASSWORD = 'compete2win'
-  const SESSION_DURATION = 48 * 60 * 60 * 1000 // 48 hours
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     
     if (!selectedRole) {
@@ -19,24 +15,41 @@ const LoginPage = () => {
       return
     }
 
-    const correctPassword = selectedRole === 'judge' ? JUDGES_PASSWORD : STAFF_PASSWORD
-    
-    if (password === correctPassword) {
-      const sessionData = {
-        timestamp: Date.now()
-      }
-      const sessionKey = selectedRole === 'judge' ? 'judgesSession' : 'staffSession'
-      localStorage.setItem(sessionKey, JSON.stringify(sessionData))
-      
-      // Navigate to appropriate page
-      if (selectedRole === 'judge') {
-        navigate('/judges')
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          role: selectedRole, 
+          password 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Store session with token
+        const sessionData = {
+          token: data.token,
+          role: data.role,
+          timestamp: Date.now()
+        };
+        const sessionKey = selectedRole === 'judge' ? 'judgesSession' : 'staffSession';
+        localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+        
+        // Navigate to appropriate page
+        if (selectedRole === 'judge') {
+          navigate('/judges');
+        } else {
+          navigate('/staff');
+        }
       } else {
-        navigate('/staff')
+        setAuthError('Incorrect password');
+        setPassword('');
       }
-    } else {
-      setAuthError('Incorrect password')
-      setPassword('')
+    } catch (error) {
+      setAuthError('Login failed. Please try again.');
+      setPassword('');
     }
   }
 

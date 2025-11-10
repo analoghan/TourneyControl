@@ -21,11 +21,17 @@ function NavBar() {
     return 'ATA Region 102 Tournament Control'
   }
   
+  const handleLogout = () => {
+    // Clear both session keys
+    localStorage.removeItem('judgesSession')
+    localStorage.removeItem('staffSession')
+  }
+  
   return (
     <nav className="navbar">
       <h1>{getTitle()}</h1>
       <div className="nav-links">
-        <Link to="/">Logout</Link>
+        <Link to="/" onClick={handleLogout}>Logout</Link>
       </div>
     </nav>
   )

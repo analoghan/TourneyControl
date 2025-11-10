@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { useAuth } from '../hooks/useAuth'
 
 const StaffInterface = () => {
+  useAuth('staff') // Check authentication
+  
   const [rings, setRings] = useState([])
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
@@ -34,12 +37,26 @@ const StaffInterface = () => {
     const res = await fetch('/api/tournaments')
     const data = await res.json()
     setTournaments(data)
-    if (data.length > 0 && !selectedTournament) {
-      setSelectedTournament(data[0].id)
+    
+    // If no tournament is selected, or selected tournament no longer exists, select first active one
+    if (data.length > 0) {
+      const stillExists = selectedTournament && data.some(t => t.id === selectedTournament)
+      if (!stillExists) {
+        // Try to select first active tournament, otherwise first tournament
+        const activeTournament = data.find(t => t.status === 'active')
+        setSelectedTournament(activeTournament ? activeTournament.id : data[0].id)
+      }
+    } else {
+      setSelectedTournament(null)
+      setRings([])
     }
   }
 
   const fetchRings = async () => {
+    if (!selectedTournament) {
+      setRings([])
+      return
+    }
     const res = await fetch(`/api/tournaments/${selectedTournament}/rings`)
     const data = await res.json()
     setRings(data)
@@ -80,11 +97,7 @@ const StaffInterface = () => {
     })
     
     if (res.ok) {
-      // If the deleted tournament was selected, clear selection
-      if (selectedTournament === tournamentId) {
-        setSelectedTournament(null)
-        setRings([])
-      }
+      // fetchTournaments will handle selecting a new tournament if needed
       fetchTournaments()
     } else {
       const error = await res.json()
@@ -210,12 +223,20 @@ const StaffInterface = () => {
                   </button>
                 )}
                 {t.status === 'ended' && (
-                  <button 
-                    className="btn-delete"
-                    onClick={() => deleteTournament(t.id)}
-                  >
-                    Delete
-                  </button>
+                  <>
+                    <button 
+                      className="btn-start"
+                      onClick={() => updateTournamentStatus(t.id, 'active')}
+                    >
+                      Restart
+                    </button>
+                    <button 
+                      className="btn-delete"
+                      onClick={() => deleteTournament(t.id)}
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -234,7 +255,7 @@ const StaffInterface = () => {
               value={selectedTournament || ''}
               onChange={(e) => setSelectedTournament(parseInt(e.target.value))}
             >
-              {tournaments.map(t => (
+              {tournaments.filter(t => t.status === 'active').map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>

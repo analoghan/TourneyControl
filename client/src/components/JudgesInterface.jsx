@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 
 const COLOR_BELT_RANKS = [
@@ -16,6 +17,8 @@ const COLOR_BELT_RANKS = [
 ]
 
 const JudgesInterface = () => {
+  useAuth('judge') // Check authentication
+  
   const [rings, setRings] = useState([])
   const [selectedRing, setSelectedRing] = useState(null)
   const [tournaments, setTournaments] = useState([])
@@ -161,6 +164,24 @@ const JudgesInterface = () => {
               {errorMessage}
             </div>
           )}
+          
+          <div className="tournament-select">
+            <label>Select Tournament:</label>
+            <select 
+              value={selectedTournament || ''}
+              onChange={(e) => {
+                const tournamentId = parseInt(e.target.value)
+                setSelectedTournament(tournamentId)
+                setSelectedRing(null)
+              }}
+            >
+              {tournaments.map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
           
           <div className="ring-selector">
             <label>Select Your Ring</label>

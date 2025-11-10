@@ -17,6 +17,38 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
 }
 
+// Authentication credentials (in production, use environment variables)
+const JUDGES_PASSWORD = process.env.JUDGES_PASSWORD || 'ata';
+const STAFF_PASSWORD = process.env.STAFF_PASSWORD || 'compete2win';
+
+// Authentication endpoint
+app.post('/api/auth/login', (req, res) => {
+  const { role, password } = req.body;
+  
+  if (!role || !password) {
+    return res.status(400).json({ error: 'Role and password are required' });
+  }
+  
+  let isValid = false;
+  if (role === 'judge' && password === JUDGES_PASSWORD) {
+    isValid = true;
+  } else if (role === 'staff' && password === STAFF_PASSWORD) {
+    isValid = true;
+  }
+  
+  if (isValid) {
+    // Generate a simple session token (timestamp-based)
+    const token = Buffer.from(`${role}:${Date.now()}`).toString('base64');
+    res.json({ 
+      success: true, 
+      token,
+      role 
+    });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
 // WebSocket connections
 const clients = new Set();
 
@@ -92,7 +124,7 @@ app.put('/api/tournaments/:id/status', (req, res) => {
     const validTransitions = {
       'not_started': ['active'],
       'active': ['ended'],
-      'ended': []
+      'ended': ['active'] // Allow restarting ended tournaments
     };
     
     if (!validTransitions[currentStatus].includes(status)) {
