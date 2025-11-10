@@ -181,6 +181,18 @@ function initDatabase() {
         });
       }
       
+      const hasIsOpenColumn = columns.some(col => col.name === 'is_open');
+      
+      if (!hasIsOpenColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN is_open INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding is_open column:', err);
+          } else {
+            console.log('Successfully added is_open column to rings table');
+          }
+        });
+      }
+      
       const hasAgeBracketsColumn = columns.some(col => col.name === 'age_brackets');
       
       if (!hasAgeBracketsColumn) {

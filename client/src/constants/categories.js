@@ -1,5 +1,4 @@
 export const EVENTS = [
-  'Open',
   'Forms',
   'Weapons',
   'Combat Sparring',

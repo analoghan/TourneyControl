@@ -276,12 +276,12 @@ const StaffInterface = () => {
             </div>
           )}
 
-          {rings.filter(r => r.current_event === 'Open').length > 0 && (
+          {rings.filter(r => r.is_open === 1).length > 0 && (
             <div className="open-rings-alert">
               <h4>✓ Open Rings:</h4>
               <div className="alert-list">
                 {rings
-                  .filter(r => r.current_event === 'Open')
+                  .filter(r => r.is_open === 1)
                   .map(ring => (
                     <span key={ring.id} className="alert-item alert-item-open">
                       Ring {ring.ring_number}
@@ -294,7 +294,7 @@ const StaffInterface = () => {
           <div className="rings-grid">
             {rings.map(ring => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
-              const isOpen = ring.current_event === 'Open'
+              const isOpen = ring.is_open === 1
               const isJudgesNeeded = ring.judges_needed === 1
               const isColorBelts = ring.rank === 'Color Belts'
               const isBlackBelts = ring.rank === 'Black Belts'
@@ -309,58 +309,63 @@ const StaffInterface = () => {
                 <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing ? 'ring-card-stacked' : ''}`}>
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-badges">
-                    {isStackedRing && (
+                    {isOpen && (
+                      <div className="open-badge">Open</div>
+                    )}
+                    {isStackedRing && !isOpen && (
                       <div className="stacked-ring-badge">Stacked Ring</div>
                     )}
                     {isJudgesNeeded && (
                       <div className="judges-needed-badge">Judges Needed</div>
                     )}
-                    {hasSpecialAbilitiesPhysical && (
+                    {hasSpecialAbilitiesPhysical && !isOpen && (
                       <div className="special-abilities-badge special-abilities-physical">SA - Physical</div>
                     )}
-                    {hasSpecialAbilitiesCognitive && (
+                    {hasSpecialAbilitiesCognitive && !isOpen && (
                       <div className="special-abilities-badge special-abilities-cognitive">SA - Cognitive</div>
                     )}
-                    {hasSpecialAbilitiesAutistic && (
+                    {hasSpecialAbilitiesAutistic && !isOpen && (
                       <div className="special-abilities-badge special-abilities-autistic">SA - Autistic</div>
                     )}
                   </div>
                   <div className="ring-info">
-                    {isTeamSparring && (
-                      <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
-                        {ring.current_event}
-                      </div>
-                    )}
                     {!isOpen && (
-                      isTeamSparring ? (
-                        <div className="division-info">{ring.division || 'Bantam'}</div>
-                      ) : (
-                        <>
-                          <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
-                            <span className="category-item">{ring.gender || 'Male'}</span>
-                            <span className="category-divider">|</span>
-                            <span className="category-item">{ring.age_bracket || 'Tigers'}</span>
+                      <>
+                        {isTeamSparring && (
+                          <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
+                            {ring.current_event}
                           </div>
-                          <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
-                            {ring.rank || 'Color Belts'}
+                        )}
+                        {isTeamSparring ? (
+                          <div className="division-info">{ring.division || 'Bantam'}</div>
+                        ) : (
+                          <>
+                            <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
+                              <span className="category-item">{ring.gender || 'Male'}</span>
+                              <span className="category-divider">|</span>
+                              <span className="category-item">{ring.age_bracket || 'Tigers'}</span>
+                            </div>
+                            <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
+                              {ring.rank || 'Color Belts'}
+                            </div>
+                            {isColorBelts && colorBelts.length > 0 && (
+                              <div className="color-belts-display">
+                                {colorBelts.join(', ')}
+                              </div>
+                            )}
+                            {isBlackBelts && blackBelts.length > 0 && (
+                              <div className="black-belts-display">
+                                {blackBelts.join(', ')}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {!isTeamSparring && (
+                          <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
+                            {ring.current_event}
                           </div>
-                          {isColorBelts && colorBelts.length > 0 && (
-                            <div className="color-belts-display">
-                              {colorBelts.join(', ')}
-                            </div>
-                          )}
-                          {isBlackBelts && blackBelts.length > 0 && (
-                            <div className="black-belts-display">
-                              {blackBelts.join(', ')}
-                            </div>
-                          )}
-                        </>
-                      )
-                    )}
-                    {!isTeamSparring && (
-                      <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
-                        {ring.current_event}
-                      </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

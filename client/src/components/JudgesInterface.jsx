@@ -27,6 +27,7 @@ const JudgesInterface = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
+  const [selectionExpanded, setSelectionExpanded] = useState(false)
 
 
   useWebSocket((data) => {
@@ -149,7 +150,7 @@ const JudgesInterface = () => {
   const updateDivision = (division) => updateRingField('division', division)
   
   const isTeamSparring = selectedRing?.current_event?.startsWith('Team Sparring')
-  const isOpen = selectedRing?.current_event === 'Open' || selectedRing?.current_event === 'Judges Needed!'
+  const isOpen = selectedRing?.is_open === 1
 
   return (
     <div className="container">
@@ -165,51 +166,109 @@ const JudgesInterface = () => {
             </div>
           )}
           
-          <div className="tournament-select">
-            <label>Select Tournament:</label>
-            <select 
-              value={selectedTournament || ''}
-              onChange={(e) => {
-                const tournamentId = parseInt(e.target.value)
-                setSelectedTournament(tournamentId)
-                setSelectedRing(null)
-              }}
-            >
-              {tournaments.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="ring-selector">
-            <label>Select Your Ring</label>
-            <div className="ring-buttons">
-              {rings.map(ring => (
-                <button
-                  key={ring.id}
-                  className={`ring-btn ${selectedRing?.id === ring.id ? 'active' : ''}`}
-                  onClick={() => setSelectedRing(ring)}
-                >
-                  Ring {ring.ring_number}
-                </button>
-              ))}
+          {selectedRing && (
+            <div className="selection-section">
+              <div className="setup-header" onClick={() => setSelectionExpanded(!selectionExpanded)}>
+                <div className="setup-header-content">
+                  <h3>Tournament & Ring Selection</h3>
+                  <span className="setup-hint">click to show/hide</span>
+                </div>
+                <span className="toggle-icon">{selectionExpanded ? '▼' : '▶'}</span>
+              </div>
+              
+              {selectionExpanded && (
+                <div className="setup-content">
+                  <div className="tournament-select">
+                    <label>Select Tournament:</label>
+                    <select 
+                      value={selectedTournament || ''}
+                      onChange={(e) => {
+                        const tournamentId = parseInt(e.target.value)
+                        setSelectedTournament(tournamentId)
+                        setSelectedRing(null)
+                      }}
+                    >
+                      {tournaments.map(t => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="ring-selector">
+                    <label>Select Your Ring</label>
+                    <div className="ring-buttons">
+                      {rings.map(ring => (
+                        <button
+                          key={ring.id}
+                          className={`ring-btn ${selectedRing?.id === ring.id ? 'active' : ''}`}
+                          onClick={() => setSelectedRing(ring)}
+                        >
+                          Ring {ring.ring_number}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
+          
+          {!selectedRing && (
+            <>
+              <div className="tournament-select">
+                <label>Select Tournament:</label>
+                <select 
+                  value={selectedTournament || ''}
+                  onChange={(e) => {
+                    const tournamentId = parseInt(e.target.value)
+                    setSelectedTournament(tournamentId)
+                    setSelectedRing(null)
+                  }}
+                >
+                  {tournaments.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="ring-selector">
+                <label>Select Your Ring</label>
+                <div className="ring-buttons">
+                  {rings.map(ring => (
+                    <button
+                      key={ring.id}
+                      className={`ring-btn ${selectedRing?.id === ring.id ? 'active' : ''}`}
+                      onClick={() => setSelectedRing(ring)}
+                    >
+                      Ring {ring.ring_number}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {selectedRing && (
             <div className="event-selector">
               <h3>Ring {selectedRing.ring_number}</h3>
               <div className="current-status">
                 <p className="current-event">
-                  <strong>Current:</strong> {selectedRing.current_event}
-                  {!isOpen && (
-                    isTeamSparring ? (
-                      <> | {selectedRing.division || 'Bantam'}</>
-                    ) : (
-                      <> | {selectedRing.gender} | {selectedRing.age_bracket} | {selectedRing.rank}</>
-                    )
+                  <strong>Current:</strong> 
+                  {isOpen ? (
+                    <> Open</>
+                  ) : (
+                    <>
+                      {selectedRing.current_event}
+                      {isTeamSparring ? (
+                        <> | {selectedRing.division || 'Bantam'}</>
+                      ) : (
+                        <> | {selectedRing.gender} | {selectedRing.age_bracket} | {selectedRing.rank}</>
+                      )}
+                    </>
                   )}
                 </p>
               </div>
@@ -217,61 +276,20 @@ const JudgesInterface = () => {
               <div className="category-selector">
                 <div className="ring-status-box">
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRing.stacked_ring === 1}
-                        onChange={(e) => updateRingField('stacked_ring', e.target.checked ? 1 : 0)}
-                        disabled={tournamentEnded}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>Stacked Ring</span>
-                    </label>
-                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRing.judges_needed === 1}
-                        onChange={(e) => updateRingField('judges_needed', e.target.checked ? 1 : 0)}
-                        disabled={tournamentEnded}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>Judges Needed</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="special-abilities-box">
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Special Abilities:</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRing.special_abilities_physical === 1}
-                        onChange={(e) => updateRingField('special_abilities_physical', e.target.checked ? 1 : 0)}
-                        disabled={tournamentEnded}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>Physical</span>
-                    </label>
-                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRing.special_abilities_cognitive === 1}
-                        onChange={(e) => updateRingField('special_abilities_cognitive', e.target.checked ? 1 : 0)}
-                        disabled={tournamentEnded}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>Cognitive</span>
-                    </label>
-                    <label className="checkbox-label" style={{ cursor: 'pointer', padding: '0.75rem', background: '#f8f9fa', borderRadius: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedRing.special_abilities_autistic === 1}
-                        onChange={(e) => updateRingField('special_abilities_autistic', e.target.checked ? 1 : 0)}
-                        disabled={tournamentEnded}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      <span style={{ fontWeight: '500' }}>Autistic</span>
-                    </label>
+                    <button
+                      className={`status-toggle-btn status-toggle-open ${selectedRing.is_open === 1 ? 'status-toggle-active' : ''}`}
+                      onClick={() => updateRingField('is_open', selectedRing.is_open === 1 ? 0 : 1)}
+                      disabled={tournamentEnded}
+                    >
+                      Ring Open
+                    </button>
+                    <button
+                      className={`status-toggle-btn status-toggle-judges ${selectedRing.judges_needed === 1 ? 'status-toggle-active' : ''}`}
+                      onClick={() => updateRingField('judges_needed', selectedRing.judges_needed === 1 ? 0 : 1)}
+                      disabled={tournamentEnded}
+                    >
+                      Judges Needed
+                    </button>
                   </div>
                 </div>
               </div>
@@ -359,71 +377,33 @@ const JudgesInterface = () => {
                       <div className="color-belt-selector">
                         <label>Select Color Belt Ranks:</label>
                         <div className="checkbox-grid">
-                          <label key="all-ranks" className="checkbox-label checkbox-label-all">
-                            <input
-                              type="checkbox"
-                              checked={selectedColorBelts.includes('All Color Belt Ranks')}
-                              onChange={(e) => {
+                          {COLOR_BELT_RANKS.map(belt => (
+                            <button
+                              key={belt}
+                              className={`belt-toggle-btn color-belt-btn belt-${belt.toLowerCase().replace('/', '-')} ${selectedColorBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                              onClick={() => {
                                 let newColorBelts
-                                if (e.target.checked) {
-                                  newColorBelts = ['All Color Belt Ranks']
+                                if (selectedColorBelts.includes(belt)) {
+                                  newColorBelts = selectedColorBelts.filter(b => b !== belt)
                                 } else {
-                                  newColorBelts = []
+                                  newColorBelts = [...selectedColorBelts, belt]
                                 }
                                 setSelectedColorBelts(newColorBelts)
                                 updateRingField('color_belts', JSON.stringify(newColorBelts))
                               }}
                               disabled={tournamentEnded}
-                            />
-                            <span>All Color Belt Ranks</span>
-                          </label>
-                          {COLOR_BELT_RANKS.map(belt => (
-                            <label key={belt} className="checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={selectedColorBelts.includes(belt)}
-                                onChange={(e) => {
-                                  let newColorBelts
-                                  if (e.target.checked) {
-                                    // Remove "All Color Belt Ranks" if selecting individual belts
-                                    newColorBelts = [...selectedColorBelts.filter(b => b !== 'All Color Belt Ranks'), belt]
-                                  } else {
-                                    newColorBelts = selectedColorBelts.filter(b => b !== belt)
-                                  }
-                                  setSelectedColorBelts(newColorBelts)
-                                  updateRingField('color_belts', JSON.stringify(newColorBelts))
-                                }}
-                                disabled={tournamentEnded || selectedColorBelts.includes('All Color Belt Ranks')}
-                              />
-                              <span>{belt}</span>
-                            </label>
+                            >
+                              {belt}
+                            </button>
                           ))}
                         </div>
                       </div>
                     )}
 
                     {selectedRing.rank === 'Black Belts' && (
-                      <div className="color-belt-selector">
+                      <div className="black-belt-selector">
                         <label>Select Black Belt Ranks:</label>
                         <div className="checkbox-grid">
-                          <label key="all-black-ranks" className="checkbox-label checkbox-label-all">
-                            <input
-                              type="checkbox"
-                              checked={selectedBlackBelts.includes('All Black Belt Ranks')}
-                              onChange={(e) => {
-                                let newBlackBelts
-                                if (e.target.checked) {
-                                  newBlackBelts = ['All Black Belt Ranks']
-                                } else {
-                                  newBlackBelts = []
-                                }
-                                setSelectedBlackBelts(newBlackBelts)
-                                updateRingField('black_belts', JSON.stringify(newBlackBelts))
-                              }}
-                              disabled={tournamentEnded}
-                            />
-                            <span>All Black Belt Ranks</span>
-                          </label>
                           {BLACK_BELT_RANKS.filter(belt => {
                             // Hide 4th-5th Degree and Masters for younger age brackets
                             const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
@@ -434,29 +414,71 @@ const JudgesInterface = () => {
                             }
                             return true
                           }).map(belt => (
-                            <label key={belt} className="checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={selectedBlackBelts.includes(belt)}
-                                onChange={(e) => {
-                                  let newBlackBelts
-                                  if (e.target.checked) {
-                                    // Remove "All Black Belt Ranks" if selecting individual belts
-                                    newBlackBelts = [...selectedBlackBelts.filter(b => b !== 'All Black Belt Ranks'), belt]
-                                  } else {
-                                    newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
-                                  }
-                                  setSelectedBlackBelts(newBlackBelts)
-                                  updateRingField('black_belts', JSON.stringify(newBlackBelts))
-                                }}
-                                disabled={tournamentEnded || selectedBlackBelts.includes('All Black Belt Ranks')}
-                              />
-                              <span>{belt}</span>
-                            </label>
+                            <button
+                              key={belt}
+                              className={`belt-toggle-btn ${selectedBlackBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                              onClick={() => {
+                                let newBlackBelts
+                                if (selectedBlackBelts.includes(belt)) {
+                                  newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
+                                } else {
+                                  newBlackBelts = [...selectedBlackBelts, belt]
+                                }
+                                setSelectedBlackBelts(newBlackBelts)
+                                updateRingField('black_belts', JSON.stringify(newBlackBelts))
+                              }}
+                              disabled={tournamentEnded}
+                            >
+                              {belt}
+                            </button>
                           ))}
                         </div>
                       </div>
                     )}
+
+                    <div className="category-selector">
+                      <div className="stacked-ring-box">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Stacked Ring:</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                          <button
+                            className={`status-toggle-btn status-toggle-stacked ${selectedRing.stacked_ring === 1 ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('stacked_ring', selectedRing.stacked_ring === 1 ? 0 : 1)}
+                            disabled={tournamentEnded}
+                          >
+                            Stacked Ring
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="category-selector">
+                      <div className="special-abilities-box">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Special Abilities:</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                          <button
+                            className={`status-toggle-btn status-toggle-physical ${selectedRing.special_abilities_physical === 1 ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('special_abilities_physical', selectedRing.special_abilities_physical === 1 ? 0 : 1)}
+                            disabled={tournamentEnded}
+                          >
+                            Physical
+                          </button>
+                          <button
+                            className={`status-toggle-btn status-toggle-cognitive ${selectedRing.special_abilities_cognitive === 1 ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('special_abilities_cognitive', selectedRing.special_abilities_cognitive === 1 ? 0 : 1)}
+                            disabled={tournamentEnded}
+                          >
+                            Cognitive
+                          </button>
+                          <button
+                            className={`status-toggle-btn status-toggle-autistic ${selectedRing.special_abilities_autistic === 1 ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('special_abilities_autistic', selectedRing.special_abilities_autistic === 1 ? 0 : 1)}
+                            disabled={tournamentEnded}
+                          >
+                            Autistic
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </>
                 )
               )}
