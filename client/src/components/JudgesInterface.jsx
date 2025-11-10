@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS } from '../constants/categories'
 
+const COLOR_BELT_RANKS = [
+  'White',
+  'Orange',
+  'Yellow',
+  'Camo',
+  'Green',
+  'Purple',
+  'Blue',
+  'Brown',
+  'Red',
+  'Red/Black'
+]
+
 const JudgesInterface = () => {
   const [rings, setRings] = useState([])
   const [selectedRing, setSelectedRing] = useState(null)
@@ -9,6 +22,7 @@ const JudgesInterface = () => {
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [tournamentEnded, setTournamentEnded] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [selectedColorBelts, setSelectedColorBelts] = useState([])
 
 
   useWebSocket((data) => {
@@ -34,6 +48,19 @@ const JudgesInterface = () => {
       fetchRings()
     }
   }, [selectedTournament])
+
+  useEffect(() => {
+    if (selectedRing && selectedRing.color_belts) {
+      try {
+        const parsedBelts = JSON.parse(selectedRing.color_belts)
+        setSelectedColorBelts(parsedBelts)
+      } catch (e) {
+        setSelectedColorBelts([])
+      }
+    } else {
+      setSelectedColorBelts([])
+    }
+  }, [selectedRing])
 
   const fetchTournaments = async () => {
     const res = await fetch('/api/tournaments/active')
@@ -213,6 +240,34 @@ const JudgesInterface = () => {
                         ))}
                       </select>
                     </div>
+
+                    {selectedRing.rank === 'Color Belts' && (
+                      <div className="color-belt-selector">
+                        <label>Select Color Belt Ranks:</label>
+                        <div className="checkbox-grid">
+                          {COLOR_BELT_RANKS.map(belt => (
+                            <label key={belt} className="checkbox-label">
+                              <input
+                                type="checkbox"
+                                checked={selectedColorBelts.includes(belt)}
+                                onChange={(e) => {
+                                  let newColorBelts
+                                  if (e.target.checked) {
+                                    newColorBelts = [...selectedColorBelts, belt]
+                                  } else {
+                                    newColorBelts = selectedColorBelts.filter(b => b !== belt)
+                                  }
+                                  setSelectedColorBelts(newColorBelts)
+                                  updateRingField('color_belts', JSON.stringify(newColorBelts))
+                                }}
+                                disabled={tournamentEnded}
+                              />
+                              <span>{belt}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )
               )}

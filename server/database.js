@@ -59,6 +59,7 @@ function initDatabase() {
       const hasAgeBracketColumn = columns.some(col => col.name === 'age_bracket');
       const hasRankColumn = columns.some(col => col.name === 'rank');
       const hasDivisionColumn = columns.some(col => col.name === 'division');
+      const hasColorBeltsColumn = columns.some(col => col.name === 'color_belts');
       
       if (!hasGenderColumn) {
         db.run(`ALTER TABLE rings ADD COLUMN gender TEXT DEFAULT 'Male'`, (err) => {
@@ -96,6 +97,16 @@ function initDatabase() {
             console.error('Error adding division column:', err);
           } else {
             console.log('Successfully added division column to rings table');
+          }
+        });
+      }
+      
+      if (!hasColorBeltsColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN color_belts TEXT DEFAULT '[]'`, (err) => {
+          if (err) {
+            console.error('Error adding color_belts column:', err);
+          } else {
+            console.log('Successfully added color_belts column to rings table');
           }
         });
       }

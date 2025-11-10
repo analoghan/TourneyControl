@@ -275,6 +275,9 @@ const StaffInterface = () => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isOpen = ring.current_event === 'Open'
               const isJudgesNeeded = ring.current_event === 'Judges Needed!'
+              const isColorBelts = ring.rank === 'Color Belts'
+              const colorBelts = isColorBelts && ring.color_belts ? JSON.parse(ring.color_belts) : []
+              
               return (
                 <div key={ring.id} className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''}`}>
                   <h3>Ring {ring.ring_number}</h3>
@@ -297,6 +300,11 @@ const StaffInterface = () => {
                           <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
                             {ring.rank || 'Color Belts'}
                           </div>
+                          {isColorBelts && colorBelts.length > 0 && (
+                            <div className="color-belts-display">
+                              {colorBelts.join(', ')}
+                            </div>
+                          )}
                         </>
                       )
                     )}
