@@ -2,12 +2,11 @@ import { useEffect } from 'react'
 
 export const useWebSocket = (onMessage) => {
   useEffect(() => {
-    // In development, Vite runs on 3000 but backend is on 8080
-    // In production, everything runs on the same port
+    // Force localhost connection for WebSocket
     const isDevelopment = import.meta.env.DEV
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = window.location.hostname
-    const port = isDevelopment ? '8080' : (window.location.port || '8080')
+    const protocol = 'ws:'
+    const host = 'localhost'
+    const port = '8080'
     const wsUrl = `${protocol}//${host}:${port}`
     
     console.log('Connecting to WebSocket:', wsUrl)
