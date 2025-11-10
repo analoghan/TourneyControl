@@ -156,17 +156,26 @@ function NavBar() {
   )
 }
 
+function AppContent() {
+  const location = useLocation()
+  const isLoginPage = location.pathname === '/'
+  
+  return (
+    <div className={`app ${isLoginPage ? 'login-page-container' : ''}`}>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/judges" element={<JudgesInterface />} />
+        <Route path="/staff" element={<StaffInterface />} />
+      </Routes>
+    </div>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <div className="app">
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/judges" element={<JudgesInterface />} />
-          <Route path="/staff" element={<StaffInterface />} />
-        </Routes>
-      </div>
+      <AppContent />
     </BrowserRouter>
   )
 }

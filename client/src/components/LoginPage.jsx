@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom'
 
 const LoginPage = () => {
   const [selectedRole, setSelectedRole] = useState(null)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const navigate = useNavigate()
+
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role)
+    setAuthError('')
+    setPassword('')
+    setShowPasswordModal(true)
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -53,6 +61,13 @@ const LoginPage = () => {
     }
   }
 
+  const handleCancel = () => {
+    setShowPasswordModal(false)
+    setPassword('')
+    setAuthError('')
+    setSelectedRole(null)
+  }
+
   return (
     <div className="container">
       <div className="landing-page">
@@ -61,11 +76,8 @@ const LoginPage = () => {
         
         <div className="role-selection">
           <button
-            className={`role-button ${selectedRole === 'judge' ? 'role-button-active' : ''}`}
-            onClick={() => {
-              setSelectedRole('judge')
-              setAuthError('')
-            }}
+            className="role-button"
+            onClick={() => handleRoleSelect('judge')}
           >
             <div className="role-icon">⚖️</div>
             <div className="role-title">Judge Login</div>
@@ -73,11 +85,8 @@ const LoginPage = () => {
           </button>
           
           <button
-            className={`role-button ${selectedRole === 'staff' ? 'role-button-active' : ''}`}
-            onClick={() => {
-              setSelectedRole('staff')
-              setAuthError('')
-            }}
+            className="role-button"
+            onClick={() => handleRoleSelect('staff')}
           >
             <div className="role-icon">👥</div>
             <div className="role-title">Tournament Staff Login</div>
@@ -85,23 +94,32 @@ const LoginPage = () => {
           </button>
         </div>
 
-        {selectedRole && (
-          <form onSubmit={handleLogin} className="login-form">
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="auth-input"
-              autoFocus
-            />
-            <button type="submit" className="auth-button">
-              Login as {selectedRole === 'judge' ? 'Judge' : 'Tournament Staff'}
-            </button>
-          </form>
+        {showPasswordModal && (
+          <div className="modal-overlay" onClick={handleCancel}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>{selectedRole === 'judge' ? 'Judge' : 'Tournament Staff'} Login</h2>
+              <form onSubmit={handleLogin}>
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="auth-input"
+                  autoFocus
+                />
+                {authError && <p className="auth-error">{authError}</p>}
+                <div className="modal-actions">
+                  <button type="submit" className="auth-button">
+                    Login
+                  </button>
+                  <button type="button" className="cancel-button" onClick={handleCancel}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
-        
-        {authError && <p className="auth-error">{authError}</p>}
       </div>
     </div>
   )
