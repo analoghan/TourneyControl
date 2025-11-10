@@ -1,12 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Use data directory for database in production, current directory in development
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? path.join(__dirname, '../data/tournament.db')
-  : path.join(__dirname, 'tournament.db');
-
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(path.join(__dirname, 'tournament.db'), (err) => {
   if (err) {
     console.error('Error opening database:', err);
   } else {
