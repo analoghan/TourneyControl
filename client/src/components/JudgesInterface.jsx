@@ -148,10 +148,10 @@ const JudgesInterface = () => {
           const parsedBrackets = JSON.parse(selectedRing.age_brackets)
           setSelectedAgeBrackets(parsedBrackets)
         } catch (e) {
-          setSelectedAgeBrackets(['Tigers'])
+          setSelectedAgeBrackets([selectedRing.age_bracket || '8 and Under'])
         }
       } else {
-        setSelectedAgeBrackets(['Tigers'])
+        setSelectedAgeBrackets([selectedRing.age_bracket || '8 and Under'])
       }
     } else {
       setSelectedColorBelts([])
@@ -417,7 +417,7 @@ const JudgesInterface = () => {
                         <>
                           {' | '}{selectedRing.division_type || 'Champion'}
                           {' | '}{selectedRing.gender}
-                          {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'}
+                          {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : (selectedRing.age_bracket || '8 and Under')}
                           {' | '}{selectedRing.rank}
                           {selectedRing.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
                             selectedColorBelts.length === COLOR_BELT_RANKS.length ? 

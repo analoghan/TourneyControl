@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 
@@ -82,6 +82,7 @@ const StaffInterface = () => {
   useAuth('staff') // Check authentication
   
   const navigate = useNavigate()
+  const location = useLocation()
   const [rings, setRings] = useState([])
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
@@ -125,6 +126,8 @@ const StaffInterface = () => {
   useEffect(() => {
     if (selectedTournament) {
       fetchRings()
+      // Save selected tournament to sessionStorage when it changes
+      sessionStorage.setItem('staffSelectedTournament', selectedTournament.toString())
     }
   }, [selectedTournament])
 
@@ -140,11 +143,21 @@ const StaffInterface = () => {
     const data = await res.json()
     setTournaments(data)
     
-    // If no tournament is selected, or selected tournament no longer exists, select first active one
+    // If no tournament is selected, or selected tournament no longer exists, select one
     if (data.length > 0) {
       const stillExists = selectedTournament && data.some(t => t.id === selectedTournament)
       if (!stillExists) {
-        // Try to select first active tournament, otherwise first tournament
+        // Check if there's a saved tournament from sessionStorage
+        const savedTournament = sessionStorage.getItem('staffSelectedTournament')
+        if (savedTournament) {
+          const savedId = parseInt(savedTournament)
+          const savedExists = data.some(t => t.id === savedId)
+          if (savedExists) {
+            setSelectedTournament(savedId)
+            return
+          }
+        }
+        // Otherwise, try to select first active tournament, or first tournament
         const activeTournament = data.find(t => t.status === 'active')
         setSelectedTournament(activeTournament ? activeTournament.id : data[0].id)
       }
@@ -841,10 +854,10 @@ const StaffInterface = () => {
                               <span className="category-divider">|</span>
                               <span className="category-item">{(() => {
                                 try {
-                                  const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : ['Tigers']
+                                  const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : [ring.age_bracket || '8 and Under']
                                   return sortAgeBrackets([...ageBrackets]).join(', ')
                                 } catch (e) {
-                                  return ring.age_bracket || 'Tigers'
+                                  return ring.age_bracket || '8 and Under'
                                 }
                               })()}</span>
                             </div>

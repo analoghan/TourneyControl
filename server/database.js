@@ -242,7 +242,7 @@ function initDatabase() {
       const hasAgeBracketsColumn = columns.some(col => col.name === 'age_brackets');
       
       if (!hasAgeBracketsColumn) {
-        db.run(`ALTER TABLE rings ADD COLUMN age_brackets TEXT DEFAULT '["Tigers"]'`, (err) => {
+        db.run(`ALTER TABLE rings ADD COLUMN age_brackets TEXT DEFAULT '["8 and Under"]'`, (err) => {
           if (err) {
             console.error('Error adding age_brackets column:', err);
           } else {

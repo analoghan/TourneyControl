@@ -132,10 +132,10 @@ const StaffRingConfig = () => {
         const parsedBrackets = JSON.parse(ringData.age_brackets)
         setSelectedAgeBrackets(parsedBrackets)
       } catch (e) {
-        setSelectedAgeBrackets(['Tigers'])
+        setSelectedAgeBrackets([ringData.age_bracket || '8 and Under'])
       }
     } else {
-      setSelectedAgeBrackets(['Tigers'])
+      setSelectedAgeBrackets([ringData.age_bracket || '8 and Under'])
     }
   }
 
@@ -272,7 +272,7 @@ const StaffRingConfig = () => {
                     <>
                       {' | '}{ring.division_type || 'Champion'}
                       {' | '}{ring.gender}
-                      {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'}
+                      {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : (ring.age_bracket || '8 and Under')}
                       {' | '}{ring.rank}
                       {ring.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
                         selectedColorBelts.length === COLOR_BELT_RANKS.length ? 

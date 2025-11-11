@@ -95,9 +95,9 @@ app.post('/api/tournaments', (req, res) => {
     const tournamentId = this.lastID;
     
     // Create rings for the tournament with is_open = 1 and age_bracket = '8 and Under' by default
-    const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open, age_bracket, gender, rank) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open, age_bracket, age_brackets, gender, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
     for (let i = 1; i <= num_rings; i++) {
-      stmt.run(tournamentId, i, 'Forms', 1, '8 and Under', 'Male', 'Color Belts');
+      stmt.run(tournamentId, i, 'Forms', 1, '8 and Under', '["8 and Under"]', 'Male', 'Color Belts');
     }
     stmt.finalize();
     
@@ -286,9 +286,9 @@ app.put('/api/tournaments/:id/rings', (req, res) => {
       
       if (num_rings > currentRings) {
         // Add new rings with is_open = 1 and age_bracket = '8 and Under' by default
-        const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open, age_bracket, gender, rank) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        const stmt = db.prepare('INSERT INTO rings (tournament_id, ring_number, current_event, is_open, age_bracket, age_brackets, gender, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
         for (let i = currentRings + 1; i <= num_rings; i++) {
-          stmt.run(tournamentId, i, 'Forms', 1, '8 and Under', 'Male', 'Color Belts');
+          stmt.run(tournamentId, i, 'Forms', 1, '8 and Under', '["8 and Under"]', 'Male', 'Color Belts');
         }
         stmt.finalize(() => {
           // Get updated tournament
