@@ -54,7 +54,10 @@ A comprehensive web application for managing martial arts tournaments with real-
   
 - **Ring Control**:
   - **Start Ring**: Records start time (button turns blue when started)
+    - Disabled when "Ring Open" is active
+    - Disabled when ring is already started
   - **End Ring**: Records end time and resets ring to default state
+  - **Ring Open**: Cannot be activated while ring is in progress
   - Confirmation modals for both actions
   - Warning message about packet readiness
   - Timestamps tracked for reporting
@@ -338,6 +341,10 @@ NODE_ENV=production node server/index.js
 - **Status Display**: Shows on staff dashboard at bottom of each ring card
 - **Reset Behavior**: Ending a ring clears start time and resets all settings to defaults
 - **Multiple Sessions**: Rings can be started again after being ended
+- **Smart Restrictions**:
+  - Cannot start a ring while "Ring Open" is active
+  - Cannot set "Ring Open" while ring is in progress (started but not ended)
+  - Prevents conflicting states
 
 ## Security Notes
 

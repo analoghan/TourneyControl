@@ -214,7 +214,7 @@ const StaffRingConfig = () => {
                 <button
                   className={`status-toggle-btn status-toggle-open ${ring.is_open === 1 ? 'status-toggle-active' : ''}`}
                   onClick={() => updateRingField('is_open', ring.is_open === 1 ? 0 : 1)}
-                  disabled={tournamentEnded}
+                  disabled={tournamentEnded || (ring.start_time && !ring.end_time)}
                 >
                   Ring Open
                 </button>
@@ -245,7 +245,7 @@ const StaffRingConfig = () => {
                 <button
                   className="btn-start-ring"
                   onClick={() => setShowStartModal(true)}
-                  disabled={tournamentEnded || ring.start_time}
+                  disabled={tournamentEnded || ring.start_time || ring.is_open === 1}
                 >
                   {ring.start_time ? `Ring In Progress - Started: ${new Date(ring.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Start Ring'}
                 </button>

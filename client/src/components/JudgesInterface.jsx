@@ -324,7 +324,7 @@ const JudgesInterface = () => {
                     <button
                       className={`status-toggle-btn status-toggle-open ${selectedRing.is_open === 1 ? 'status-toggle-active' : ''}`}
                       onClick={() => updateRingField('is_open', selectedRing.is_open === 1 ? 0 : 1)}
-                      disabled={tournamentEnded}
+                      disabled={tournamentEnded || (selectedRing.start_time && !selectedRing.end_time)}
                     >
                       Ring Open
                     </button>
@@ -355,7 +355,7 @@ const JudgesInterface = () => {
                     <button
                       className="btn-start-ring"
                       onClick={() => setShowStartModal(true)}
-                      disabled={tournamentEnded || selectedRing.start_time}
+                      disabled={tournamentEnded || selectedRing.start_time || selectedRing.is_open === 1}
                     >
                       {selectedRing.start_time ? `Ring In Progress - Started: ${new Date(selectedRing.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Start Ring'}
                     </button>
