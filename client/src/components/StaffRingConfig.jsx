@@ -229,6 +229,7 @@ const StaffRingConfig = () => {
   
   const handleStartRing = async () => {
     if (!ring) return
+    
     // Clear end_time and set start_time in a single request
     await updateRingFields({
       end_time: null,
@@ -625,22 +626,47 @@ const StaffRingConfig = () => {
         </div>
       </div>
 
-      {showStartModal && (
-        <div className="confirm-modal-overlay" onClick={() => setShowStartModal(false)}>
-          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Start Ring?</h3>
-            <p>Are you sure you want to start this ring? This will record the start time.</p>
-            <div className="confirm-modal-actions">
-              <button className="btn-confirm btn-confirm-start" onClick={handleStartRing}>
-                Yes, Start Ring
-              </button>
-              <button className="cancel-button" onClick={() => setShowStartModal(false)}>
-                Cancel
-              </button>
+      {showStartModal && (() => {
+        const isColorBelts = ring.rank === 'Color Belts'
+        const isBlackBelts = ring.rank === 'Black Belts'
+        const needsRankValidation = !isTeamSparring && ((isColorBelts && selectedColorBelts.length === 0) || (isBlackBelts && selectedBlackBelts.length === 0))
+        
+        return (
+          <div className="confirm-modal-overlay" onClick={() => setShowStartModal(false)}>
+            <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+              <h3>Start Ring?</h3>
+              <p>Are you sure you want to start this ring? This will record the start time.</p>
+              {needsRankValidation && (
+                <div style={{ 
+                  background: '#fee2e2', 
+                  border: '2px solid #dc2626', 
+                  padding: '1rem', 
+                  borderRadius: '6px', 
+                  margin: '1.5rem 0',
+                  color: '#991b1b',
+                  fontWeight: '600',
+                  lineHeight: '1.5'
+                }}>
+                  ⚠️ Please select at least one {isColorBelts ? 'Color Belt' : 'Black Belt'} rank before starting the ring.
+                </div>
+              )}
+              <div className="confirm-modal-actions">
+                <button 
+                  className="btn-confirm btn-confirm-start" 
+                  onClick={handleStartRing}
+                  disabled={needsRankValidation}
+                  style={needsRankValidation ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
+                  Yes, Start Ring
+                </button>
+                <button className="cancel-button" onClick={() => setShowStartModal(false)}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {showEndModal && (
         <div className="confirm-modal-overlay" onClick={() => setShowEndModal(false)}>

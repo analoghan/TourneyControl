@@ -40,6 +40,7 @@ A comprehensive web application for managing martial arts tournaments with real-
   - **Champion**: White button when active
   - **Recreational**: Gold button when active
   - Hidden for Team Sparring events
+  - Hidden when Tigers age bracket is selected (Tigers is always recreational)
 
 - **Competition Categories** (for standard events):
   - **Gender**: Male or Female
@@ -63,8 +64,10 @@ A comprehensive web application for managing martial arts tournaments with real-
     - Disabled when "Ring Open" is active
     - Disabled when ring is already started
     - Clears previous end_time to start fresh session
+    - **Validation**: Requires at least one belt rank to be selected (Color Belt or Black Belt)
+    - Modal shows warning and disables button if no ranks selected
   - **End Ring**: Records end time, completes session, and resets ring to default state
-    - All settings reset to defaults (Forms, Male, Tigers, Color Belts, etc.)
+    - All settings reset to defaults (Forms, Male, 8 and Under, Color Belts, etc.)
     - Ring automatically set to "Open" status
   - **Multiple Sessions**: Rings can be started/ended multiple times, each tracked as separate packet
   - **Session Data**: Each start/end cycle stored with timestamps and run time
@@ -119,7 +122,7 @@ A comprehensive web application for managing martial arts tournaments with real-
     - **Red flashing background**: Judges Needed! (urgent)
     - **Blue background**: Stacked rings (hidden when open)
   - Status badges with black borders:
-    - **Division Type Badge**: White (Champion) or Gold (Recreational) - shown for standard events only
+    - **Division Type Badge**: White (Champion) or Gold (Recreational) - shown for standard events only (hidden for Tigers)
     - **Open Badge**: Large green badge
     - **RTTL Needed Badge**: Large dark red badge
     - **Judges Needed Badge**: Large dark orange badge
