@@ -276,12 +276,12 @@ const StaffRingConfig = () => {
                       {' | '}{ring.rank}
                       {ring.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
                         selectedColorBelts.length === COLOR_BELT_RANKS.length ? 
-                          <> (all ranks)</> : 
+                          <> (All Ranks)</> : 
                           <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
                       )}
                       {ring.rank === 'Black Belts' && selectedBlackBelts.length > 0 && (
                         selectedBlackBelts.length === BLACK_BELT_RANKS.length ? 
-                          <> (all ranks)</> : 
+                          <> (All Ranks)</> : 
                           <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                       )}
                     </>

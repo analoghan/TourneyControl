@@ -705,12 +705,12 @@ const StaffInterface = () => {
                             </div>
                             {isColorBelts && colorBelts.length > 0 && (
                               <div className="color-belts-display">
-                                {colorBelts.length === COLOR_BELT_RANKS.length ? 'all ranks' : sortColorBelts(colorBelts).join(', ')}
+                                {colorBelts.length === COLOR_BELT_RANKS.length ? 'All Ranks' : sortColorBelts(colorBelts).join(', ')}
                               </div>
                             )}
                             {isBlackBelts && blackBelts.length > 0 && (
                               <div className="black-belts-display">
-                                {blackBelts.length === BLACK_BELT_RANKS.length ? 'all ranks' : sortBlackBelts(blackBelts).join(', ')}
+                                {blackBelts.length === BLACK_BELT_RANKS.length ? 'All Ranks' : sortBlackBelts(blackBelts).join(', ')}
                               </div>
                             )}
                           </>

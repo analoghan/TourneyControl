@@ -387,12 +387,12 @@ const JudgesInterface = () => {
                           {' | '}{selectedRing.rank}
                           {selectedRing.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
                             selectedColorBelts.length === COLOR_BELT_RANKS.length ? 
-                              <> (all ranks)</> : 
+                              <> (All Ranks)</> : 
                               <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
                           )}
                           {selectedRing.rank === 'Black Belts' && selectedBlackBelts.length > 0 && (
                             selectedBlackBelts.length === BLACK_BELT_RANKS.length ? 
-                              <> (all ranks)</> : 
+                              <> (All Ranks)</> : 
                               <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                           )}
                         </>
