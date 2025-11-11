@@ -128,8 +128,8 @@ const StaffInterface = () => {
   useEffect(() => {
     if (selectedTournament) {
       fetchRings()
-      // Save selected tournament to sessionStorage when it changes
-      sessionStorage.setItem('staffSelectedTournament', selectedTournament.toString())
+      // Save selected tournament to sessionStorage when it changes (shared key for both roles)
+      sessionStorage.setItem('selectedTournamentId', selectedTournament.toString())
     }
   }, [selectedTournament])
 
@@ -149,8 +149,8 @@ const StaffInterface = () => {
     if (data.length > 0) {
       const stillExists = selectedTournament && data.some(t => t.id === selectedTournament)
       if (!stillExists) {
-        // Check if there's a saved tournament from sessionStorage
-        const savedTournament = sessionStorage.getItem('staffSelectedTournament')
+        // Check if there's a saved tournament from sessionStorage (shared key for both roles)
+        const savedTournament = sessionStorage.getItem('selectedTournamentId')
         if (savedTournament) {
           const savedId = parseInt(savedTournament)
           const savedExists = data.some(t => t.id === savedId)

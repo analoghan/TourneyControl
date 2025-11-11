@@ -113,6 +113,8 @@ const JudgesInterface = () => {
   useEffect(() => {
     if (selectedTournament) {
       fetchRings()
+      // Save selected tournament to sessionStorage when it changes (shared key for both roles)
+      sessionStorage.setItem('selectedTournamentId', selectedTournament.toString())
     }
   }, [selectedTournament])
 
@@ -165,6 +167,18 @@ const JudgesInterface = () => {
     const data = await res.json()
     setTournaments(data)
     if (data.length > 0) {
+      // Check if there's a saved tournament from sessionStorage (shared key for both roles)
+      const savedTournament = sessionStorage.getItem('selectedTournamentId')
+      if (savedTournament) {
+        const savedId = parseInt(savedTournament)
+        const savedExists = data.some(t => t.id === savedId)
+        if (savedExists) {
+          setSelectedTournament(savedId)
+          setTournamentEnded(false)
+          return
+        }
+      }
+      // Otherwise, select first tournament
       setSelectedTournament(data[0].id)
       setTournamentEnded(false)
     } else {
