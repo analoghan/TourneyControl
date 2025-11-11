@@ -24,7 +24,8 @@ export const AGE_BRACKETS = [
   '30-39',
   '40-49',
   '50-59',
-  '60+'
+  '60-69',
+  '70-99'
 ]
 
 export const RANKS = [
