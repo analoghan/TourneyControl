@@ -273,7 +273,7 @@ const StaffInterface = () => {
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Number of Rings:</label>
+                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Ring Count:</label>
                   <select
                     value={numRings}
                     onChange={(e) => setNumRings(parseInt(e.target.value))}
@@ -317,6 +317,7 @@ const StaffInterface = () => {
                 </div>
                 {editingRingCount === t.id ? (
                   <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Ring Count:</span>
                     <select
                       value={newRingCount}
                       onChange={(e) => setNewRingCount(parseInt(e.target.value))}
@@ -341,7 +342,7 @@ const StaffInterface = () => {
                   </div>
                 ) : (
                   <div className="tournament-meta">
-                    {t.num_rings} rings
+                    <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Ring Count:</span> {t.num_rings} rings
                     {t.status === 'active' && (
                       <button 
                         className="btn-edit-small"
@@ -355,6 +356,7 @@ const StaffInterface = () => {
                 )}
                 {editingTimezone === t.id ? (
                   <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem' }}>
+                    <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Timezone:</span>
                     <select
                       value={newTimezone}
                       onChange={(e) => setNewTimezone(e.target.value)}
@@ -380,7 +382,7 @@ const StaffInterface = () => {
                   </div>
                 ) : (
                   <div className="tournament-meta" style={{ marginTop: '0.25rem' }}>
-                    {t.timezone === 'America/New_York' ? 'US Eastern' : 
+                    <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Timezone:</span> {t.timezone === 'America/New_York' ? 'US Eastern' : 
                      t.timezone === 'America/Chicago' ? 'US Central' : 
                      t.timezone === 'America/Denver' ? 'US Mountain' : 
                      t.timezone === 'America/Los_Angeles' ? 'US Pacific' : t.timezone}
