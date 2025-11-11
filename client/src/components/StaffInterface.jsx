@@ -889,19 +889,21 @@ const StaffInterface = () => {
                       <div className="ring-status-badge ring-status-in-progress">
                         RING IN PROGRESS<br />STARTED AT: {formatTime(ring.start_time)}
                       </div>
-                    ) : ring.end_time && ring.start_time ? (
+                    ) : ring.end_time && ring.start_time && !isOpen ? (
                       <>
                         <div className="ring-status-badge ring-status-ended">
                           PREVIOUS RING ENDED:<br />{formatTime(ring.end_time)}
                         </div>
                         {(() => {
-                          // Only show clear timing button if the ring has been in this state for more than 5 seconds
-                          // This prevents showing it during the brief moment when starting a new ring
+                          // Only show clear timing button if:
+                          // 1. Ring has both start_time and end_time (stuck state)
+                          // 2. Ring is NOT open (is_open = 0)
+                          // 3. It's been more than 10 seconds since the ring ended
                           const endTime = new Date(ring.end_time).getTime()
                           const now = Date.now()
                           const timeSinceEnd = now - endTime
                           
-                          if (timeSinceEnd > 5000) {
+                          if (timeSinceEnd > 10000) {
                             return (
                               <div 
                                 className="ring-status-badge ring-status-reset"
