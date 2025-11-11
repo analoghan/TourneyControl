@@ -43,6 +43,16 @@ function initDatabase() {
       teams_coach INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS ring_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ring_id INTEGER NOT NULL,
+      session_number INTEGER NOT NULL,
+      start_time DATETIME,
+      end_time DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE
+    )`);
     
     // Migration: Add ata_number column to judges table if it doesn't exist
     db.all(`PRAGMA table_info(judges)`, (err, columns) => {

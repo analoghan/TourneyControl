@@ -212,6 +212,38 @@ const JudgesInterface = () => {
     }
   }
 
+  const updateRingFields = async (updates) => {
+    if (!selectedRing) return
+    
+    // Optimistically update local state with all fields
+    setSelectedRing(prev => ({ ...prev, ...updates }))
+    
+    try {
+      const response = await fetch(`/api/rings/${selectedRing.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      
+      if (response.status === 403) {
+        const errorData = await response.json()
+        setErrorMessage(errorData.error || 'Tournament has ended. Ring events cannot be modified.')
+        setTournamentEnded(true)
+        fetchRings()
+      } else if (!response.ok) {
+        setErrorMessage('Failed to update ring')
+        fetchRings()
+      } else {
+        const updatedRing = await response.json()
+        setSelectedRing(updatedRing)
+        setErrorMessage('')
+      }
+    } catch (error) {
+      setErrorMessage('Failed to update ring')
+      fetchRings()
+    }
+  }
+
   const updateEvent = (event) => updateRingField('current_event', event)
   const updateGender = (gender) => updateRingField('gender', gender)
   const updateAgeBracket = (ageBracket) => {
@@ -226,13 +258,17 @@ const JudgesInterface = () => {
   
   const handleStartRing = async () => {
     if (!selectedRing) return
-    await updateRingField('start_time', new Date().toISOString())
+    // Clear end_time and set start_time in a single request
+    await updateRingFields({
+      end_time: null,
+      start_time: new Date().toISOString()
+    })
     setShowStartModal(false)
   }
   
   const handleEndRing = async () => {
     if (!selectedRing) return
-    // Reset ring to default state
+    // Reset ring to default state - send all updates in a single request
     const updates = {
       end_time: new Date().toISOString(),
       start_time: null,
@@ -253,9 +289,7 @@ const JudgesInterface = () => {
       special_abilities_autistic: 0
     }
     
-    for (const [key, value] of Object.entries(updates)) {
-      await updateRingField(key, value)
-    }
+    await updateRingFields(updates)
     
     setShowEndModal(false)
     fetchRings()

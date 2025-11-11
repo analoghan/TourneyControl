@@ -132,23 +132,111 @@ app.put('/api/tournaments/:id/status', (req, res) => {
       return res.status(400).json({ error: 'Invalid status transition' });
     }
     
-    // Update tournament status
-    db.run('UPDATE tournaments SET status = ? WHERE id = ?', [status, tournamentId], (err) => {
-      if (err) return res.status(500).json({ error: err.message });
+    // If ending the tournament, first end all in-progress rings
+    if (status === 'ended') {
+      const currentTime = new Date().toISOString();
       
-      // Get updated tournament
-      db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+      // Get all rings for this tournament that are in progress (have start_time but no end_time)
+      db.all(
+        'SELECT id FROM rings WHERE tournament_id = ? AND start_time IS NOT NULL AND end_time IS NULL',
+        [tournamentId],
+        (err, inProgressRings) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+          
+          // End all in-progress rings
+          if (inProgressRings.length > 0) {
+            const ringIds = inProgressRings.map(r => r.id);
+            
+            // Update rings to set end_time
+            db.run(
+              `UPDATE rings SET end_time = ? WHERE id IN (${ringIds.join(',')})`,
+              [currentTime],
+              (err) => {
+                if (err) {
+                  return res.status(500).json({ error: err.message });
+                }
+                
+                // Update ring sessions to set end_time for incomplete sessions
+                db.run(
+                  `UPDATE ring_sessions SET end_time = ? WHERE ring_id IN (${ringIds.join(',')}) AND end_time IS NULL`,
+                  [currentTime],
+                  (err) => {
+                    if (err) {
+                      console.error('Error updating ring sessions:', err);
+                    }
+                    
+                    // Now update the tournament status
+                    updateTournamentStatusAndNotify();
+                  }
+                );
+              }
+            );
+          } else {
+            // No rings in progress, just update tournament status
+            updateTournamentStatusAndNotify();
+          }
+        }
+      );
+    } else if (status === 'active' && currentStatus === 'ended') {
+      // If restarting an ended tournament, clear all ring timing to reset them
+      db.run(
+        'UPDATE rings SET start_time = NULL, end_time = NULL WHERE tournament_id = ?',
+        [tournamentId],
+        (err) => {
+          if (err) {
+            console.error('Error clearing ring timing on restart:', err);
+          }
+          
+          // Update tournament status and broadcast
+          updateTournamentStatusAndNotify();
+          
+          // Broadcast ring updates
+          db.all('SELECT * FROM rings WHERE tournament_id = ?', [tournamentId], (err, rings) => {
+            if (!err && rings) {
+              rings.forEach(ring => {
+                broadcast({ type: 'ring_update', data: ring });
+              });
+            }
+          });
+        }
+      );
+    } else {
+      // For other status changes, just update the tournament
+      updateTournamentStatusAndNotify();
+    }
+    
+    function updateTournamentStatusAndNotify() {
+      // Update tournament status
+      db.run('UPDATE tournaments SET status = ? WHERE id = ?', [status, tournamentId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         
-        // Broadcast tournament status change
-        broadcast({ 
-          type: 'tournament_status_change', 
-          data: updatedTournament 
+        // Get updated tournament
+        db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          // Broadcast tournament status change
+          broadcast({ 
+            type: 'tournament_status_change', 
+            data: updatedTournament 
+          });
+          
+          // If we ended rings, also broadcast ring updates
+          if (status === 'ended') {
+            db.all('SELECT * FROM rings WHERE tournament_id = ?', [tournamentId], (err, rings) => {
+              if (!err && rings) {
+                rings.forEach(ring => {
+                  broadcast({ type: 'ring_update', data: ring });
+                });
+              }
+            });
+          }
+          
+          res.json(updatedTournament);
         });
-        
-        res.json(updatedTournament);
       });
-    });
+    }
   });
 });
 
@@ -288,6 +376,18 @@ app.get('/api/rings/:id', (req, res) => {
   });
 });
 
+// Get all sessions for a ring (for debugging/verification)
+app.get('/api/rings/:id/sessions', (req, res) => {
+  db.all(
+    'SELECT * FROM ring_sessions WHERE ring_id = ? ORDER BY session_number',
+    [req.params.id],
+    (err, sessions) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(sessions);
+    }
+  );
+});
+
 app.put('/api/rings/:id', (req, res) => {
   const { current_event, gender, age_bracket, age_brackets, rank, division, division_type, color_belts, black_belts, stacked_ring, is_open, judges_needed, rttl_needed, special_abilities_physical, special_abilities_cognitive, special_abilities_autistic, start_time, end_time } = req.body;
   
@@ -379,10 +479,45 @@ app.put('/api/rings/:id', (req, res) => {
       if (start_time !== undefined) {
         updates.push('start_time = ?');
         values.push(start_time);
+        
+        // If starting a new session (start_time is being set and ring doesn't currently have one)
+        if (start_time && !ring.start_time) {
+          db.get('SELECT COUNT(*) as count FROM ring_sessions WHERE ring_id = ?', [req.params.id], (err, result) => {
+            if (!err) {
+              const sessionNumber = (result.count || 0) + 1;
+              db.run(
+                'INSERT INTO ring_sessions (ring_id, session_number, start_time) VALUES (?, ?, ?)',
+                [req.params.id, sessionNumber, start_time],
+                (err) => {
+                  if (err) {
+                    console.error('Error creating ring session:', err);
+                  } else {
+                    console.log(`Created session ${sessionNumber} for ring ${req.params.id}`);
+                  }
+                }
+              );
+            }
+          });
+        }
       }
       if (end_time !== undefined) {
         updates.push('end_time = ?');
         values.push(end_time);
+        
+        // If ending a session (end_time is being set and ring currently has a start_time)
+        if (end_time && ring.start_time) {
+          db.run(
+            'UPDATE ring_sessions SET end_time = ? WHERE ring_id = ? AND end_time IS NULL ORDER BY session_number DESC LIMIT 1',
+            [end_time, req.params.id],
+            (err) => {
+              if (err) {
+                console.error('Error updating ring session:', err);
+              } else {
+                console.log(`Updated session end_time for ring ${req.params.id}`);
+              }
+            }
+          );
+        }
       }
       
       if (updates.length === 0) {
@@ -538,11 +673,176 @@ app.delete('/api/judges/:id', (req, res) => {
   });
 });
 
+// Tournament Report Endpoint
+app.get('/api/tournaments/:id/report', (req, res) => {
+  const { id } = req.params;
+  
+  // Get tournament info
+  db.get('SELECT * FROM tournaments WHERE id = ?', [id], (err, tournament) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (!tournament) {
+      return res.status(404).json({ error: 'Tournament not found' });
+    }
+    
+    // Get all rings for this tournament
+    db.all(
+      `SELECT id, ring_number FROM rings 
+       WHERE tournament_id = ? 
+       ORDER BY ring_number`,
+      [id],
+      (err, rings) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        
+        // Get all sessions for all rings
+        const ringIds = rings.map(r => r.id);
+        if (ringIds.length === 0) {
+          return res.json({
+            tournament: {
+              id: tournament.id,
+              name: tournament.name,
+              status: tournament.status,
+              timezone: tournament.timezone,
+              created_at: tournament.created_at,
+              total_rings: 0,
+              completed_sessions: 0
+            },
+            rings: []
+          });
+        }
+        
+        db.all(
+          `SELECT ring_id, session_number, start_time, end_time 
+           FROM ring_sessions 
+           WHERE ring_id IN (${ringIds.join(',')})
+           ORDER BY ring_id, session_number`,
+          [],
+          (err, sessions) => {
+            if (err) {
+              return res.status(500).json({ error: err.message });
+            }
+            
+            // Group sessions by ring
+            const sessionsByRing = {};
+            sessions.forEach(session => {
+              if (!sessionsByRing[session.ring_id]) {
+                sessionsByRing[session.ring_id] = [];
+              }
+              
+              let runTime = null;
+              if (session.start_time && session.end_time) {
+                const start = new Date(session.start_time);
+                const end = new Date(session.end_time);
+                runTime = Math.round((end - start) / 1000 / 60); // minutes
+              }
+              
+              sessionsByRing[session.ring_id].push({
+                session_number: session.session_number,
+                start_time: session.start_time,
+                end_time: session.end_time,
+                run_time_minutes: runTime,
+                status: session.start_time && session.end_time ? 'Completed' : 
+                        session.start_time ? 'In Progress' : 'Not Started'
+              });
+            });
+            
+            // Build ring data with sessions
+            const ringsWithData = rings.map(ring => ({
+              ring_number: ring.ring_number,
+              sessions: sessionsByRing[ring.id] || []
+            }));
+            
+            // Calculate total completed sessions
+            const completedSessions = sessions.filter(s => s.start_time && s.end_time).length;
+            
+            res.json({
+              tournament: {
+                id: tournament.id,
+                name: tournament.name,
+                status: tournament.status,
+                timezone: tournament.timezone,
+                created_at: tournament.created_at,
+                total_rings: rings.length,
+                completed_sessions: completedSessions
+              },
+              rings: ringsWithData
+            });
+          }
+        );
+      }
+    );
+  });
+});
+
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
+
+// Admin endpoint to clean up incomplete sessions
+app.post('/api/admin/cleanup-sessions', (req, res) => {
+  // Find all sessions with start_time but no end_time
+  db.all(
+    'SELECT * FROM ring_sessions WHERE start_time IS NOT NULL AND end_time IS NULL',
+    [],
+    (err, incompleteSessions) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (incompleteSessions.length === 0) {
+        return res.json({ 
+          message: 'No incomplete sessions found',
+          cleaned: 0
+        });
+      }
+      
+      // For each incomplete session, try to set end_time from the ring's end_time
+      let cleaned = 0;
+      let promises = incompleteSessions.map(session => {
+        return new Promise((resolve) => {
+          db.get('SELECT end_time FROM rings WHERE id = ?', [session.ring_id], (err, ring) => {
+            if (err || !ring || !ring.end_time) {
+              // If no ring end_time, just mark session as ended at start_time + 1 hour (placeholder)
+              const endTime = new Date(new Date(session.start_time).getTime() + 60 * 60 * 1000).toISOString();
+              db.run(
+                'UPDATE ring_sessions SET end_time = ? WHERE id = ?',
+                [endTime, session.id],
+                (err) => {
+                  if (!err) cleaned++;
+                  resolve();
+                }
+              );
+            } else {
+              // Use ring's end_time
+              db.run(
+                'UPDATE ring_sessions SET end_time = ? WHERE id = ?',
+                [ring.end_time, session.id],
+                (err) => {
+                  if (!err) cleaned++;
+                  resolve();
+                }
+              );
+            }
+          });
+        });
+      });
+      
+      Promise.all(promises).then(() => {
+        res.json({
+          message: `Cleaned up ${cleaned} incomplete sessions`,
+          cleaned: cleaned,
+          total_found: incompleteSessions.length
+        });
+      });
+    }
+  );
+});
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

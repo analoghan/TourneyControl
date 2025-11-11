@@ -30,7 +30,7 @@ A comprehensive web application for managing martial arts tournaments with real-
 - **Ring Status Controls** (Toggle Buttons with Black Borders):
   - **Ring Open**: Mark ring as available (gray/green with black border when active)
   - **Judges Needed**: Alert staff for judge assistance (gray/dark orange with black border when active)
-  - **RTTL Needed**: Alert staff for RTTL assistance (gray/dark red with black border when active)
+  - **RTTL Needed**: Alert staff for RTTL assistance (gray/dark red with black border when active - highest priority)
   
 - **Event Selection**:
   - Dropdown menu with 10 event types
@@ -58,15 +58,20 @@ A comprehensive web application for managing martial arts tournaments with real-
   - **Stacked Ring**: Toggle button (light blue/blue with black border when active)
   - **Special Abilities**: Physical (green), Cognitive (orange), Autistic (purple) - all with black borders when active
   
-- **Ring Control**:
-  - **Start Ring**: Records start time (button turns blue when started)
+- **Ring Control & Session Tracking**:
+  - **Start Ring**: Records start time and creates new session/packet (button turns blue when started)
     - Disabled when "Ring Open" is active
     - Disabled when ring is already started
-  - **End Ring**: Records end time and resets ring to default state
+    - Clears previous end_time to start fresh session
+  - **End Ring**: Records end time, completes session, and resets ring to default state
+    - All settings reset to defaults (Forms, Male, Tigers, Color Belts, etc.)
+    - Ring automatically set to "Open" status
+  - **Multiple Sessions**: Rings can be started/ended multiple times, each tracked as separate packet
+  - **Session Data**: Each start/end cycle stored with timestamps and run time
   - **Ring Open**: Cannot be activated while ring is in progress
   - Confirmation modals for both actions
   - Warning message about packet readiness
-  - Timestamps tracked for reporting
+  - All timestamps tracked in tournament timezone for accurate reporting
 
 - **Smart UI**:
   - When "Ring Open" is selected, event dropdown and all category options are hidden
@@ -83,8 +88,11 @@ A comprehensive web application for managing martial arts tournaments with real-
   - Edit timezone for active tournaments
   - View all tournaments with status badges
   - Start/End/Restart/Delete tournaments with status-based controls
+  - **End Tournament**: Automatically ends all in-progress rings and closes their sessions
+  - **Restart Tournament**: Clears all ring timing to reset for new sessions
   - New rings default to "Open" status when created or added
   - Clear labels for Ring Count and Timezone in both creation and edit modes
+  - **Generate Reports**: CSV export with complete session/packet data
   
 - **Active Tournament Display**:
   - Tournament selector dropdown
@@ -121,6 +129,7 @@ A comprehensive web application for managing martial arts tournaments with real-
     - **Ready to Start**: Gray badge
     - **Ring In Progress**: Dark blue badge with start time
     - **Previous Ring Ended**: Gray badge with end time
+    - **Clear Timing Button**: Orange badge appears on stuck rings (both start and end times set) - click to reset
   - Category displays with black borders:
     - **Gender/Age**: Blue (Male) or Pink (Female) background
     - **Rank**: Orange (Color Belts) or Black (Black Belts) background
@@ -237,8 +246,16 @@ NODE_ENV=production node server/index.js
    - Click "End" button when tournament is complete
    - Rings become read-only for judges
 
-8. **Restart/Delete Tournament**:
-   - Click "Restart" to reactivate an ended tournament
+8. **Generate Reports**:
+   - Click "Generate Report" button on any tournament
+   - Downloads CSV file with complete session/packet data
+   - Each ring on one row with all packets in columns
+   - Includes: Ring Number, Total Packets Completed, and all packet start/end times with run times
+   - Timestamps formatted without commas for proper CSV parsing
+   - All times in tournament timezone
+
+9. **Restart/Delete Tournament**:
+   - Click "Restart" to reactivate an ended tournament (clears all ring timing)
    - Click "Delete" to permanently remove ended tournaments
 
 ### For Judges
@@ -256,11 +273,13 @@ NODE_ENV=production node server/index.js
    - Toggle "Judges Needed" if you need judge assistance
    - Toggle "RTTL Needed" if you need RTTL assistance
 
-4. **Start/End Ring**:
-   - Click "Start Ring" to begin timing (records start time)
-   - Click "End Ring" when finished (records end time and resets ring)
+4. **Start/End Ring (Session/Packet Tracking)**:
+   - Click "Start Ring" to begin timing (records start time and creates new session)
+   - Click "End Ring" when finished (records end time, completes session, resets ring to defaults)
+   - Each start/end cycle creates a separate packet/session tracked in the database
    - Confirmation modals prevent accidental clicks
-   - Ring status displayed on staff dashboard
+   - Ring status displayed on staff dashboard with timing information
+   - Multiple sessions per ring supported - start again after ending for next packet
 
 5. **Set Division Type** (for standard events):
    - Choose "Champion" or "Recreational"
@@ -360,19 +379,61 @@ NODE_ENV=production node server/index.js
 - `tournament_rings_updated`: Ring count changed for tournament
 - `tournament_timezone_updated`: Timezone changed for tournament
 
-## Ring Timing & Tracking
+## Ring Timing & Session Tracking
 
-- **Start Time**: Recorded when "Start Ring" is clicked
-- **End Time**: Recorded when "End Ring" is clicked
-- **Timezone Support**: All times displayed in tournament's configured timezone
+- **Session/Packet System**: Each start/end cycle creates a separate tracked session
+- **Start Time**: Recorded when "Start Ring" is clicked, creates new session in database
+- **End Time**: Recorded when "End Ring" is clicked, completes current session
+- **Run Time**: Automatically calculated in minutes for each completed session
+- **Multiple Sessions**: Rings can be started/ended multiple times, each tracked separately
+- **Session Numbering**: Sessions numbered sequentially (1, 2, 3, etc.) per ring
+- **Timezone Support**: All times displayed and stored in tournament's configured timezone
 - **Status Display**: Shows on staff dashboard at bottom of each ring card
 - **Live Clock**: Current time displayed at top of staff dashboard, updates every second
-- **Reset Behavior**: Ending a ring clears start time and resets all settings to defaults
-- **Multiple Sessions**: Rings can be started again after being ended
+- **Reset Behavior**: Ending a ring completes session, clears timing, and resets all settings to defaults
 - **Smart Restrictions**:
   - Cannot start a ring while "Ring Open" is active
   - Cannot set "Ring Open" while ring is in progress (started but not ended)
   - Prevents conflicting states
+- **Clear Timing**: Staff can manually reset stuck rings using "Clear Timing" button
+
+## Tournament Reports
+
+### CSV Export Format
+
+Reports are generated per tournament with comprehensive session data:
+
+**Header Information:**
+- Tournament Name
+- Status (Active/Ended)
+- Total Ring Numbers
+- Total Completed Packets (sum of all completed sessions)
+- Created timestamp
+
+**Data Format:**
+- One row per ring
+- Columns: `Ring Number`, `Total Packets Completed`, then for each packet:
+  - `Packet 1 Start Time`, `Packet 1 End Time`, `Packet 1 Run Time (minutes)`
+  - `Packet 2 Start Time`, `Packet 2 End Time`, `Packet 2 Run Time (minutes)`
+  - etc.
+- Timestamps formatted without commas (MM/DD/YYYY HH:MM:SS) for proper CSV parsing
+- Run times calculated automatically in minutes
+- Empty columns for rings with fewer sessions than maximum
+
+**Example:**
+```
+Ring Number,Total Packets Completed,Packet 1 Start Time,Packet 1 End Time,Packet 1 Run Time (minutes),Packet 2 Start Time,Packet 2 End Time,Packet 2 Run Time (minutes)
+1,2,01/15/2025 10:30:00,01/15/2025 10:45:00,15,01/15/2025 11:00:00,01/15/2025 11:20:00,20
+2,1,01/15/2025 10:35:00,01/15/2025 10:50:00,15,,,
+3,0,N/A,N/A,N/A,,,
+```
+
+**Use Cases:**
+- Track ring productivity and efficiency
+- Analyze tournament flow and timing
+- Identify bottlenecks or delays
+- Generate statistics for future planning
+- Verify completion of all scheduled events
 
 ## Security Notes
 

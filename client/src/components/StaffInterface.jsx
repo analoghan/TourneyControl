@@ -180,13 +180,52 @@ const StaffInterface = () => {
   }
 
   const updateTournamentStatus = async (tournamentId, status) => {
+    // Show confirmation dialog when ending a tournament
+    if (status === 'ended') {
+      const confirmed = confirm(
+        'Are you sure you want to end this tournament?\n\n' +
+        'This action will:\n' +
+        '• Mark the tournament as ended\n' +
+        '• Automatically end all rings that are currently in progress\n' +
+        '• This cannot be undone (though you can restart the tournament later)'
+      )
+      
+      if (!confirmed) {
+        return
+      }
+    }
+    
     const res = await fetch(`/api/tournaments/${tournamentId}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     })
     if (res.ok) {
+      // If we just ended the currently selected tournament, switch to another active one
+      if (status === 'ended' && selectedTournament === tournamentId) {
+        const updatedRes = await fetch('/api/tournaments')
+        const updatedTournaments = await updatedRes.json()
+        
+        // Try to find another active tournament
+        const activeTournament = updatedTournaments.find(t => t.status === 'active' && t.id !== tournamentId)
+        
+        if (activeTournament) {
+          setSelectedTournament(activeTournament.id)
+        } else {
+          // No other active tournaments, select first tournament or null
+          setSelectedTournament(updatedTournaments.length > 0 ? updatedTournaments[0].id : null)
+        }
+      }
+      
       fetchTournaments()
+      
+      // Refresh rings if we're still viewing this tournament
+      if (selectedTournament === tournamentId) {
+        fetchRings()
+      }
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update tournament status')
     }
   }
 
@@ -205,6 +244,102 @@ const StaffInterface = () => {
     } else {
       const error = await res.json()
       alert(error.error || 'Failed to delete tournament')
+    }
+  }
+
+  const generateTournamentReport = async (tournamentId) => {
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}/report`)
+      const data = await res.json()
+      
+      if (!res.ok) {
+        alert(data.error || 'Failed to generate report')
+        return
+      }
+      
+      // Generate CSV content
+      const tournament = tournaments.find(t => t.id === tournamentId)
+      const tz = tournament?.timezone || 'America/New_York'
+      
+      // Helper function to format timestamps without commas
+      const formatTimestamp = (dateString) => {
+        if (!dateString) return 'N/A'
+        const date = new Date(dateString)
+        // Format: YYYY-MM-DD HH:MM:SS (no commas)
+        return date.toLocaleString('en-US', { 
+          timeZone: tz,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(',', '')
+      }
+      
+      let csv = 'Tournament Summary Report\n\n'
+      csv += `Tournament Name:,${data.tournament.name}\n`
+      csv += `Status:,${data.tournament.status}\n`
+      csv += `Total Ring Numbers:,${data.tournament.total_rings}\n`
+      csv += `Total Completed Rings:,${data.tournament.completed_sessions}\n`
+      csv += `Created:,${formatTimestamp(data.tournament.created_at)}\n\n`
+      
+      // Find the maximum number of sessions any ring has
+      const maxSessions = Math.max(...data.rings.map(r => r.sessions.length), 1)
+      
+      // Build header row
+      let headerRow = 'Ring Number,Total Packets Completed'
+      for (let i = 1; i <= maxSessions; i++) {
+        headerRow += `,Packet ${i} Start Time,Packet ${i} End Time,Packet ${i} Run Time (minutes)`
+      }
+      csv += headerRow + '\n'
+      
+      // Build data rows - one row per ring
+      data.rings.forEach(ring => {
+        // Count completed sessions (those with both start and end times)
+        const completedSessions = ring.sessions.filter(s => s.start_time && s.end_time).length
+        
+        let row = `${ring.ring_number},${completedSessions}`
+        
+        if (ring.sessions.length === 0) {
+          // No sessions - fill with N/A for first session
+          row += ',N/A,N/A,N/A'
+          // Fill remaining session columns with empty values
+          for (let i = 1; i < maxSessions; i++) {
+            row += ',,,'
+          }
+        } else {
+          // Add each session's data
+          ring.sessions.forEach(session => {
+            const startTime = formatTimestamp(session.start_time)
+            const endTime = formatTimestamp(session.end_time)
+            const runTime = session.run_time_minutes !== null ? session.run_time_minutes : 'N/A'
+            row += `,${startTime},${endTime},${runTime}`
+          })
+          
+          // Fill remaining columns if this ring has fewer sessions than max
+          const remainingSessions = maxSessions - ring.sessions.length
+          for (let i = 0; i < remainingSessions; i++) {
+            row += ',,,'
+          }
+        }
+        
+        csv += row + '\n'
+      })
+      
+      // Create download
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `tournament-report-${data.tournament.name.replace(/\s+/g, '-')}-${Date.now()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      alert('Failed to generate report. Please try again.')
     }
   }
 
@@ -499,6 +634,12 @@ const StaffInterface = () => {
                       Restart
                     </button>
                     <button 
+                      className="btn-report"
+                      onClick={() => generateTournamentReport(t.id)}
+                    >
+                      Tournament Summary Report
+                    </button>
+                    <button 
                       className="btn-delete"
                       onClick={() => deleteTournament(t.id)}
                     >
@@ -728,6 +869,33 @@ const StaffInterface = () => {
                       <div className="ring-status-badge ring-status-in-progress">
                         RING IN PROGRESS - STARTED AT: {formatTime(ring.start_time)}
                       </div>
+                    ) : ring.end_time && ring.start_time ? (
+                      <>
+                        <div className="ring-status-badge ring-status-ended">
+                          PREVIOUS RING ENDED: {formatTime(ring.end_time)}
+                        </div>
+                        <div 
+                          className="ring-status-badge ring-status-reset"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            if (confirm(`Clear timing data for Ring ${ring.ring_number}? This will reset it to "Ready to Start" status.`)) {
+                              try {
+                                await fetch(`/api/rings/${ring.id}`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ start_time: null, end_time: null })
+                                })
+                                fetchRings()
+                              } catch (error) {
+                                alert('Failed to reset ring timing')
+                              }
+                            }
+                          }}
+                          style={{ cursor: 'pointer', marginTop: '0.5rem' }}
+                        >
+                          CLICK TO CLEAR TIMING
+                        </div>
+                      </>
                     ) : ring.end_time ? (
                       <div className="ring-status-badge ring-status-ended">
                         PREVIOUS RING ENDED: {formatTime(ring.end_time)}

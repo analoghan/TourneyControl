@@ -42,17 +42,24 @@
 
 #### Ring Status Buttons
 
-At the top of your ring controls, you'll see two important buttons:
+At the top of your ring controls, you'll see three important buttons:
 
 **Ring Open** (Green)
 - Click this when your ring is available and not running an event
 - When active, all event options will be hidden
 - Use this during breaks or when waiting for competitors
+- Cannot be activated while a ring is in progress
 
-**Judges Needed** (Red)
+**Judges Needed** (Orange)
 - Click this if you need assistance from tournament staff
 - This will alert staff on their dashboard
-- Staff will see your ring highlighted in red
+- Staff will see your ring highlighted in orange
+
+**RTTL Needed** (Dark Red)
+- Click this if you need RTTL (Ring To The Line) assistance - HIGHEST PRIORITY
+- This creates a flashing dark red alert on staff dashboard
+- Use for urgent situations requiring immediate attention
+- Staff will see your ring at the top of their alert list
 
 #### Setting Up an Event
 
@@ -99,18 +106,51 @@ At the top of your screen, you'll see a gray box showing your current ring confi
 - **Current: Open** - When ring is open
 - **Current: [Event] | [Categories]** - When running an event
 
+#### Starting and Ending Rings (Session Tracking)
+
+**Starting a Ring:**
+1. Make sure "Ring Open" is OFF
+2. Set up your event and categories
+3. Click "Start Ring" button
+4. Confirm in the modal dialog
+5. A new session/packet is created and timing begins
+6. Button shows start time and becomes disabled
+
+**Ending a Ring:**
+1. Click "End Ring" button when division is complete
+2. Confirm in the modal dialog
+3. Session is completed with end time recorded
+4. Ring automatically resets to:
+   - "Ring Open" status ON
+   - Event: Forms
+   - Gender: Male
+   - Age: Tigers
+   - Rank: Color Belts
+   - All other settings cleared
+5. Ready to start next packet/session
+
+**Multiple Sessions:**
+- You can start and end a ring multiple times
+- Each start/end cycle creates a separate tracked packet
+- All sessions are recorded for tournament reports
+- Session data includes start time, end time, and run time
+
 ### Quick Tips for Judges
 
 ✅ **DO:**
 - Set "Ring Open" during breaks
 - Update your event and categories before each division
 - Use "Judges Needed" if you need help
+- Use "RTTL Needed" for urgent/priority situations
 - Select all applicable belt ranks for combined divisions
+- End your ring when division is complete to track timing
+- Start a new session for each packet/division
 
 ❌ **DON'T:**
-- Leave "Judges Needed" on after help arrives
+- Leave "Judges Needed" or "RTTL Needed" on after help arrives
 - Forget to turn off "Ring Open" when starting an event
 - Change settings while competitors are performing
+- Start a ring while "Ring Open" is active
 
 ---
 
@@ -149,9 +189,11 @@ Need to add or remove rings during an active tournament?
 
 Your dashboard shows all rings in a grid layout with color-coded information:
 
-**Alert Sections** (at top):
-- **Red Flashing Section**: "Rings Needing Judges" - Urgent attention required
+**Alert Sections** (at top, in priority order):
+- **Dark Red Flashing Section**: "RTTL Needed" - HIGHEST PRIORITY, immediate attention required
+- **Orange Flashing Section**: "Rings Needing Judges" - Urgent attention required
 - **Green Section**: "Open Rings" - Available rings
+- Click any ring number in alerts to jump directly to that ring
 
 **Ring Cards** show:
 - Ring number
@@ -159,10 +201,16 @@ Your dashboard shows all rings in a grid layout with color-coded information:
 - Event type (color-coded)
 - Categories (Gender, Age, Rank, Division)
 - Special indicators (Stacked Ring, Special Abilities)
+- **Ring Status Footer**: Shows timing status
+  - "READY TO START" - Ring not started
+  - "RING IN PROGRESS - STARTED AT: [time]" - Currently running
+  - "PREVIOUS RING ENDED: [time]" - Completed session
+  - "CLICK TO CLEAR TIMING" - Reset button for stuck rings (orange)
 
 **Ring Card Colors:**
 - **Green Background**: Ring is Open (available)
 - **Orange Background**: Team Sparring event
+- **Dark Red Flashing**: RTTL Needed! (highest priority)
 - **Red Flashing**: Judges Needed! (urgent)
 - **Blue Background**: Stacked Ring
 - **White Background**: Standard event
@@ -183,37 +231,89 @@ This is useful for:
 - Fixing incorrect settings
 - Managing rings without assigned judges
 
+### Generating Tournament Reports
+
+1. Find your tournament in the list (active or ended)
+2. Click "Generate Report" button
+3. CSV file downloads automatically with name: `tournament-report-[name]-[timestamp].csv`
+
+**Report Contents:**
+- Tournament summary (name, status, ring count, total packets completed)
+- One row per ring with all session data
+- Columns for each packet: Start Time, End Time, Run Time (minutes)
+- All times in tournament timezone
+- Total packets completed per ring
+
+**Using the Report:**
+- Open in Excel, Google Sheets, or any spreadsheet program
+- Analyze ring productivity and efficiency
+- Track tournament timing and flow
+- Identify bottlenecks or delays
+- Generate statistics for future planning
+
 ### Ending a Tournament
 
 1. Click "End" button on your active tournament
-2. Tournament status changes to "Ended"
-3. Judges can no longer modify ring settings
-4. All ring data is preserved
+2. **Confirmation dialog** appears warning that:
+   - Tournament will be marked as ended
+   - All rings currently in progress will be automatically ended
+   - This cannot be undone (though you can restart later)
+3. Confirm to proceed
+4. Tournament status changes to "Ended"
+5. All in-progress rings are ended and sessions completed
+6. Judges can no longer modify ring settings
+7. All ring and session data is preserved
 
 ### After Tournament Ends
 
 **Restart:**
 - Click "Restart" to reactivate the tournament
+- **All ring timing is automatically cleared** (start_time and end_time reset)
+- Rings reset to "Ready to Start" status
+- Session history is preserved in database
 - Judges can modify rings again
-- All previous settings are preserved
+- Fresh start for new tournament run
+
+**Generate Report:**
+- Reports can be generated for ended tournaments
+- All session data is preserved and available
 
 **Delete:**
 - Click "Delete" to permanently remove the tournament
 - This cannot be undone
+- Deletes tournament, rings, and all session data
 - Only ended tournaments can be deleted
+
+### Fixing Stuck Rings
+
+If a ring shows "PREVIOUS RING ENDED" but should be ready to start:
+
+1. Look for the orange "CLICK TO CLEAR TIMING" button below the status
+2. Click the button
+3. Confirm the action
+4. Ring timing is cleared and status changes to "READY TO START"
+5. Judge can now start a new session normally
+
+This can happen with rings that were in progress when the tournament was ended or during system updates.
 
 ### Quick Tips for Staff
 
 ✅ **DO:**
-- Monitor the "Judges Needed" alert section regularly
+- Monitor the "RTTL Needed" alert section first (highest priority)
+- Check "Judges Needed" alert section regularly
+- Generate reports periodically to track tournament progress
 - Pre-configure rings if you have time before judges arrive
 - Edit ring count if you need more or fewer rings
 - Keep tournament names clear and descriptive
+- Use "Clear Timing" button to fix stuck rings
+- Generate final report before deleting ended tournaments
 
 ❌ **DON'T:**
-- Delete tournaments until you're sure you don't need the data
+- Delete tournaments until you've generated and saved reports
+- Ignore RTTL alerts - they're highest priority
 - Start a tournament before judges are ready
 - Forget to end the tournament when complete
+- Restart a tournament without understanding it clears all ring timing
 
 ---
 
@@ -321,6 +421,39 @@ This is useful for:
 1. Click "Switch to Staff" or "Switch to Judge" in the navigation bar
 2. If you haven't logged into that role recently, you'll need to enter the password
 3. Your session will be remembered for 48 hours
+
+### "Ring shows 'PREVIOUS RING ENDED' but should be ready" (Staff)
+
+**Solution:**
+1. Look for the orange "CLICK TO CLEAR TIMING" button below the ring status
+2. Click it and confirm
+3. Ring will reset to "READY TO START"
+4. This clears stuck timing data from incomplete sessions
+
+### "CSV report has incomplete data or missing end times"
+
+**Solution:**
+1. This may be from sessions started before recent updates
+2. Contact system administrator to run cleanup command
+3. Future sessions will track properly
+4. Incomplete sessions show start time but may have placeholder end times
+
+### "All rings show 'PREVIOUS RING ENDED' after restarting tournament" (Staff)
+
+**Solution:**
+This is expected behavior:
+1. When you restart an ended tournament, ring timing is NOT automatically cleared
+2. Use "Clear Timing" button on each affected ring
+3. Or ask judges to start new sessions (which will clear the end_time)
+4. Future updates may add automatic clearing on restart
+
+### "I can't start a ring after ending it" (Judge)
+
+**Solution:**
+1. Make sure "Ring Open" is turned OFF (not green)
+2. The ring should automatically set to "Open" after ending
+3. Turn off "Ring Open" before starting new session
+4. If stuck, ask staff to use "Clear Timing" button
 
 ### "The page isn't updating in real-time"
 
