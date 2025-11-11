@@ -27,6 +27,7 @@ const JudgesInterface = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
+  const [selectedAgeBrackets, setSelectedAgeBrackets] = useState([])
   const [selectionExpanded, setSelectionExpanded] = useState(false)
   const [showStartModal, setShowStartModal] = useState(false)
   const [showEndModal, setShowEndModal] = useState(false)
@@ -85,9 +86,22 @@ const JudgesInterface = () => {
       } else {
         setSelectedBlackBelts([])
       }
+      
+      // Load age brackets
+      if (selectedRing.age_brackets) {
+        try {
+          const parsedBrackets = JSON.parse(selectedRing.age_brackets)
+          setSelectedAgeBrackets(parsedBrackets)
+        } catch (e) {
+          setSelectedAgeBrackets(['Tigers'])
+        }
+      } else {
+        setSelectedAgeBrackets(['Tigers'])
+      }
     } else {
       setSelectedColorBelts([])
       setSelectedBlackBelts([])
+      setSelectedAgeBrackets([])
     }
   }, [selectedRing])
 
@@ -311,7 +325,7 @@ const JudgesInterface = () => {
                       {isTeamSparring ? (
                         <> | {selectedRing.division || 'Bantam'}</>
                       ) : (
-                        <> | {selectedRing.gender} | {selectedRing.age_bracket} | {selectedRing.rank}</>
+                        <> | {selectedRing.gender} | {selectedAgeBrackets.length > 0 ? selectedAgeBrackets.join(', ') : 'Tigers'} | {selectedRing.rank}</>
                       )}
                     </>
                   )}
@@ -441,18 +455,42 @@ const JudgesInterface = () => {
                       </select>
                     </div>
 
-                    <div className="category-selector">
-                      <label>Select Age Bracket:</label>
-                      <select 
-                        value={selectedRing.age_bracket || 'Tigers'}
-                        onChange={(e) => updateAgeBracket(e.target.value)}
-                        className="category-dropdown"
-                        disabled={tournamentEnded}
-                      >
+                    <div className="age-bracket-selector" style={{ marginTop: '1.5rem' }}>
+                      <label>Select Age Brackets:</label>
+                      <div className="checkbox-grid">
                         {AGE_BRACKETS.map(bracket => (
-                          <option key={bracket} value={bracket}>{bracket}</option>
+                          <button
+                            key={bracket}
+                            className={`belt-toggle-btn black-belt-btn ${selectedAgeBrackets.includes(bracket) ? 'belt-toggle-active' : ''}`}
+                            onClick={() => {
+                              let newAgeBrackets
+                              if (selectedAgeBrackets.includes(bracket)) {
+                                // Deselecting
+                                newAgeBrackets = selectedAgeBrackets.filter(b => b !== bracket)
+                              } else {
+                                // Selecting
+                                if (bracket === 'Tigers') {
+                                  // If Tigers is selected, clear all other selections
+                                  newAgeBrackets = ['Tigers']
+                                } else {
+                                  // If any other bracket is selected, remove Tigers if it exists
+                                  newAgeBrackets = [...selectedAgeBrackets.filter(b => b !== 'Tigers'), bracket]
+                                }
+                              }
+                              setSelectedAgeBrackets(newAgeBrackets)
+                              updateRingField('age_brackets', JSON.stringify(newAgeBrackets))
+                              
+                              // If Tigers is selected and Black Belts is the current rank, switch to Color Belts
+                              if (newAgeBrackets.includes('Tigers') && selectedRing.rank === 'Black Belts') {
+                                updateRingField('rank', 'Color Belts')
+                              }
+                            }}
+                            disabled={tournamentEnded}
+                          >
+                            {bracket}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
 
                     <div className="category-selector">
@@ -465,7 +503,7 @@ const JudgesInterface = () => {
                       >
                         {RANKS.filter(rank => {
                           // Hide Black Belts option if Tigers age bracket is selected
-                          if (selectedRing.age_bracket === 'Tigers' && rank === 'Black Belts') {
+                          if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
                             return false
                           }
                           return true
@@ -509,7 +547,8 @@ const JudgesInterface = () => {
                           {BLACK_BELT_RANKS.filter(belt => {
                             // Hide 4th-5th Degree and Masters for younger age brackets
                             const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
-                            if (youngerAgeBrackets.includes(selectedRing.age_bracket)) {
+                            const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
+                            if (hasYoungerBracket) {
                               if (belt === '4th-5th Degree' || belt === 'Masters') {
                                 return false
                               }

@@ -616,7 +616,14 @@ const StaffInterface = () => {
                             <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
                               <span className="category-item">{ring.gender || 'Male'}</span>
                               <span className="category-divider">|</span>
-                              <span className="category-item">{ring.age_bracket || 'Tigers'}</span>
+                              <span className="category-item">{(() => {
+                                try {
+                                  const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : ['Tigers']
+                                  return ageBrackets.join(', ')
+                                } catch (e) {
+                                  return ring.age_bracket || 'Tigers'
+                                }
+                              })()}</span>
                             </div>
                             <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
                               {ring.rank || 'Color Belts'}

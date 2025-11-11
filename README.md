@@ -43,7 +43,10 @@ A comprehensive web application for managing martial arts tournaments with real-
 
 - **Competition Categories** (for standard events):
   - **Gender**: Male or Female
-  - **Age Bracket**: Tigers, 8 and Under, 9-10, 11-12, 13-14, 15-17, 18-29, 30-39, 40-49, 50-59, 60-69, 70-99
+  - **Age Brackets**: Multi-select buttons (gray when not selected, black when selected)
+    - Tigers, 8 and Under, 9-10, 11-12, 13-14, 15-17, 18-29, 30-39, 40-49, 50-59, 60-69, 70-99
+    - Multiple age brackets can be selected for combined divisions
+    - Tigers is mutually exclusive - cannot be combined with other age brackets
   - **Rank**: Color Belts or Black Belts
   - **Color Belt Selection**: Individual belt buttons (White, Orange, Yellow, Camo, Green, Purple, Blue, Brown, Red, Red/Black)
   - **Black Belt Selection**: Degree buttons (1st, 2nd-3rd, 4th-5th, Masters) with age-based filtering

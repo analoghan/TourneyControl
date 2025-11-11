@@ -26,6 +26,7 @@ const StaffRingConfig = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
+  const [selectedAgeBrackets, setSelectedAgeBrackets] = useState([])
   const [showStartModal, setShowStartModal] = useState(false)
   const [showEndModal, setShowEndModal] = useState(false)
 
@@ -68,6 +69,18 @@ const StaffRingConfig = () => {
       }
     } else {
       setSelectedBlackBelts([])
+    }
+    
+    // Load age brackets
+    if (ringData.age_brackets) {
+      try {
+        const parsedBrackets = JSON.parse(ringData.age_brackets)
+        setSelectedAgeBrackets(parsedBrackets)
+      } catch (e) {
+        setSelectedAgeBrackets(['Tigers'])
+      }
+    } else {
+      setSelectedAgeBrackets(['Tigers'])
     }
   }
 
@@ -201,7 +214,7 @@ const StaffRingConfig = () => {
                   {isTeamSparring ? (
                     <> | {ring.division || 'Bantam'}</>
                   ) : (
-                    <> | {ring.gender} | {ring.age_bracket} | {ring.rank}</>
+                    <> | {ring.gender} | {selectedAgeBrackets.length > 0 ? selectedAgeBrackets.join(', ') : 'Tigers'} | {ring.rank}</>
                   )}
                 </>
               )}
@@ -331,18 +344,42 @@ const StaffRingConfig = () => {
                   </select>
                 </div>
 
-                <div className="category-selector">
-                  <label>Select Age Bracket:</label>
-                  <select 
-                    value={ring.age_bracket || 'Tigers'}
-                    onChange={(e) => updateAgeBracket(e.target.value)}
-                    className="category-dropdown"
-                    disabled={tournamentEnded}
-                  >
+                <div className="age-bracket-selector" style={{ marginTop: '1.5rem' }}>
+                  <label>Select Age Brackets:</label>
+                  <div className="checkbox-grid">
                     {AGE_BRACKETS.map(bracket => (
-                      <option key={bracket} value={bracket}>{bracket}</option>
+                      <button
+                        key={bracket}
+                        className={`belt-toggle-btn black-belt-btn ${selectedAgeBrackets.includes(bracket) ? 'belt-toggle-active' : ''}`}
+                        onClick={() => {
+                          let newAgeBrackets
+                          if (selectedAgeBrackets.includes(bracket)) {
+                            // Deselecting
+                            newAgeBrackets = selectedAgeBrackets.filter(b => b !== bracket)
+                          } else {
+                            // Selecting
+                            if (bracket === 'Tigers') {
+                              // If Tigers is selected, clear all other selections
+                              newAgeBrackets = ['Tigers']
+                            } else {
+                              // If any other bracket is selected, remove Tigers if it exists
+                              newAgeBrackets = [...selectedAgeBrackets.filter(b => b !== 'Tigers'), bracket]
+                            }
+                          }
+                          setSelectedAgeBrackets(newAgeBrackets)
+                          updateRingField('age_brackets', JSON.stringify(newAgeBrackets))
+                          
+                          // If Tigers is selected and Black Belts is the current rank, switch to Color Belts
+                          if (newAgeBrackets.includes('Tigers') && ring.rank === 'Black Belts') {
+                            updateRingField('rank', 'Color Belts')
+                          }
+                        }}
+                        disabled={tournamentEnded}
+                      >
+                        {bracket}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div className="category-selector">
@@ -354,7 +391,7 @@ const StaffRingConfig = () => {
                     disabled={tournamentEnded}
                   >
                     {RANKS.filter(rank => {
-                      if (ring.age_bracket === 'Tigers' && rank === 'Black Belts') {
+                      if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
                         return false
                       }
                       return true
@@ -397,7 +434,8 @@ const StaffRingConfig = () => {
                     <div className="checkbox-grid">
                       {BLACK_BELT_RANKS.filter(belt => {
                         const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
-                        if (youngerAgeBrackets.includes(ring.age_bracket)) {
+                        const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
+                        if (hasYoungerBracket) {
                           if (belt === '4th-5th Degree' || belt === 'Masters') {
                             return false
                           }
