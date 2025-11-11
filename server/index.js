@@ -87,8 +87,9 @@ app.get('/api/tournaments/active', (req, res) => {
 });
 
 app.post('/api/tournaments', (req, res) => {
-  const { name, num_rings } = req.body;
-  db.run('INSERT INTO tournaments (name, num_rings) VALUES (?, ?)', [name, num_rings], function(err) {
+  const { name, num_rings, timezone } = req.body;
+  const tz = timezone || 'America/New_York';
+  db.run('INSERT INTO tournaments (name, num_rings, timezone) VALUES (?, ?, ?)', [name, num_rings, tz], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     
     const tournamentId = this.lastID;
@@ -147,6 +148,31 @@ app.put('/api/tournaments/:id/status', (req, res) => {
         
         res.json(updatedTournament);
       });
+    });
+  });
+});
+
+app.put('/api/tournaments/:id/timezone', (req, res) => {
+  const { timezone } = req.body;
+  const tournamentId = req.params.id;
+  
+  const validTimezones = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'];
+  if (!validTimezones.includes(timezone)) {
+    return res.status(400).json({ error: 'Invalid timezone' });
+  }
+  
+  db.run('UPDATE tournaments SET timezone = ? WHERE id = ?', [timezone, tournamentId], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      broadcast({ 
+        type: 'tournament_timezone_updated', 
+        data: updatedTournament 
+      });
+      
+      res.json(updatedTournament);
     });
   });
 });

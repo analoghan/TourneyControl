@@ -12,9 +12,13 @@ const StaffInterface = () => {
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(24)
+  const [timezone, setTimezone] = useState('America/New_York')
   const [setupExpanded, setSetupExpanded] = useState(false)
   const [editingRingCount, setEditingRingCount] = useState(null)
   const [newRingCount, setNewRingCount] = useState(0)
+  const [editingTimezone, setEditingTimezone] = useState(null)
+  const [newTimezone, setNewTimezone] = useState('')
+  const [currentTime, setCurrentTime] = useState(new Date())
 
 
   useWebSocket((data) => {
@@ -32,6 +36,10 @@ const StaffInterface = () => {
       if (selectedTournament === data.data.id) {
         fetchRings()
       }
+    } else if (data.type === 'tournament_timezone_updated') {
+      setTournaments(prev => prev.map(t => 
+        t.id === data.data.id ? data.data : t
+      ))
     }
   })
 
@@ -44,6 +52,13 @@ const StaffInterface = () => {
       fetchRings()
     }
   }, [selectedTournament])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const fetchTournaments = async () => {
     const res = await fetch('/api/tournaments')
@@ -79,11 +94,12 @@ const StaffInterface = () => {
     const res = await fetch('/api/tournaments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, num_rings: numRings })
+      body: JSON.stringify({ name, num_rings: numRings, timezone })
     })
     if (res.ok) {
       setName('')
       setNumRings(4)
+      setTimezone('America/New_York')
       fetchTournaments()
     }
   }
@@ -149,6 +165,33 @@ const StaffInterface = () => {
     } else {
       const error = await res.json()
       alert(error.error || 'Failed to update ring count')
+    }
+  }
+
+  const startEditingTimezone = (tournamentId, currentTimezone) => {
+    setEditingTimezone(tournamentId)
+    setNewTimezone(currentTimezone)
+  }
+
+  const cancelEditingTimezone = () => {
+    setEditingTimezone(null)
+    setNewTimezone('')
+  }
+
+  const updateTimezone = async (tournamentId) => {
+    const res = await fetch(`/api/tournaments/${tournamentId}/timezone`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timezone: newTimezone })
+    })
+
+    if (res.ok) {
+      setEditingTimezone(null)
+      setNewTimezone('')
+      fetchTournaments()
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update timezone')
     }
   }
 
@@ -218,23 +261,45 @@ const StaffInterface = () => {
             <div className="tournament-management">
               <h4>Create Tournament</h4>
               <form onSubmit={createTournament} className="setup-form">
-                <input
-                  type="text"
-                  placeholder="Tournament Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <select
-                  value={numRings}
-                  onChange={(e) => setNumRings(parseInt(e.target.value))}
-                  required
-                >
-                  {Array.from({ length: 70 }, (_, i) => i + 1).map(num => (
-                    <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
-                  ))}
-                </select>
-                <button type="submit">Create Tournament</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Tournament Name:</label>
+                  <input
+                    type="text"
+                    placeholder="Tournament Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    style={{ padding: '0.6rem', fontSize: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Number of Rings:</label>
+                  <select
+                    value={numRings}
+                    onChange={(e) => setNumRings(parseInt(e.target.value))}
+                    required
+                    style={{ padding: '0.6rem', fontSize: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    {Array.from({ length: 70 }, (_, i) => i + 1).map(num => (
+                      <option key={num} value={num}>{num} {num === 1 ? 'Ring' : 'Rings'}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Timezone:</label>
+                  <select
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                    required
+                    style={{ padding: '0.6rem', fontSize: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="America/New_York">US Eastern</option>
+                    <option value="America/Chicago">US Central</option>
+                    <option value="America/Denver">US Mountain</option>
+                    <option value="America/Los_Angeles">US Pacific</option>
+                  </select>
+                </div>
+                <button type="submit" style={{ padding: '0.6rem', fontSize: '1rem', marginTop: '0.5rem' }}>Create Tournament</button>
               </form>
             </div>
 
@@ -281,6 +346,48 @@ const StaffInterface = () => {
                       <button 
                         className="btn-edit-small"
                         onClick={() => startEditingRingCount(t.id, t.num_rings)}
+                        style={{ marginLeft: '0.5rem' }}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                )}
+                {editingTimezone === t.id ? (
+                  <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem' }}>
+                    <select
+                      value={newTimezone}
+                      onChange={(e) => setNewTimezone(e.target.value)}
+                      style={{ padding: '0.25rem', fontSize: '0.9rem' }}
+                    >
+                      <option value="America/New_York">US Eastern</option>
+                      <option value="America/Chicago">US Central</option>
+                      <option value="America/Denver">US Mountain</option>
+                      <option value="America/Los_Angeles">US Pacific</option>
+                    </select>
+                    <button 
+                      className="btn-save-small"
+                      onClick={() => updateTimezone(t.id)}
+                    >
+                      Save
+                    </button>
+                    <button 
+                      className="btn-cancel-small"
+                      onClick={cancelEditingTimezone}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="tournament-meta" style={{ marginTop: '0.25rem' }}>
+                    {t.timezone === 'America/New_York' ? 'US Eastern' : 
+                     t.timezone === 'America/Chicago' ? 'US Central' : 
+                     t.timezone === 'America/Denver' ? 'US Mountain' : 
+                     t.timezone === 'America/Los_Angeles' ? 'US Pacific' : t.timezone}
+                    {t.status === 'active' && (
+                      <button 
+                        className="btn-edit-small"
+                        onClick={() => startEditingTimezone(t.id, t.timezone || 'America/New_York')}
                         style={{ marginLeft: '0.5rem' }}
                       >
                         Edit
@@ -343,6 +450,30 @@ const StaffInterface = () => {
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </select>
+            <div style={{ 
+              marginLeft: 'auto', 
+              fontWeight: '600', 
+              color: '#2c3e50',
+              fontSize: '1rem',
+              whiteSpace: 'nowrap'
+            }}>
+              {(() => {
+                const tournament = tournaments.find(t => t.id === selectedTournament)
+                const tz = tournament?.timezone || 'America/New_York'
+                const timeStr = currentTime.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: tz
+                })
+                const dateStr = currentTime.toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                  timeZone: tz
+                })
+                return `${timeStr}, ${dateStr}`
+              })()}
+            </div>
           </div>
 
           {rings.filter(r => r.rttl_needed === 1).length > 0 && (
@@ -416,6 +547,20 @@ const StaffInterface = () => {
               const hasSpecialAbilitiesAutistic = ring.special_abilities_autistic === 1
               const colorBelts = isColorBelts && ring.color_belts ? JSON.parse(ring.color_belts) : []
               const blackBelts = isBlackBelts && ring.black_belts ? JSON.parse(ring.black_belts) : []
+              
+              // Get tournament timezone
+              const tournament = tournaments.find(t => t.id === selectedTournament)
+              const tz = tournament?.timezone || 'America/New_York'
+              
+              // Format time in tournament timezone
+              const formatTime = (dateString) => {
+                if (!dateString) return ''
+                return new Date(dateString).toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  timeZone: tz
+                })
+              }
               
               return (
                 <div 
@@ -494,11 +639,11 @@ const StaffInterface = () => {
                   <div className="ring-status-footer">
                     {ring.start_time && !ring.end_time ? (
                       <div className="ring-status-badge ring-status-in-progress">
-                        RING IN PROGRESS - STARTED AT: {new Date(ring.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        RING IN PROGRESS - STARTED AT: {formatTime(ring.start_time)}
                       </div>
                     ) : ring.end_time ? (
                       <div className="ring-status-badge ring-status-ended">
-                        PREVIOUS RING ENDED: {new Date(ring.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        PREVIOUS RING ENDED: {formatTime(ring.end_time)}
                       </div>
                     ) : (
                       <div className="ring-status-badge ring-status-ready">READY TO START</div>

@@ -17,6 +17,7 @@ function initDatabase() {
       name TEXT NOT NULL,
       num_rings INTEGER NOT NULL,
       status TEXT DEFAULT 'not_started',
+      timezone TEXT DEFAULT 'America/New_York',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -249,6 +250,26 @@ function initDatabase() {
             console.error('Error adding rttl_needed column:', err);
           } else {
             console.log('Successfully added rttl_needed column to rings table');
+          }
+        });
+      }
+    });
+    
+    // Migration: Add timezone column to tournaments table if it doesn't exist
+    db.all(`PRAGMA table_info(tournaments)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking tournaments table schema:', err);
+        return;
+      }
+      
+      const hasTimezoneColumn = columns.some(col => col.name === 'timezone');
+      
+      if (!hasTimezoneColumn) {
+        db.run(`ALTER TABLE tournaments ADD COLUMN timezone TEXT DEFAULT 'America/New_York'`, (err) => {
+          if (err) {
+            console.error('Error adding timezone column:', err);
+          } else {
+            console.log('Successfully added timezone column to tournaments table');
           }
         });
       }

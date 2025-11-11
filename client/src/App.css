@@ -1685,6 +1685,9 @@ body.login-body {
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .tournament-select select {
