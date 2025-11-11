@@ -293,6 +293,7 @@ const StaffRingConfig = () => {
         
         <div className="event-selector">
           <div className="ring-number-header">
+            <p className="tournament-name-label">{ring.tournament_name || 'Tournament'}</p>
             <h2>Ring {ring.ring_number}</h2>
           </div>
           <div className="current-status">

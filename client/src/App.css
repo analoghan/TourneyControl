@@ -479,6 +479,16 @@ body.login-body {
   border: 3px solid #c91010;
 }
 
+.tournament-name-label {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
 .ring-number-header h2 {
   margin: 0;
   font-size: 3rem;

@@ -94,6 +94,8 @@ const StaffInterface = () => {
   const [newRingCount, setNewRingCount] = useState(0)
   const [editingTimezone, setEditingTimezone] = useState(null)
   const [newTimezone, setNewTimezone] = useState('')
+  const [editingName, setEditingName] = useState(null)
+  const [newName, setNewName] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
 
 
@@ -418,6 +420,38 @@ const StaffInterface = () => {
     }
   }
 
+  const startEditingName = (tournamentId, currentName) => {
+    setEditingName(tournamentId)
+    setNewName(currentName)
+  }
+
+  const cancelEditingName = () => {
+    setEditingName(null)
+    setNewName('')
+  }
+
+  const updateTournamentName = async (tournamentId) => {
+    if (!newName.trim()) {
+      alert('Tournament name cannot be empty')
+      return
+    }
+
+    const res = await fetch(`/api/tournaments/${tournamentId}/name`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName.trim() })
+    })
+
+    if (res.ok) {
+      setEditingName(null)
+      setNewName('')
+      fetchTournaments()
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update tournament name')
+    }
+  }
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'not_started': return 'status-badge status-not-started'
@@ -532,12 +566,57 @@ const StaffInterface = () => {
           {tournaments.map(t => (
             <div key={t.id} className="tournament-card">
               <div className="tournament-info">
-                <div>
-                  <strong>{t.name}</strong>
-                  <span className={getStatusBadgeClass(t.status)}>
-                    {getStatusText(t.status)}
-                  </span>
-                </div>
+                {editingName === t.id ? (
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      style={{ 
+                        padding: '0.4rem', 
+                        fontSize: '1rem', 
+                        fontWeight: '600',
+                        flex: 1,
+                        border: '2px solid #3b82f6',
+                        borderRadius: '4px'
+                      }}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          updateTournamentName(t.id)
+                        } else if (e.key === 'Escape') {
+                          cancelEditingName()
+                        }
+                      }}
+                    />
+                    <button 
+                      className="btn-save-small"
+                      onClick={() => updateTournamentName(t.id)}
+                    >
+                      Save
+                    </button>
+                    <button 
+                      className="btn-cancel-small"
+                      onClick={cancelEditingName}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <strong>{t.name}</strong>
+                    <button 
+                      className="btn-edit-small"
+                      onClick={() => startEditingName(t.id, t.name)}
+                      title="Rename tournament"
+                    >
+                      Rename
+                    </button>
+                    <span className={getStatusBadgeClass(t.status)}>
+                      {getStatusText(t.status)}
+                    </span>
+                  </div>
+                )}
                 {editingRingCount === t.id ? (
                   <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Ring Count:</span>

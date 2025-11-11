@@ -265,6 +265,30 @@ app.put('/api/tournaments/:id/timezone', (req, res) => {
   });
 });
 
+app.put('/api/tournaments/:id/name', (req, res) => {
+  const { name } = req.body;
+  const tournamentId = req.params.id;
+  
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Tournament name is required' });
+  }
+  
+  db.run('UPDATE tournaments SET name = ? WHERE id = ?', [name.trim(), tournamentId], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      broadcast({ 
+        type: 'tournament_name_updated', 
+        data: updatedTournament 
+      });
+      
+      res.json(updatedTournament);
+    });
+  });
+});
+
 app.put('/api/tournaments/:id/rings', (req, res) => {
   const { num_rings } = req.body;
   const tournamentId = req.params.id;
@@ -369,11 +393,18 @@ app.get('/api/tournaments/:id/rings', (req, res) => {
 
 // Get single ring by ID
 app.get('/api/rings/:id', (req, res) => {
-  db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, ring) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!ring) return res.status(404).json({ error: 'Ring not found' });
-    res.json(ring);
-  });
+  db.get(
+    `SELECT rings.*, tournaments.name as tournament_name 
+     FROM rings 
+     LEFT JOIN tournaments ON rings.tournament_id = tournaments.id 
+     WHERE rings.id = ?`,
+    [req.params.id],
+    (err, ring) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!ring) return res.status(404).json({ error: 'Ring not found' });
+      res.json(ring);
+    }
+  );
 });
 
 // Get all sessions for a ring (for debugging/verification)

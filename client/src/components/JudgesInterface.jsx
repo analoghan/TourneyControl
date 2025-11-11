@@ -402,6 +402,9 @@ const JudgesInterface = () => {
           {selectedRing && (
             <div className="event-selector">
               <div className="ring-number-header">
+                <p className="tournament-name-label">
+                  {tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
+                </p>
                 <h2>Ring {selectedRing.ring_number}</h2>
               </div>
               <div className="current-status">
