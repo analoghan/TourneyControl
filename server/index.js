@@ -491,8 +491,6 @@ app.put('/api/rings/:id', (req, res) => {
                 (err) => {
                   if (err) {
                     console.error('Error creating ring session:', err);
-                  } else {
-                    console.log(`Created session ${sessionNumber} for ring ${req.params.id}`);
                   }
                 }
               );
@@ -512,8 +510,6 @@ app.put('/api/rings/:id', (req, res) => {
             (err) => {
               if (err) {
                 console.error('Error updating ring session:', err);
-              } else {
-                console.log(`Updated session end_time for ring ${req.params.id}`);
               }
             }
           );

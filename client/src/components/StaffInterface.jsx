@@ -889,47 +889,32 @@ const StaffInterface = () => {
                       <div className="ring-status-badge ring-status-in-progress">
                         RING IN PROGRESS<br />STARTED AT: {formatTime(ring.start_time)}
                       </div>
-                    ) : ring.end_time && ring.start_time && !isOpen ? (
+                    ) : ring.end_time && ring.start_time ? (
                       <>
                         <div className="ring-status-badge ring-status-ended">
-                          PREVIOUS RING ENDED:<br />{formatTime(ring.end_time)}
+                          STUCK - BOTH TIMES SET:<br />{formatTime(ring.end_time)}
                         </div>
-                        {(() => {
-                          // Only show clear timing button if:
-                          // 1. Ring has both start_time and end_time (stuck state)
-                          // 2. Ring is NOT open (is_open = 0)
-                          // 3. It's been more than 10 seconds since the ring ended
-                          const endTime = new Date(ring.end_time).getTime()
-                          const now = Date.now()
-                          const timeSinceEnd = now - endTime
-                          
-                          if (timeSinceEnd > 10000) {
-                            return (
-                              <div 
-                                className="ring-status-badge ring-status-reset"
-                                onClick={async (e) => {
-                                  e.stopPropagation()
-                                  if (confirm(`Clear timing data for Ring ${ring.ring_number}? This will reset it to "Ready to Start" status.`)) {
-                                    try {
-                                      await fetch(`/api/rings/${ring.id}`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ start_time: null, end_time: null })
-                                      })
-                                      fetchRings()
-                                    } catch (error) {
-                                      alert('Failed to reset ring timing')
-                                    }
-                                  }
-                                }}
-                                style={{ cursor: 'pointer', marginTop: '0.5rem' }}
-                              >
-                                CLICK TO CLEAR TIMING
-                              </div>
-                            )
-                          }
-                          return null
-                        })()}
+                        <div 
+                          className="ring-status-badge ring-status-reset"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            if (confirm(`Clear timing data for Ring ${ring.ring_number}? This will reset it to "Ready to Start" status.`)) {
+                              try {
+                                await fetch(`/api/rings/${ring.id}`, {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ start_time: null, end_time: null })
+                                })
+                                fetchRings()
+                              } catch (error) {
+                                alert('Failed to reset ring timing')
+                              }
+                            }
+                          }}
+                          style={{ cursor: 'pointer', marginTop: '0.5rem' }}
+                        >
+                          CLICK TO CLEAR TIMING
+                        </div>
                       </>
                     ) : ring.end_time ? (
                       <div className="ring-status-badge ring-status-ended">

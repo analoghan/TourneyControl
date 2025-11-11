@@ -184,6 +184,38 @@ const StaffRingConfig = () => {
     }
   }
 
+  const updateRingFields = async (updates) => {
+    if (!ring) return
+    
+    // Optimistically update local state with all fields
+    setRing(prev => ({ ...prev, ...updates }))
+    
+    try {
+      const response = await fetch(`/api/rings/${ring.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      
+      if (response.status === 403) {
+        const errorData = await response.json()
+        setErrorMessage(errorData.error || 'Tournament has ended. Ring events cannot be modified.')
+        setTournamentEnded(true)
+        fetchRing()
+      } else if (!response.ok) {
+        setErrorMessage('Failed to update ring')
+        fetchRing()
+      } else {
+        const updatedRing = await response.json()
+        setRing(updatedRing)
+        setErrorMessage('')
+      }
+    } catch (error) {
+      setErrorMessage('Failed to update ring')
+      fetchRing()
+    }
+  }
+
   const updateEvent = (event) => updateRingField('current_event', event)
   const updateGender = (gender) => updateRingField('gender', gender)
   const updateAgeBracket = (ageBracket) => {
@@ -197,7 +229,11 @@ const StaffRingConfig = () => {
   
   const handleStartRing = async () => {
     if (!ring) return
-    await updateRingField('start_time', new Date().toISOString())
+    // Clear end_time and set start_time in a single request
+    await updateRingFields({
+      end_time: null,
+      start_time: new Date().toISOString()
+    })
     setShowStartModal(false)
   }
   
