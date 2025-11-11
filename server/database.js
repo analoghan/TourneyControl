@@ -204,6 +204,42 @@ function initDatabase() {
           }
         });
       }
+      
+      const hasDivisionTypeColumn = columns.some(col => col.name === 'division_type');
+      
+      if (!hasDivisionTypeColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN division_type TEXT DEFAULT 'Champion'`, (err) => {
+          if (err) {
+            console.error('Error adding division_type column:', err);
+          } else {
+            console.log('Successfully added division_type column to rings table');
+          }
+        });
+      }
+      
+      const hasStartTimeColumn = columns.some(col => col.name === 'start_time');
+      
+      if (!hasStartTimeColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN start_time DATETIME`, (err) => {
+          if (err) {
+            console.error('Error adding start_time column:', err);
+          } else {
+            console.log('Successfully added start_time column to rings table');
+          }
+        });
+      }
+      
+      const hasEndTimeColumn = columns.some(col => col.name === 'end_time');
+      
+      if (!hasEndTimeColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN end_time DATETIME`, (err) => {
+          if (err) {
+            console.error('Error adding end_time column:', err);
+          } else {
+            console.log('Successfully added end_time column to rings table');
+          }
+        });
+      }
     });
   });
 }

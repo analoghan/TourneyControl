@@ -398,6 +398,9 @@ const StaffInterface = () => {
                 >
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-badges">
+                    {!isOpen && !isTeamSparring && (
+                      <div className={`division-type-badge ${(ring.division_type || 'Champion') === 'Recreational' ? 'division-type-recreational' : ''}`}>{ring.division_type || 'Champion'}</div>
+                    )}
                     {isOpen && (
                       <div className="open-badge">Open</div>
                     )}
@@ -455,6 +458,19 @@ const StaffInterface = () => {
                           </div>
                         )}
                       </>
+                    )}
+                  </div>
+                  <div className="ring-status-footer">
+                    {ring.start_time && !ring.end_time ? (
+                      <div className="ring-status-badge ring-status-in-progress">
+                        RING IN PROGRESS - STARTED AT: {new Date(ring.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    ) : ring.end_time ? (
+                      <div className="ring-status-badge ring-status-ended">
+                        LAST RING ENDED: {new Date(ring.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    ) : (
+                      <div className="ring-status-badge ring-status-ready">READY TO START</div>
                     )}
                   </div>
                 </div>

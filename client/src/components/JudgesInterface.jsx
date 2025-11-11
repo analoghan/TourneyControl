@@ -28,6 +28,8 @@ const JudgesInterface = () => {
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
   const [selectionExpanded, setSelectionExpanded] = useState(false)
+  const [showStartModal, setShowStartModal] = useState(false)
+  const [showEndModal, setShowEndModal] = useState(false)
 
 
   useWebSocket((data) => {
@@ -152,6 +154,42 @@ const JudgesInterface = () => {
   }
   const updateRank = (rank) => updateRingField('rank', rank)
   const updateDivision = (division) => updateRingField('division', division)
+  
+  const handleStartRing = async () => {
+    if (!selectedRing) return
+    await updateRingField('start_time', new Date().toISOString())
+    setShowStartModal(false)
+  }
+  
+  const handleEndRing = async () => {
+    if (!selectedRing) return
+    // Reset ring to default state
+    const updates = {
+      end_time: new Date().toISOString(),
+      start_time: null,
+      is_open: 1,
+      judges_needed: 0,
+      current_event: 'Forms',
+      gender: 'Male',
+      age_bracket: 'Tigers',
+      rank: 'Color Belts',
+      division: 'Bantam',
+      division_type: 'Champion',
+      color_belts: '[]',
+      black_belts: '[]',
+      stacked_ring: 0,
+      special_abilities_physical: 0,
+      special_abilities_cognitive: 0,
+      special_abilities_autistic: 0
+    }
+    
+    for (const [key, value] of Object.entries(updates)) {
+      await updateRingField(key, value)
+    }
+    
+    setShowEndModal(false)
+    fetchRings()
+  }
   
   const isTeamSparring = selectedRing?.current_event?.startsWith('Team Sparring')
   const isOpen = selectedRing?.is_open === 1
@@ -299,6 +337,54 @@ const JudgesInterface = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="category-selector">
+                <div className="ring-control-box">
+                  <div className="ring-control-warning">
+                    ⚠️ Do not click "End Ring" until your ring is finished and your packet is ready to turn in!
+                  </div>
+                  <div className="ring-control-buttons">
+                    <button
+                      className="btn-start-ring"
+                      onClick={() => setShowStartModal(true)}
+                      disabled={tournamentEnded || selectedRing.start_time}
+                    >
+                      {selectedRing.start_time ? `Ring In Progress - Started: ${new Date(selectedRing.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Start Ring'}
+                    </button>
+                    <button
+                      className="btn-end-ring"
+                      onClick={() => setShowEndModal(true)}
+                      disabled={tournamentEnded || !selectedRing.start_time}
+                    >
+                      End Ring
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {!isOpen && !isTeamSparring && (
+                <div className="category-selector">
+                  <div className="division-type-box">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Division:</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                      <button
+                        className={`status-toggle-btn status-toggle-division ${(selectedRing.division_type || 'Champion') === 'Champion' ? 'status-toggle-active' : ''}`}
+                        onClick={() => updateRingField('division_type', 'Champion')}
+                        disabled={tournamentEnded}
+                      >
+                        Champion
+                      </button>
+                      <button
+                        className={`status-toggle-btn status-toggle-division status-toggle-recreational ${(selectedRing.division_type || 'Champion') === 'Recreational' ? 'status-toggle-active' : ''}`}
+                        onClick={() => updateRingField('division_type', 'Recreational')}
+                        disabled={tournamentEnded}
+                      >
+                        Recreational
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {!isOpen && (
                 <div className="category-selector">
@@ -496,6 +582,41 @@ const JudgesInterface = () => {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {showStartModal && (
+        <div className="confirm-modal-overlay" onClick={() => setShowStartModal(false)}>
+          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Start Ring?</h3>
+            <p>Are you sure you want to start this ring? This will record the start time.</p>
+            <div className="confirm-modal-actions">
+              <button className="btn-confirm btn-confirm-start" onClick={handleStartRing}>
+                Yes, Start Ring
+              </button>
+              <button className="cancel-button" onClick={() => setShowStartModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEndModal && (
+        <div className="confirm-modal-overlay" onClick={() => setShowEndModal(false)}>
+          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>End Ring?</h3>
+            <p><strong>Warning:</strong> This will record the end time and reset the ring to default state (Open). Make sure your packet is ready to turn in before proceeding.</p>
+            <p>This action cannot be undone.</p>
+            <div className="confirm-modal-actions">
+              <button className="btn-confirm" onClick={handleEndRing}>
+                Yes, End Ring
+              </button>
+              <button className="cancel-button" onClick={() => setShowEndModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

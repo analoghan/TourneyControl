@@ -592,6 +592,177 @@ body.login-body {
   margin-bottom: 0.75rem;
 }
 
+.division-type-box {
+  padding: 1rem;
+  background: #f3f4f6;
+  border-radius: 6px;
+  border: 2px solid #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.ring-control-box {
+  padding: 1rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 2px solid #dc2626;
+  margin-bottom: 0.75rem;
+}
+
+.ring-control-warning {
+  color: #991b1b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: #fee2e2;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.ring-control-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.btn-start-ring {
+  padding: 0.75rem 1.5rem;
+  background: #1e40af;
+  color: white;
+  border: 2px solid #1e3a8a;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-start-ring:hover:not(:disabled) {
+  background: #1e3a8a;
+  border-color: #1e293b;
+}
+
+.btn-start-ring:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  background: #1e40af;
+  border-color: #1e3a8a;
+}
+
+.btn-end-ring {
+  padding: 0.75rem 1.5rem;
+  background: #dc2626;
+  color: white;
+  border: 2px solid #b91c1c;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-end-ring:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #991b1b;
+}
+
+.btn-end-ring:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.confirm-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+}
+
+.confirm-modal-content h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.confirm-modal-content p {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.confirm-modal-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-confirm {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #b91c1c;
+}
+
+.btn-confirm.btn-confirm-start {
+  background: #22c55e;
+}
+
+.btn-confirm.btn-confirm-start:hover {
+  background: #16a34a;
+}
+
+.status-toggle-btn.status-toggle-division.status-toggle-active {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #000000;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+}
+
+.status-toggle-btn.status-toggle-division.status-toggle-active:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #000000;
+}
+
+.status-toggle-btn.status-toggle-division.status-toggle-recreational.status-toggle-active {
+  background: #eab308;
+  color: #1f2937;
+  border-color: #000000;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.3);
+}
+
+.status-toggle-btn.status-toggle-division.status-toggle-recreational.status-toggle-active:hover:not(:disabled) {
+  background: #ca8a04;
+  border-color: #000000;
+}
+
 .status-toggle-btn {
   padding: 0.75rem 1.5rem;
   background: #e5e7eb;
@@ -628,14 +799,14 @@ body.login-body {
 }
 
 .status-toggle-btn.status-toggle-open:not(.status-toggle-active) {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #6ee7b7;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-open:not(.status-toggle-active):hover:not(:disabled) {
-  background: #a7f3d0;
-  border-color: #34d399;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-open.status-toggle-active {
@@ -651,14 +822,14 @@ body.login-body {
 }
 
 .status-toggle-btn.status-toggle-judges:not(.status-toggle-active) {
-  background: #fecaca;
-  color: #991b1b;
-  border-color: #fca5a5;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-judges:not(.status-toggle-active):hover:not(:disabled) {
-  background: #fca5a5;
-  border-color: #f87171;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-judges.status-toggle-active {
@@ -675,14 +846,14 @@ body.login-body {
 
 /* Stacked Ring - Blue */
 .status-toggle-btn.status-toggle-stacked:not(.status-toggle-active) {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #93c5fd;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-stacked:not(.status-toggle-active):hover:not(:disabled) {
-  background: #bfdbfe;
-  border-color: #60a5fa;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-stacked.status-toggle-active {
@@ -699,14 +870,14 @@ body.login-body {
 
 /* Physical - Green/Emerald */
 .status-toggle-btn.status-toggle-physical:not(.status-toggle-active) {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #6ee7b7;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-physical:not(.status-toggle-active):hover:not(:disabled) {
-  background: #a7f3d0;
-  border-color: #34d399;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-physical.status-toggle-active {
@@ -723,14 +894,14 @@ body.login-body {
 
 /* Cognitive - Orange/Amber */
 .status-toggle-btn.status-toggle-cognitive:not(.status-toggle-active) {
-  background: #fed7aa;
-  color: #92400e;
-  border-color: #fdba74;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-cognitive:not(.status-toggle-active):hover:not(:disabled) {
-  background: #fdba74;
-  border-color: #fb923c;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-cognitive.status-toggle-active {
@@ -747,14 +918,14 @@ body.login-body {
 
 /* Autistic - Purple/Violet */
 .status-toggle-btn.status-toggle-autistic:not(.status-toggle-active) {
-  background: #ede9fe;
-  color: #5b21b6;
-  border-color: #c4b5fd;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .status-toggle-btn.status-toggle-autistic:not(.status-toggle-active):hover:not(:disabled) {
-  background: #ddd6fe;
-  border-color: #a78bfa;
+  background: #d1d5db;
+  border-color: #9ca3af;
 }
 
 .status-toggle-btn.status-toggle-autistic.status-toggle-active {
@@ -1101,6 +1272,8 @@ body.login-body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   text-align: center;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .ring-card:hover {
@@ -1157,6 +1330,58 @@ body.login-body {
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+}
+
+.division-type-badge {
+  background: #ffffff;
+  color: #1f2937;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 2px solid #000;
+  width: 100%;
+}
+
+.division-type-badge.division-type-recreational {
+  background: #eab308;
+  color: #1f2937;
+}
+
+.ring-status-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.ring-status-badge {
+  padding: 0.6rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+  border: 2px solid #000;
+  width: 100%;
+  line-height: 1.4;
+}
+
+.ring-status-ready {
+  background: #d1d5db;
+  color: #1f2937;
+}
+
+.ring-status-in-progress {
+  background: #1e40af;
+  color: white;
+}
+
+.ring-status-ended {
+  background: #6b7280;
+  color: white;
 }
 
 .stacked-ring-badge {

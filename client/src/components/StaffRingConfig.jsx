@@ -26,6 +26,8 @@ const StaffRingConfig = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
+  const [showStartModal, setShowStartModal] = useState(false)
+  const [showEndModal, setShowEndModal] = useState(false)
 
   useWebSocket((data) => {
     if (data.type === 'ring_update' && data.data.id === parseInt(ringId)) {
@@ -125,6 +127,42 @@ const StaffRingConfig = () => {
   const updateRank = (rank) => updateRingField('rank', rank)
   const updateDivision = (division) => updateRingField('division', division)
   
+  const handleStartRing = async () => {
+    if (!ring) return
+    await updateRingField('start_time', new Date().toISOString())
+    setShowStartModal(false)
+  }
+  
+  const handleEndRing = async () => {
+    if (!ring) return
+    // Reset ring to default state
+    const updates = {
+      end_time: new Date().toISOString(),
+      start_time: null,
+      is_open: 1,
+      judges_needed: 0,
+      current_event: 'Forms',
+      gender: 'Male',
+      age_bracket: 'Tigers',
+      rank: 'Color Belts',
+      division: 'Bantam',
+      division_type: 'Champion',
+      color_belts: '[]',
+      black_belts: '[]',
+      stacked_ring: 0,
+      special_abilities_physical: 0,
+      special_abilities_cognitive: 0,
+      special_abilities_autistic: 0
+    }
+    
+    for (const [key, value] of Object.entries(updates)) {
+      await updateRingField(key, value)
+    }
+    
+    setShowEndModal(false)
+    fetchRing()
+  }
+  
   const isTeamSparring = ring?.current_event?.startsWith('Team Sparring')
   const isOpen = ring?.is_open === 1
 
@@ -189,6 +227,54 @@ const StaffRingConfig = () => {
               </div>
             </div>
           </div>
+
+          <div className="category-selector">
+            <div className="ring-control-box">
+              <div className="ring-control-warning">
+                ⚠️ Do not click "End Ring" until your ring is finished and your packet is ready to turn in!
+              </div>
+              <div className="ring-control-buttons">
+                <button
+                  className="btn-start-ring"
+                  onClick={() => setShowStartModal(true)}
+                  disabled={tournamentEnded || ring.start_time}
+                >
+                  {ring.start_time ? `Ring In Progress - Started: ${new Date(ring.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Start Ring'}
+                </button>
+                <button
+                  className="btn-end-ring"
+                  onClick={() => setShowEndModal(true)}
+                  disabled={tournamentEnded || !ring.start_time}
+                >
+                  End Ring
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {!isOpen && !isTeamSparring && (
+            <div className="category-selector">
+              <div className="division-type-box">
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Division:</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                  <button
+                    className={`status-toggle-btn status-toggle-division ${(ring.division_type || 'Champion') === 'Champion' ? 'status-toggle-active' : ''}`}
+                    onClick={() => updateRingField('division_type', 'Champion')}
+                    disabled={tournamentEnded}
+                  >
+                    Champion
+                  </button>
+                  <button
+                    className={`status-toggle-btn status-toggle-division status-toggle-recreational ${(ring.division_type || 'Champion') === 'Recreational' ? 'status-toggle-active' : ''}`}
+                    onClick={() => updateRingField('division_type', 'Recreational')}
+                    disabled={tournamentEnded}
+                  >
+                    Recreational
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {!isOpen && (
             <div className="category-selector">
@@ -384,6 +470,41 @@ const StaffRingConfig = () => {
           )}
         </div>
       </div>
+
+      {showStartModal && (
+        <div className="confirm-modal-overlay" onClick={() => setShowStartModal(false)}>
+          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Start Ring?</h3>
+            <p>Are you sure you want to start this ring? This will record the start time.</p>
+            <div className="confirm-modal-actions">
+              <button className="btn-confirm btn-confirm-start" onClick={handleStartRing}>
+                Yes, Start Ring
+              </button>
+              <button className="cancel-button" onClick={() => setShowStartModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEndModal && (
+        <div className="confirm-modal-overlay" onClick={() => setShowEndModal(false)}>
+          <div className="confirm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>End Ring?</h3>
+            <p><strong>Warning:</strong> This will record the end time and reset the ring to default state (Open). Make sure your packet is ready to turn in before proceeding.</p>
+            <p>This action cannot be undone.</p>
+            <div className="confirm-modal-actions">
+              <button className="btn-confirm" onClick={handleEndRing}>
+                Yes, End Ring
+              </button>
+              <button className="cancel-button" onClick={() => setShowEndModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
