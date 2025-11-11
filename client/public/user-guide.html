@@ -313,7 +313,7 @@
             <h3>Managing Your Ring</h3>
 
             <h4>Ring Status Buttons</h4>
-            <p>At the top of your ring controls, you'll see two important buttons:</p>
+            <p>At the top of your ring controls, you'll see three important buttons:</p>
 
             <p><span class="badge badge-green">Ring Open</span></p>
             <ul>
@@ -322,11 +322,37 @@
                 <li>Use this during breaks or when waiting for competitors</li>
             </ul>
 
-            <p><span class="badge badge-red">Judges Needed</span></p>
+            <p><span class="badge badge-orange">Judges Needed</span></p>
             <ul>
-                <li>Click this if you need assistance from tournament staff</li>
-                <li>This will alert staff on their dashboard</li>
-                <li>Staff will see your ring highlighted in red</li>
+                <li>Click this if you need judge assistance from tournament staff</li>
+                <li>This will alert staff on their dashboard in orange</li>
+                <li>Staff will see your ring highlighted</li>
+            </ul>
+
+            <p><span class="badge badge-red">RTTL Needed</span></p>
+            <ul>
+                <li>Click this if you need RTTL (Ring To The Line) assistance</li>
+                <li>This will alert staff on their dashboard in dark red</li>
+                <li>This is the highest priority alert</li>
+            </ul>
+
+            <h4>Ring Control - Start and End</h4>
+            <p><strong>Important:</strong> Use these buttons to track your ring timing.</p>
+            
+            <p><span class="badge badge-blue">Start Ring</span></p>
+            <ul>
+                <li>Click when you begin your first event</li>
+                <li>Records the start time for tracking</li>
+                <li>Button turns blue and shows start time when active</li>
+                <li>Confirmation modal prevents accidental clicks</li>
+            </ul>
+
+            <p><span class="badge badge-red">End Ring</span></p>
+            <ul>
+                <li><strong>⚠️ Only click when your ring is completely finished and packet is ready to turn in!</strong></li>
+                <li>Records end time and resets ring to default state</li>
+                <li>Confirmation modal with warning</li>
+                <li>After ending, you can start a new ring session</li>
             </ul>
 
             <h4>Setting Up an Event</h4>
@@ -334,6 +360,7 @@
 
             <ol>
                 <li><strong>Make sure "Ring Open" is OFF</strong> (not green)</li>
+                <li><strong>Select Division Type</strong> - Choose "Champion" (white) or "Recreational" (gold)</li>
                 <li><strong>Select Event Type</strong> - Choose from the dropdown: Forms, Weapons, Sparring, etc.</li>
                 <li><strong>For Standard Events</strong> (Forms, Weapons, Sparring):
                     <ul>
@@ -378,17 +405,21 @@
             <div class="tip-box do">
                 <h4>✅ DO:</h4>
                 <ul>
+                    <li>Click "Start Ring" when beginning your first event</li>
                     <li>Set "Ring Open" during breaks</li>
                     <li>Update your event and categories before each division</li>
-                    <li>Use "Judges Needed" if you need help</li>
+                    <li>Use "Judges Needed" if you need judge help</li>
+                    <li>Use "RTTL Needed" if you need RTTL assistance</li>
                     <li>Select all applicable belt ranks for combined divisions</li>
+                    <li>Choose Champion or Recreational division type</li>
                 </ul>
             </div>
 
             <div class="tip-box dont">
                 <h4>❌ DON'T:</h4>
                 <ul>
-                    <li>Leave "Judges Needed" on after help arrives</li>
+                    <li>Click "End Ring" until you're completely finished and packet is ready</li>
+                    <li>Leave "Judges Needed" or "RTTL Needed" on after help arrives</li>
                     <li>Forget to turn off "Ring Open" when starting an event</li>
                     <li>Change settings while competitors are performing</li>
                 </ul>
@@ -438,25 +469,30 @@
             <h4>Monitoring Rings</h4>
             <p>Your dashboard shows all rings in a grid layout with color-coded information:</p>
 
-            <p><strong>Alert Sections</strong> (at top):</p>
+            <p><strong>Alert Sections</strong> (at top, with clickable ring numbers):</p>
             <ul>
-                <li><strong>Red Flashing Section:</strong> "Rings Needing Judges" - Urgent attention required</li>
-                <li><strong>Green Section:</strong> "Open Rings" - Available rings</li>
+                <li><strong>Dark Red Flashing Section:</strong> "🚨 RTTL Needed" - Highest priority, immediate attention required</li>
+                <li><strong>Orange Flashing Section:</strong> "⚠️ Rings Needing Judges" - Urgent attention required</li>
+                <li><strong>Green Section:</strong> "✓ Open Rings" - Available rings</li>
+                <li><strong>Tip:</strong> Click any ring number to go directly to that ring's configuration</li>
             </ul>
 
             <p><strong>Ring Cards</strong> show:</p>
             <ul>
                 <li>Ring number</li>
-                <li>Current status badges</li>
+                <li>Division type badge (Champion in white, Recreational in gold)</li>
+                <li>Current status badges (Open, RTTL Needed, Judges Needed, Stacked Ring)</li>
                 <li>Event type (color-coded)</li>
                 <li>Categories (Gender, Age, Rank, Division)</li>
-                <li>Special indicators (Stacked Ring, Special Abilities)</li>
+                <li>Special indicators (Special Abilities)</li>
+                <li><strong>Ring Status Footer:</strong> Shows "Ready to Start", "Ring In Progress" with start time, or "Previous Ring Ended" with end time</li>
             </ul>
 
             <p><strong>Ring Card Colors:</strong></p>
             <ul>
                 <li><strong>Green Background:</strong> Ring is Open (available)</li>
                 <li><strong>Orange Background:</strong> Team Sparring event</li>
+                <li><strong>Dark Red Flashing:</strong> RTTL Needed! (highest priority)</li>
                 <li><strong>Red Flashing:</strong> Judges Needed! (urgent)</li>
                 <li><strong>Blue Background:</strong> Stacked Ring</li>
                 <li><strong>White Background:</strong> Standard event</li>
@@ -621,6 +657,21 @@
                 <li>Refresh the page</li>
                 <li>Make sure you're not in "Ring Open" mode (which hides event details)</li>
             </ol>
+
+            <h3>"I can't start my ring again after ending it"</h3>
+            <p><strong>Solution:</strong> This should work automatically. If not:</p>
+            <ol>
+                <li>Refresh your browser page</li>
+                <li>Make sure the tournament is still active</li>
+                <li>Contact staff if the issue persists</li>
+            </ol>
+
+            <h3>"What's the difference between Judges Needed and RTTL Needed?"</h3>
+            <p><strong>Answer:</strong></p>
+            <ul>
+                <li><strong>Judges Needed (Orange):</strong> Use when you need additional judges</li>
+                <li><strong>RTTL Needed (Dark Red):</strong> Use when you need Ring To The Line assistance - this is the highest priority alert</li>
+            </ul>
 
             <h3>"I accidentally selected the wrong ring"</h3>
             <p><strong>Solution:</strong></p>
