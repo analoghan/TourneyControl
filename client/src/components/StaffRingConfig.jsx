@@ -382,87 +382,89 @@ const StaffRingConfig = () => {
                   </div>
                 </div>
 
-                <div className="category-selector">
-                  <label>Select Rank:</label>
-                  <select 
-                    value={ring.rank || 'Color Belts'}
-                    onChange={(e) => updateRank(e.target.value)}
-                    className="category-dropdown"
-                    disabled={tournamentEnded}
-                  >
-                    {RANKS.filter(rank => {
-                      if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
-                        return false
-                      }
-                      return true
-                    }).map(rank => (
-                      <option key={rank} value={rank}>{rank}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {ring.rank === 'Color Belts' && (
-                  <div className="color-belt-selector">
-                    <label>Select Color Belt Ranks:</label>
-                    <div className="checkbox-grid">
-                      {COLOR_BELT_RANKS.map(belt => (
-                        <button
-                          key={belt}
-                          className={`belt-toggle-btn color-belt-btn belt-${belt.toLowerCase().replace('/', '-')} ${selectedColorBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
-                          onClick={() => {
-                            let newColorBelts
-                            if (selectedColorBelts.includes(belt)) {
-                              newColorBelts = selectedColorBelts.filter(b => b !== belt)
-                            } else {
-                              newColorBelts = [...selectedColorBelts, belt]
-                            }
-                            setSelectedColorBelts(newColorBelts)
-                            updateRingField('color_belts', JSON.stringify(newColorBelts))
-                          }}
-                          disabled={tournamentEnded}
-                        >
-                          {belt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {ring.rank === 'Black Belts' && (
-                  <div className="black-belt-selector">
-                    <label>Select Black Belt Ranks:</label>
-                    <div className="checkbox-grid">
-                      {BLACK_BELT_RANKS.filter(belt => {
-                        const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
-                        const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
-                        if (hasYoungerBracket) {
-                          if (belt === '4th-5th Degree' || belt === 'Masters') {
-                            return false
-                          }
+                <div className="rank-selector-box">
+                  <div className="category-selector">
+                    <label>Select Rank:</label>
+                    <select 
+                      value={ring.rank || 'Color Belts'}
+                      onChange={(e) => updateRank(e.target.value)}
+                      className="category-dropdown"
+                      disabled={tournamentEnded}
+                    >
+                      {RANKS.filter(rank => {
+                        if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
+                          return false
                         }
                         return true
-                      }).map(belt => (
-                        <button
-                          key={belt}
-                          className={`belt-toggle-btn ${selectedBlackBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
-                          onClick={() => {
-                            let newBlackBelts
-                            if (selectedBlackBelts.includes(belt)) {
-                              newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
-                            } else {
-                              newBlackBelts = [...selectedBlackBelts, belt]
-                            }
-                            setSelectedBlackBelts(newBlackBelts)
-                            updateRingField('black_belts', JSON.stringify(newBlackBelts))
-                          }}
-                          disabled={tournamentEnded}
-                        >
-                          {belt}
-                        </button>
+                      }).map(rank => (
+                        <option key={rank} value={rank}>{rank}</option>
                       ))}
-                    </div>
+                    </select>
                   </div>
-                )}
+
+                  {ring.rank === 'Color Belts' && (
+                    <div className="belt-ranks-section">
+                      <label>Select Color Belt Ranks:</label>
+                      <div className="checkbox-grid">
+                        {COLOR_BELT_RANKS.map(belt => (
+                          <button
+                            key={belt}
+                            className={`belt-toggle-btn color-belt-btn belt-${belt.toLowerCase().replace('/', '-')} ${selectedColorBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                            onClick={() => {
+                              let newColorBelts
+                              if (selectedColorBelts.includes(belt)) {
+                                newColorBelts = selectedColorBelts.filter(b => b !== belt)
+                              } else {
+                                newColorBelts = [...selectedColorBelts, belt]
+                              }
+                              setSelectedColorBelts(newColorBelts)
+                              updateRingField('color_belts', JSON.stringify(newColorBelts))
+                            }}
+                            disabled={tournamentEnded}
+                          >
+                            {belt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {ring.rank === 'Black Belts' && (
+                    <div className="belt-ranks-section">
+                      <label>Select Black Belt Ranks:</label>
+                      <div className="checkbox-grid">
+                        {BLACK_BELT_RANKS.filter(belt => {
+                          const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
+                          const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
+                          if (hasYoungerBracket) {
+                            if (belt === '4th-5th Degree' || belt === 'Masters') {
+                              return false
+                            }
+                          }
+                          return true
+                        }).map(belt => (
+                          <button
+                            key={belt}
+                            className={`belt-toggle-btn ${selectedBlackBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                            onClick={() => {
+                              let newBlackBelts
+                              if (selectedBlackBelts.includes(belt)) {
+                                newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
+                              } else {
+                                newBlackBelts = [...selectedBlackBelts, belt]
+                              }
+                              setSelectedBlackBelts(newBlackBelts)
+                              updateRingField('black_belts', JSON.stringify(newBlackBelts))
+                            }}
+                            disabled={tournamentEnded}
+                          >
+                            {belt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="category-selector">
                   <div className="stacked-ring-box">
