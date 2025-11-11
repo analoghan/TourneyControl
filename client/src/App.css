@@ -1485,15 +1485,16 @@ body.login-body {
 .stacked-ring-badge {
   background: #3b82f6;
   color: white;
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border: 2px solid #000;
-  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .judges-needed-badge {
@@ -1549,15 +1550,16 @@ body.login-body {
 
 .special-abilities-badge {
   color: white;
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border: 2px solid #000;
-  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .special-abilities-physical {
