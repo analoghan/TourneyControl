@@ -36,7 +36,11 @@ const sortColorBelts = (belts) => {
     'Red': 8,
     'Red/Black': 9
   }
-  return belts.sort((a, b) => (order[a] || 999) - (order[b] || 999))
+  return [...belts].sort((a, b) => {
+    const aOrder = order[a] !== undefined ? order[a] : 999
+    const bOrder = order[b] !== undefined ? order[b] : 999
+    return aOrder - bOrder
+  })
 }
 
 // Helper function to sort black belt ranks
@@ -47,7 +51,11 @@ const sortBlackBelts = (belts) => {
     '4th-5th Degree': 2,
     'Masters': 3
   }
-  return belts.sort((a, b) => (order[a] || 999) - (order[b] || 999))
+  return [...belts].sort((a, b) => {
+    const aOrder = order[a] !== undefined ? order[a] : 999
+    const bOrder = order[b] !== undefined ? order[b] : 999
+    return aOrder - bOrder
+  })
 }
 
 const StaffInterface = () => {
@@ -677,12 +685,12 @@ const StaffInterface = () => {
                             </div>
                             {isColorBelts && colorBelts.length > 0 && (
                               <div className="color-belts-display">
-                                {sortColorBelts([...colorBelts]).join(', ')}
+                                {sortColorBelts(colorBelts).join(', ')}
                               </div>
                             )}
                             {isBlackBelts && blackBelts.length > 0 && (
                               <div className="black-belts-display">
-                                {sortBlackBelts([...blackBelts]).join(', ')}
+                                {sortBlackBelts(blackBelts).join(', ')}
                               </div>
                             )}
                           </>

@@ -50,7 +50,11 @@ const sortColorBelts = (belts) => {
     'Red': 8,
     'Red/Black': 9
   }
-  return belts.sort((a, b) => (order[a] || 999) - (order[b] || 999))
+  return [...belts].sort((a, b) => {
+    const aOrder = order[a] !== undefined ? order[a] : 999
+    const bOrder = order[b] !== undefined ? order[b] : 999
+    return aOrder - bOrder
+  })
 }
 
 // Helper function to sort black belt ranks
@@ -61,7 +65,11 @@ const sortBlackBelts = (belts) => {
     '4th-5th Degree': 2,
     'Masters': 3
   }
-  return belts.sort((a, b) => (order[a] || 999) - (order[b] || 999))
+  return [...belts].sort((a, b) => {
+    const aOrder = order[a] !== undefined ? order[a] : 999
+    const bOrder = order[b] !== undefined ? order[b] : 999
+    return aOrder - bOrder
+  })
 }
 
 const StaffRingConfig = () => {
@@ -261,7 +269,17 @@ const StaffRingConfig = () => {
                   {isTeamSparring ? (
                     <> | {ring.division || 'Bantam'}</>
                   ) : (
-                    <> | {ring.gender} | {selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'} | {ring.rank}</>
+                    <>
+                      {' | '}{ring.gender}
+                      {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'}
+                      {' | '}{ring.rank}
+                      {ring.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
+                        <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
+                      )}
+                      {ring.rank === 'Black Belts' && selectedBlackBelts.length > 0 && (
+                        <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
+                      )}
+                    </>
                   )}
                 </>
               )}
