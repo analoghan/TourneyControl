@@ -3,6 +3,26 @@ import { useNavigate } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 
+const COLOR_BELT_RANKS = [
+  'White',
+  'Orange',
+  'Yellow',
+  'Camo',
+  'Green',
+  'Purple',
+  'Blue',
+  'Brown',
+  'Red',
+  'Red/Black'
+]
+
+const BLACK_BELT_RANKS = [
+  '1st Degree',
+  '2nd-3rd Degree',
+  '4th-5th Degree',
+  'Masters'
+]
+
 // Helper function to sort age brackets numerically
 const sortAgeBrackets = (brackets) => {
   const order = {
@@ -685,12 +705,12 @@ const StaffInterface = () => {
                             </div>
                             {isColorBelts && colorBelts.length > 0 && (
                               <div className="color-belts-display">
-                                {sortColorBelts(colorBelts).join(', ')}
+                                {colorBelts.length === COLOR_BELT_RANKS.length ? 'all ranks' : sortColorBelts(colorBelts).join(', ')}
                               </div>
                             )}
                             {isBlackBelts && blackBelts.length > 0 && (
                               <div className="black-belts-display">
-                                {sortBlackBelts(blackBelts).join(', ')}
+                                {blackBelts.length === BLACK_BELT_RANKS.length ? 'all ranks' : sortBlackBelts(blackBelts).join(', ')}
                               </div>
                             )}
                           </>

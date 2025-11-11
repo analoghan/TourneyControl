@@ -260,9 +260,9 @@ const StaffRingConfig = () => {
           </div>
           <div className="current-status">
             <p className="current-event">
-              <strong>Current:</strong> 
+              <strong>Current: </strong>
               {isOpen ? (
-                <> Open</>
+                <>Open</>
               ) : (
                 <>
                   {ring.current_event}
@@ -270,14 +270,19 @@ const StaffRingConfig = () => {
                     <> | {ring.division || 'Bantam'}</>
                   ) : (
                     <>
+                      {' | '}{ring.division_type || 'Champion'}
                       {' | '}{ring.gender}
                       {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'}
                       {' | '}{ring.rank}
                       {ring.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
-                        <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
+                        selectedColorBelts.length === COLOR_BELT_RANKS.length ? 
+                          <> (all ranks)</> : 
+                          <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
                       )}
                       {ring.rank === 'Black Belts' && selectedBlackBelts.length > 0 && (
-                        <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
+                        selectedBlackBelts.length === BLACK_BELT_RANKS.length ? 
+                          <> (all ranks)</> : 
+                          <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                       )}
                     </>
                   )}

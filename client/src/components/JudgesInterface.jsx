@@ -371,9 +371,9 @@ const JudgesInterface = () => {
               </div>
               <div className="current-status">
                 <p className="current-event">
-                  <strong>Current:</strong> 
+                  <strong>Current: </strong>
                   {isOpen ? (
-                    <> Open</>
+                    <>Open</>
                   ) : (
                     <>
                       {selectedRing.current_event}
@@ -381,14 +381,19 @@ const JudgesInterface = () => {
                         <> | {selectedRing.division || 'Bantam'}</>
                       ) : (
                         <>
+                          {' | '}{selectedRing.division_type || 'Champion'}
                           {' | '}{selectedRing.gender}
                           {' | '}{selectedAgeBrackets.length > 0 ? sortAgeBrackets([...selectedAgeBrackets]).join(', ') : 'Tigers'}
                           {' | '}{selectedRing.rank}
                           {selectedRing.rank === 'Color Belts' && selectedColorBelts.length > 0 && (
-                            <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
+                            selectedColorBelts.length === COLOR_BELT_RANKS.length ? 
+                              <> (all ranks)</> : 
+                              <> ({sortColorBelts(selectedColorBelts).join(', ')})</>
                           )}
                           {selectedRing.rank === 'Black Belts' && selectedBlackBelts.length > 0 && (
-                            <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
+                            selectedBlackBelts.length === BLACK_BELT_RANKS.length ? 
+                              <> (all ranks)</> : 
+                              <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                           )}
                         </>
                       )}
