@@ -1354,7 +1354,7 @@ body.login-body {
 .ring-status-footer {
   margin-top: auto;
   padding-top: 0.75rem;
-  border-top: 2px solid #e5e7eb;
+  border-top: 3px solid #6b7280;
 }
 
 .ring-status-badge {
@@ -1460,6 +1460,9 @@ body.login-body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  min-height: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .event-display {
