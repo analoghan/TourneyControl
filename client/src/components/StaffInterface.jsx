@@ -792,7 +792,14 @@ const StaffInterface = () => {
                 >
                   <h3>Ring {ring.ring_number}</h3>
                   <div className="ring-badges">
-                    {!isOpen && !isTeamSparring && (
+                    {!isOpen && !isTeamSparring && (() => {
+                      try {
+                        const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : []
+                        return !ageBrackets.includes('Tigers')
+                      } catch (e) {
+                        return true
+                      }
+                    })() && (
                       <div className={`division-type-badge ${(ring.division_type || 'Champion') === 'Recreational' ? 'division-type-recreational' : ''}`}>{ring.division_type || 'Champion'}</div>
                     )}
                     {isOpen && (

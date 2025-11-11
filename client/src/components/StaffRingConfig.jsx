@@ -212,7 +212,7 @@ const StaffRingConfig = () => {
       rttl_needed: 0,
       current_event: 'Forms',
       gender: 'Male',
-      age_bracket: 'Tigers',
+      age_bracket: '8 and Under',
       rank: 'Color Belts',
       division: 'Bantam',
       division_type: 'Champion',
@@ -343,7 +343,7 @@ const StaffRingConfig = () => {
             </div>
           </div>
 
-          {!isOpen && !isTeamSparring && (
+          {!isOpen && !isTeamSparring && !selectedAgeBrackets.includes('Tigers') && (
             <div className="category-selector">
               <div className="division-type-box">
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Division:</label>
