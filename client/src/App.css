@@ -1418,15 +1418,16 @@ body.login-body {
 .division-type-badge {
   background: #ffffff;
   color: #1f2937;
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border: 2px solid #000;
-  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .division-type-badge.division-type-recreational {
