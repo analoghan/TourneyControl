@@ -345,6 +345,25 @@ const StaffInterface = () => {
             </select>
           </div>
 
+          {rings.filter(r => r.rttl_needed === 1).length > 0 && (
+            <div className="rttl-needed-alert">
+              <h4>🚨 RTTL Needed:</h4>
+              <div className="alert-list">
+                {rings
+                  .filter(r => r.rttl_needed === 1)
+                  .map(ring => (
+                    <span 
+                      key={ring.id} 
+                      className="alert-item alert-item-urgent alert-item-clickable"
+                      onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                    >
+                      Ring {ring.ring_number}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+
           {rings.filter(r => r.judges_needed === 1).length > 0 && (
             <div className="judges-needed-alert">
               <h4>⚠️ Rings Needing Judges:</h4>
@@ -388,6 +407,7 @@ const StaffInterface = () => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isOpen = ring.is_open === 1
               const isJudgesNeeded = ring.judges_needed === 1
+              const isRttlNeeded = ring.rttl_needed === 1
               const isColorBelts = ring.rank === 'Color Belts'
               const isBlackBelts = ring.rank === 'Black Belts'
               const isStackedRing = ring.stacked_ring === 1
@@ -400,7 +420,7 @@ const StaffInterface = () => {
               return (
                 <div 
                   key={ring.id} 
-                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}
+                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isRttlNeeded ? 'ring-card-rttl-needed' : isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}
                   onClick={() => navigate(`/staff/ring/${ring.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -414,6 +434,9 @@ const StaffInterface = () => {
                     )}
                     {isStackedRing && !isOpen && (
                       <div className="stacked-ring-badge">Stacked Ring</div>
+                    )}
+                    {isRttlNeeded && (
+                      <div className="rttl-needed-badge">RTTL Needed</div>
                     )}
                     {isJudgesNeeded && (
                       <div className="judges-needed-badge">Judges Needed</div>

@@ -25,13 +25,19 @@ A comprehensive web application for managing martial arts tournaments with real-
   - Current status display showing event and categories
   
 - **Ring Status Controls** (Toggle Buttons with Black Borders):
-  - **Ring Open**: Mark ring as available (light green/green with black border when active)
-  - **Judges Needed**: Alert staff for judge assistance (light red/red with black border when active)
+  - **Ring Open**: Mark ring as available (gray/green with black border when active)
+  - **Judges Needed**: Alert staff for judge assistance (gray/dark orange with black border when active)
+  - **RTTL Needed**: Alert staff for RTTL assistance (gray/dark red with black border when active)
   
 - **Event Selection**:
   - Dropdown menu with 10 event types
   - Automatic category display based on event type
   
+- **Division Type Selection** (for standard events):
+  - **Champion**: White button when active
+  - **Recreational**: Gold button when active
+  - Hidden for Team Sparring events
+
 - **Competition Categories** (for standard events):
   - **Gender**: Male or Female
   - **Age Bracket**: Tigers, 8 and Under, 9-10, 11-12, 13-14, 15-17, 18-29, 30-39, 40-49, 50-59, 60+
@@ -46,12 +52,20 @@ A comprehensive web application for managing martial arts tournaments with real-
   - **Stacked Ring**: Toggle button (light blue/blue with black border when active)
   - **Special Abilities**: Physical (green), Cognitive (orange), Autistic (purple) - all with black borders when active
   
+- **Ring Control**:
+  - **Start Ring**: Records start time (button turns blue when started)
+  - **End Ring**: Records end time and resets ring to default state
+  - Confirmation modals for both actions
+  - Warning message about packet readiness
+  - Timestamps tracked for reporting
+
 - **Smart UI**:
   - When "Ring Open" is selected, event dropdown and all category options are hidden
   - Color belt buttons show actual belt colors with light/dark states
   - Black belt buttons with gray theme
   - Age-based restrictions (Tigers can't select Black Belts, younger ages can't select Masters)
   - Current status box with centered text and consistent border styling
+  - Division type hidden for Team Sparring events
 
 ### Staff Dashboard
 - **Tournament Management Section** (Collapsible):
@@ -61,10 +75,12 @@ A comprehensive web application for managing martial arts tournaments with real-
   - Start/End/Restart/Delete tournaments with status-based controls
   - New rings default to "Open" status when created or added
   
-- **Alert Sections**:
-  - **Judges Needed Alert**: Red flashing section listing rings needing judges
+- **Alert Sections** (with clickable ring numbers):
+  - **RTTL Needed Alert**: Dark red flashing section listing rings needing RTTL (highest priority)
+  - **Judges Needed Alert**: Orange flashing section listing rings needing judges
   - **Open Rings Alert**: Green section listing available rings
-  - Both sections auto-show/hide based on ring status
+  - All sections auto-show/hide based on ring status
+  - Ring numbers are clickable to navigate to ring configuration
   
 - **Ring Monitoring Grid**:
   - Full-width badges and information boxes
@@ -73,19 +89,27 @@ A comprehensive web application for managing martial arts tournaments with real-
   - Visual highlighting for special ring statuses:
     - **Green background**: Open rings (overrides all other styling)
     - **Orange background**: Team Sparring events
+    - **Dark red flashing background**: RTTL Needed! (highest priority)
     - **Red flashing background**: Judges Needed! (urgent)
     - **Blue background**: Stacked rings (hidden when open)
   - Status badges with black borders:
+    - **Division Type Badge**: White (Champion) or Gold (Recreational) - shown for standard events only
     - **Open Badge**: Large green badge
-    - **Judges Needed Badge**: Large red badge
+    - **RTTL Needed Badge**: Large dark red badge
+    - **Judges Needed Badge**: Large dark orange badge
     - **Stacked Ring Badge**: Blue badge
     - **Special Abilities Badges**: Color-coded (Physical-green, Cognitive-orange, Autistic-purple)
+  - Ring Status Footer (bottom of each card):
+    - **Ready to Start**: Gray badge
+    - **Ring In Progress**: Dark blue badge with start time
+    - **Previous Ring Ended**: Gray badge with end time
   - Category displays with black borders:
     - **Gender/Age**: Blue (Male) or Pink (Female) background
     - **Rank**: Orange (Color Belts) or Black (Black Belts) background
-    - **Division**: Orange background for team events
+    - **Division**: White background for team events
     - **Specific Belts**: Yellow background for color belts, gray for black belts
   - All text in bold black for maximum readability
+  - Clickable cards navigate to ring configuration
 
 ### Event Types
 
@@ -166,7 +190,7 @@ NODE_ENV=production node server/index.js
 
 3. **Edit Ring Count** (Active Tournaments):
    - Click "Edit" button next to ring count
-   - Select new ring count from dropdown
+   - Select new ring count from dropdown (1-70)
    - Click "Save" to apply or "Cancel" to discard
    - New rings are automatically added as "Open"
    - Excess rings are removed from the end
@@ -201,13 +225,24 @@ NODE_ENV=production node server/index.js
 
 3. **Set Ring Status**:
    - Toggle "Ring Open" if ring is available
-   - Toggle "Judges Needed" if you need assistance
+   - Toggle "Judges Needed" if you need judge assistance
+   - Toggle "RTTL Needed" if you need RTTL assistance
 
-4. **Set Event**:
+4. **Start/End Ring**:
+   - Click "Start Ring" to begin timing (records start time)
+   - Click "End Ring" when finished (records end time and resets ring)
+   - Confirmation modals prevent accidental clicks
+   - Ring status displayed on staff dashboard
+
+5. **Set Division Type** (for standard events):
+   - Choose "Champion" or "Recreational"
+   - Hidden for Team Sparring events
+
+6. **Set Event**:
    - Select current event from dropdown
    - UI automatically adjusts based on event type
 
-5. **Set Categories** (for standard events):
+7. **Set Categories** (for standard events):
    - Choose Gender (Male/Female)
    - Select Age Bracket
    - Select Rank (Color Belts or Black Belts)
@@ -215,10 +250,10 @@ NODE_ENV=production node server/index.js
    - Toggle "Stacked Ring" if applicable
    - Select Special Abilities if applicable
 
-6. **Set Division** (for Team Sparring):
+8. **Set Division** (for Team Sparring):
    - Choose Division instead of Gender/Age/Rank
 
-7. **Open Ring Mode**:
+9. **Open Ring Mode**:
    - When "Ring Open" is toggled, event dropdown and all category options are hidden
    - Only "Judges Needed" toggle remains available
    - Current status displays "Open"
@@ -261,6 +296,8 @@ NODE_ENV=production node server/index.js
 - **Purple**: Special Abilities - Autistic
 
 ### Category Displays (Staff Page)
+- **White background**: Champion division type
+- **Gold background**: Recreational division type
 - **Blue background**: Male divisions
 - **Pink background**: Female divisions
 - **Orange background**: Color Belts rank
@@ -269,22 +306,38 @@ NODE_ENV=production node server/index.js
 - **Yellow background**: Specific color belt selections
 - **Gray background**: Specific black belt selections
 
+### Ring Status Footer (Staff Page)
+- **Gray badge**: Ready to Start
+- **Dark blue badge**: Ring In Progress (with start time)
+- **Gray badge**: Previous Ring Ended (with end time)
+
 ### Toggle Buttons (Judges & Staff Pages)
-- **Light Green → Green (Black Border)**: Ring Open
-- **Light Red → Red (Black Border)**: Judges Needed
-- **Light Blue → Blue (Black Border)**: Stacked Ring
-- **Light Green → Green (Black Border)**: Special Abilities - Physical
-- **Light Orange → Orange (Black Border)**: Special Abilities - Cognitive
-- **Light Purple → Purple (Black Border)**: Special Abilities - Autistic
+- **Gray → Green (Black Border)**: Ring Open
+- **Gray → Dark Orange (Black Border)**: Judges Needed
+- **Gray → Dark Red (Black Border)**: RTTL Needed
+- **Gray → Blue (Black Border)**: Stacked Ring
+- **Gray → Green (Black Border)**: Special Abilities - Physical
+- **Gray → Orange (Black Border)**: Special Abilities - Cognitive
+- **Gray → Purple (Black Border)**: Special Abilities - Autistic
+- **Gray → White (Black Border)**: Champion Division
+- **Gray → Gold (Black Border)**: Recreational Division
 - **Belt Colors → Darker**: Color belt rank buttons (actual belt colors)
 - **Light Gray → Dark Gray**: Black belt rank buttons
 
 ## WebSocket Events
 
-- `ring_update`: Ring data changed
+- `ring_update`: Ring data changed (including start/end times, RTTL status)
 - `tournament_ended`: Tournament ended by staff
 - `tournament_status_change`: Tournament status updated
 - `tournament_rings_updated`: Ring count changed for tournament
+
+## Ring Timing & Tracking
+
+- **Start Time**: Recorded when "Start Ring" is clicked
+- **End Time**: Recorded when "End Ring" is clicked
+- **Status Display**: Shows on staff dashboard at bottom of each ring card
+- **Reset Behavior**: Ending a ring clears start time and resets all settings to defaults
+- **Multiple Sessions**: Rings can be started again after being ended
 
 ## Security Notes
 

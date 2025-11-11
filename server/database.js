@@ -240,6 +240,18 @@ function initDatabase() {
           }
         });
       }
+      
+      const hasRttlNeededColumn = columns.some(col => col.name === 'rttl_needed');
+      
+      if (!hasRttlNeededColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN rttl_needed INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding rttl_needed column:', err);
+          } else {
+            console.log('Successfully added rttl_needed column to rings table');
+          }
+        });
+      }
     });
   });
 }

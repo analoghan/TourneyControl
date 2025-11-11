@@ -169,6 +169,7 @@ const JudgesInterface = () => {
       start_time: null,
       is_open: 1,
       judges_needed: 0,
+      rttl_needed: 0,
       current_event: 'Forms',
       gender: 'Male',
       age_bracket: 'Tigers',
@@ -333,6 +334,13 @@ const JudgesInterface = () => {
                       disabled={tournamentEnded}
                     >
                       Judges Needed
+                    </button>
+                    <button
+                      className={`status-toggle-btn status-toggle-rttl ${selectedRing.rttl_needed === 1 ? 'status-toggle-active' : ''}`}
+                      onClick={() => updateRingField('rttl_needed', selectedRing.rttl_needed === 1 ? 0 : 1)}
+                      disabled={tournamentEnded}
+                    >
+                      RTTL Needed
                     </button>
                   </div>
                 </div>
