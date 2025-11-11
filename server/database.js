@@ -29,6 +29,41 @@ function initDatabase() {
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS judges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      ata_number TEXT NOT NULL,
+      rank TEXT NOT NULL,
+      age INTEGER NOT NULL,
+      judging_level TEXT NOT NULL,
+      competing INTEGER DEFAULT 0,
+      competing_creative_xma INTEGER DEFAULT 0,
+      competing_teams INTEGER DEFAULT 0,
+      teams_coach INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+    
+    // Migration: Add ata_number column to judges table if it doesn't exist
+    db.all(`PRAGMA table_info(judges)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking judges table schema:', err);
+        return;
+      }
+      
+      const hasAtaNumberColumn = columns.some(col => col.name === 'ata_number');
+      
+      if (!hasAtaNumberColumn) {
+        db.run(`ALTER TABLE judges ADD COLUMN ata_number TEXT DEFAULT ''`, (err) => {
+          if (err) {
+            console.error('Error adding ata_number column:', err);
+          } else {
+            console.log('Successfully added ata_number column to judges table');
+          }
+        });
+      }
+    });
+
     // Migration: Add status column to tournaments table if it doesn't exist
     db.all(`PRAGMA table_info(tournaments)`, (err, columns) => {
       if (err) {

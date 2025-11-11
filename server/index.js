@@ -407,6 +407,137 @@ app.put('/api/rings/:id', (req, res) => {
 });
 
 // Serve React app for all other routes in production
+// Judge Management Endpoints
+
+// Input sanitization helper
+const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
+  // Remove any potential SQL injection characters and trim whitespace
+  return input.trim().replace(/[<>]/g, '');
+};
+
+const sanitizeAtaNumber = (input) => {
+  if (typeof input !== 'string') return '';
+  // Only allow numbers and dashes
+  return input.replace(/[^0-9-]/g, '');
+};
+
+// Get all judges
+app.get('/api/judges', (req, res) => {
+  db.all('SELECT * FROM judges ORDER BY last_name, first_name', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// Add a new judge
+app.post('/api/judges', (req, res) => {
+  let { first_name, last_name, ata_number, rank, age, judging_level, competing, competing_creative_xma, competing_teams, teams_coach } = req.body;
+  
+  // Sanitize inputs
+  first_name = sanitizeInput(first_name);
+  last_name = sanitizeInput(last_name);
+  ata_number = sanitizeAtaNumber(ata_number);
+  rank = sanitizeInput(rank) || '';
+  judging_level = sanitizeInput(judging_level) || '';
+  
+  // Only first name, last name, ATA number, and age are required
+  if (!first_name || !last_name || !ata_number || !age) {
+    return res.status(400).json({ error: 'First name, last name, ATA number, and age are required' });
+  }
+  
+  // Validate age is a number
+  const ageNum = parseInt(age);
+  if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+    return res.status(400).json({ error: 'Age must be a valid number between 1 and 120' });
+  }
+  
+  // Check for duplicate ATA number
+  db.get('SELECT id FROM judges WHERE ata_number = ?', [ata_number], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (row) {
+      return res.status(400).json({ error: 'A judge with this ATA number already exists in the database' });
+    }
+    
+    // Insert the new judge
+    db.run(
+      `INSERT INTO judges (first_name, last_name, ata_number, rank, age, judging_level, competing, competing_creative_xma, competing_teams, teams_coach) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [first_name, last_name, ata_number, rank, ageNum, judging_level, competing ? 1 : 0, competing_creative_xma ? 1 : 0, competing_teams ? 1 : 0, teams_coach ? 1 : 0],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ id: this.lastID, message: 'Judge added successfully' });
+      }
+    );
+  });
+});
+
+// Update a judge
+app.put('/api/judges/:id', (req, res) => {
+  const { id } = req.params;
+  let { first_name, last_name, ata_number, rank, age, judging_level, competing, competing_creative_xma, competing_teams, teams_coach } = req.body;
+  
+  // Sanitize inputs
+  first_name = sanitizeInput(first_name);
+  last_name = sanitizeInput(last_name);
+  ata_number = sanitizeAtaNumber(ata_number);
+  rank = sanitizeInput(rank) || '';
+  judging_level = sanitizeInput(judging_level) || '';
+  
+  // Only first name, last name, ATA number, and age are required
+  if (!first_name || !last_name || !ata_number || !age) {
+    return res.status(400).json({ error: 'First name, last name, ATA number, and age are required' });
+  }
+  
+  // Validate age is a number
+  const ageNum = parseInt(age);
+  if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+    return res.status(400).json({ error: 'Age must be a valid number between 1 and 120' });
+  }
+  
+  // Check for duplicate ATA number (excluding current judge)
+  db.get('SELECT id FROM judges WHERE ata_number = ? AND id != ?', [ata_number, id], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (row) {
+      return res.status(400).json({ error: 'A judge with this ATA number already exists in the database' });
+    }
+    
+    // Update the judge
+    db.run(
+      `UPDATE judges SET first_name = ?, last_name = ?, ata_number = ?, rank = ?, age = ?, judging_level = ?, competing = ?, competing_creative_xma = ?, competing_teams = ?, teams_coach = ? WHERE id = ?`,
+      [first_name, last_name, ata_number, rank, ageNum, judging_level, competing ? 1 : 0, competing_creative_xma ? 1 : 0, competing_teams ? 1 : 0, teams_coach ? 1 : 0, id],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Judge updated successfully' });
+      }
+    );
+  });
+});
+
+// Delete a judge
+app.delete('/api/judges/:id', (req, res) => {
+  const { id } = req.params;
+  
+  db.run('DELETE FROM judges WHERE id = ?', [id], function(err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ message: 'Judge deleted successfully' });
+  });
+});
+
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 're
 import JudgesInterface from './components/JudgesInterface'
 import StaffInterface from './components/StaffInterface'
 import StaffRingConfig from './components/StaffRingConfig'
+import JudgeManagement from './components/JudgeManagement'
 import LoginPage from './components/LoginPage'
 import './App.css'
 
@@ -25,6 +26,8 @@ function NavBar() {
       return 'ATA Region 102 Tournament Control - Judges Dashboard'
     } else if (location.pathname === '/staff') {
       return 'ATA Region 102 Tournament Control - Staff Dashboard'
+    } else if (location.pathname === '/staff/judge-management') {
+      return 'ATA Region 102 Tournament Control - Judge Management'
     } else if (location.pathname.startsWith('/staff/ring/')) {
       return 'ATA Region 102 Tournament Control - Ring Configuration'
     }
@@ -127,9 +130,19 @@ function NavBar() {
             </button>
           )}
           {location.pathname === '/staff' && (
-            <button onClick={() => handleSwitchRole('judge', '/judges')} className="nav-button">
-              Switch to Judge
-            </button>
+            <>
+              <button onClick={() => handleSwitchRole('judge', '/judges')} className="nav-button">
+                Switch to Judge
+              </button>
+              <Link to="/staff/judge-management" className="nav-button">
+                Judge Management
+              </Link>
+            </>
+          )}
+          {location.pathname === '/staff/judge-management' && (
+            <Link to="/staff" className="nav-button">
+              Return to Tournament Overview
+            </Link>
           )}
           <Link to="/" onClick={handleLogout} className="nav-button">Logout</Link>
         </div>
@@ -190,6 +203,7 @@ function AppContent() {
         <Route path="/judges" element={<JudgesInterface />} />
         <Route path="/staff" element={<StaffInterface />} />
         <Route path="/staff/ring/:ringId" element={<StaffRingConfig />} />
+        <Route path="/staff/judge-management" element={<JudgeManagement />} />
       </Routes>
     </div>
   )
