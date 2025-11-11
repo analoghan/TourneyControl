@@ -874,12 +874,12 @@ const StaffInterface = () => {
                   <div className="ring-status-footer">
                     {ring.start_time && !ring.end_time ? (
                       <div className="ring-status-badge ring-status-in-progress">
-                        RING IN PROGRESS - STARTED AT: {formatTime(ring.start_time)}
+                        RING IN PROGRESS<br />STARTED AT: {formatTime(ring.start_time)}
                       </div>
                     ) : ring.end_time && ring.start_time ? (
                       <>
                         <div className="ring-status-badge ring-status-ended">
-                          PREVIOUS RING ENDED: {formatTime(ring.end_time)}
+                          PREVIOUS RING ENDED:<br />{formatTime(ring.end_time)}
                         </div>
                         <div 
                           className="ring-status-badge ring-status-reset"
@@ -905,7 +905,7 @@ const StaffInterface = () => {
                       </>
                     ) : ring.end_time ? (
                       <div className="ring-status-badge ring-status-ended">
-                        PREVIOUS RING ENDED: {formatTime(ring.end_time)}
+                        PREVIOUS RING ENDED:<br />{formatTime(ring.end_time)}
                       </div>
                     ) : (
                       <div className="ring-status-badge ring-status-ready">READY TO START</div>

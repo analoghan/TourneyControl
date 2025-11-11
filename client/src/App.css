@@ -1438,12 +1438,6 @@ body.login-body {
   margin-top: auto;
   padding-top: 0.75rem;
   border-top: 3px solid #6b7280;
-  margin-left: -2rem;
-  margin-right: -2rem;
-  margin-bottom: -2rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-bottom: 2rem;
 }
 
 .ring-status-badge {
