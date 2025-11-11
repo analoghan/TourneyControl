@@ -352,7 +352,11 @@ const StaffInterface = () => {
                 {rings
                   .filter(r => r.judges_needed === 1)
                   .map(ring => (
-                    <span key={ring.id} className="alert-item alert-item-urgent">
+                    <span 
+                      key={ring.id} 
+                      className="alert-item alert-item-urgent alert-item-clickable"
+                      onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                    >
                       Ring {ring.ring_number}
                     </span>
                   ))}
@@ -367,7 +371,11 @@ const StaffInterface = () => {
                 {rings
                   .filter(r => r.is_open === 1)
                   .map(ring => (
-                    <span key={ring.id} className="alert-item alert-item-open">
+                    <span 
+                      key={ring.id} 
+                      className="alert-item alert-item-open alert-item-clickable"
+                      onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                    >
                       Ring {ring.ring_number}
                     </span>
                   ))}
