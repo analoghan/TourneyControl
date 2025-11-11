@@ -13,11 +13,14 @@ A comprehensive web application for managing martial arts tournaments with real-
 
 ### Tournament Management
 - Create tournaments with 1-70 adjustable rings
+- Timezone selection (US Eastern, Central, Mountain, Pacific) for accurate time display
+- Edit timezone for active tournaments
 - Tournament lifecycle management (Not Started → Active → Ended)
 - Start, end, and restart tournaments with status controls
 - Delete ended tournaments to keep interface clean
 - Real-time WebSocket updates across all connected clients
 - Collapsible tournament setup section for clean interface
+- Live clock display showing current time in tournament timezone
 
 ### Judges Interface
 - **Ring Selection**:
@@ -72,11 +75,20 @@ A comprehensive web application for managing martial arts tournaments with real-
 
 ### Staff Dashboard
 - **Tournament Management Section** (Collapsible):
-  - Create new tournaments with custom ring counts (1-70)
+  - Create new tournaments with custom ring counts (1-70) and timezone selection
   - Edit ring count for active tournaments with inline dropdown
+  - Edit timezone for active tournaments
   - View all tournaments with status badges
   - Start/End/Restart/Delete tournaments with status-based controls
   - New rings default to "Open" status when created or added
+  - Clear labels for Ring Count and Timezone in both creation and edit modes
+  
+- **Active Tournament Display**:
+  - Tournament selector dropdown
+  - Live clock showing current time in tournament timezone
+  - Format: "HH:MM AM/PM, Month Day, Year"
+  - Updates every second automatically
+  - Right-aligned for easy visibility
   
 - **Alert Sections** (with clickable ring numbers):
   - **RTTL Needed Alert**: Dark red flashing section listing rings needing RTTL (highest priority)
@@ -187,32 +199,42 @@ NODE_ENV=production node server/index.js
 2. **Create Tournament**:
    - Expand "Tournament Setup" section
    - Enter tournament name
-   - Select number of rings (1-70)
+   - Select ring count (1-70)
+   - Select timezone (US Eastern, Central, Mountain, or Pacific)
    - Click "Create Tournament"
    - All rings default to "Open" status
 
 3. **Edit Ring Count** (Active Tournaments):
-   - Click "Edit" button next to ring count
+   - Click "Edit" button next to "Ring Count:" label
    - Select new ring count from dropdown (1-70)
    - Click "Save" to apply or "Cancel" to discard
    - New rings are automatically added as "Open"
    - Excess rings are removed from the end
 
-4. **Start Tournament**:
+4. **Edit Timezone** (Active Tournaments):
+   - Click "Edit" button next to "Timezone:" label
+   - Select new timezone from dropdown
+   - Click "Save" to apply or "Cancel" to discard
+   - All time displays update to new timezone immediately
+
+5. **Start Tournament**:
    - Click "Start" button on tournament
    - Tournament becomes active and visible to judges
 
-5. **Monitor Rings**:
+6. **Monitor Rings**:
+   - View live clock showing current time in tournament timezone
    - View all rings in color-coded grid
+   - Check "RTTL Needed" alert for highest priority requests
    - Check "Rings Needing Judges" alert for urgent requests
    - Check "Open Rings" section for available rings
    - Monitor event types, categories, and special statuses
+   - Ring status footer shows timing information (Ready/In Progress/Ended)
 
-6. **End Tournament**:
+7. **End Tournament**:
    - Click "End" button when tournament is complete
    - Rings become read-only for judges
 
-7. **Restart/Delete Tournament**:
+8. **Restart/Delete Tournament**:
    - Click "Restart" to reactivate an ended tournament
    - Click "Delete" to permanently remove ended tournaments
 
@@ -333,12 +355,15 @@ NODE_ENV=production node server/index.js
 - `tournament_ended`: Tournament ended by staff
 - `tournament_status_change`: Tournament status updated
 - `tournament_rings_updated`: Ring count changed for tournament
+- `tournament_timezone_updated`: Timezone changed for tournament
 
 ## Ring Timing & Tracking
 
 - **Start Time**: Recorded when "Start Ring" is clicked
 - **End Time**: Recorded when "End Ring" is clicked
+- **Timezone Support**: All times displayed in tournament's configured timezone
 - **Status Display**: Shows on staff dashboard at bottom of each ring card
+- **Live Clock**: Current time displayed at top of staff dashboard, updates every second
 - **Reset Behavior**: Ending a ring clears start time and resets all settings to defaults
 - **Multiple Sessions**: Rings can be started again after being ended
 - **Smart Restrictions**:

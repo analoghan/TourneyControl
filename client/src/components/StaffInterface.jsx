@@ -454,27 +454,30 @@ const StaffInterface = () => {
             </select>
             <div style={{ 
               marginLeft: 'auto', 
-              fontWeight: '600', 
-              color: '#2c3e50',
-              fontSize: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
               whiteSpace: 'nowrap'
             }}>
-              {(() => {
-                const tournament = tournaments.find(t => t.id === selectedTournament)
-                const tz = tournament?.timezone || 'America/New_York'
-                const timeStr = currentTime.toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: tz
-                })
-                const dateStr = currentTime.toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  timeZone: tz
-                })
-                return `${timeStr}, ${dateStr}`
-              })()}
+              <span style={{ fontWeight: '600', color: '#2c3e50', fontSize: '1rem' }}>Current Time:</span>
+              <span style={{ fontWeight: '600', color: '#2c3e50', fontSize: '1rem' }}>
+                {(() => {
+                  const tournament = tournaments.find(t => t.id === selectedTournament)
+                  const tz = tournament?.timezone || 'America/New_York'
+                  const timeStr = currentTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: tz
+                  })
+                  const dateStr = currentTime.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    timeZone: tz
+                  })
+                  return `${timeStr}, ${dateStr}`
+                })()}
+              </span>
             </div>
           </div>
 
