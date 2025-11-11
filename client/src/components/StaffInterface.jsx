@@ -467,7 +467,7 @@ const StaffInterface = () => {
                       </div>
                     ) : ring.end_time ? (
                       <div className="ring-status-badge ring-status-ended">
-                        LAST RING ENDED: {new Date(ring.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        PREVIOUS RING ENDED: {new Date(ring.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     ) : (
                       <div className="ring-status-badge ring-status-ready">READY TO START</div>
