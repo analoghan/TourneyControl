@@ -344,8 +344,8 @@ const StaffRingConfig = () => {
                   </select>
                 </div>
 
-                <div className="age-bracket-selector" style={{ marginTop: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.75rem' }}>Select Age Brackets:</label>
+                <div className="age-bracket-selector">
+                  <label>Select Age Brackets:</label>
                   <div className="checkbox-grid">
                     {AGE_BRACKETS.map(bracket => (
                       <button
