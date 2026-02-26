@@ -84,6 +84,7 @@ const StaffInterface = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [rings, setRings] = useState([])
+  const [stackedRingsMap, setStackedRingsMap] = useState({}) // Map of ringId -> stacked rings array
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [name, setName] = useState('')
@@ -172,11 +173,31 @@ const StaffInterface = () => {
   const fetchRings = async () => {
     if (!selectedTournament) {
       setRings([])
+      setStackedRingsMap({})
       return
     }
     const res = await fetch(`/api/tournaments/${selectedTournament}/rings`)
     const data = await res.json()
     setRings(data)
+    
+    // Fetch stacked rings for each ring
+    const stackedMap = {}
+    await Promise.all(
+      data.map(async (ring) => {
+        try {
+          const stackedRes = await fetch(`/api/rings/${ring.id}/stacked`)
+          if (stackedRes.ok) {
+            const stackedData = await stackedRes.json()
+            if (stackedData.length > 0) {
+              stackedMap[ring.id] = stackedData
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch stacked rings for ring ${ring.id}:`, error)
+        }
+      })
+    )
+    setStackedRingsMap(stackedMap)
   }
 
   const createTournament = async (e) => {
@@ -847,7 +868,26 @@ const StaffInterface = () => {
           )}
 
           <div className="rings-grid">
-            {rings.map(ring => {
+            {rings.flatMap(ring => {
+              const stackedRings = stackedRingsMap[ring.id] || []
+              
+              // If there are stacked rings, show main ring as Stack 1
+              if (stackedRings.length > 0) {
+                const mainRingCard = { ...ring, isStackedRing: true, stackedIndex: 1, parentRingId: ring.id, parentRingNumber: ring.ring_number }
+                const stackedCards = stackedRings.map((stackedRing, index) => ({
+                  ...ring,
+                  ...stackedRing,
+                  isStackedRing: true,
+                  stackedIndex: index + 2,
+                  parentRingId: ring.id,
+                  parentRingNumber: ring.ring_number
+                }))
+                return [mainRingCard, ...stackedCards]
+              } else {
+                // No stacked rings, show as normal
+                return [{ ...ring, isStackedRing: false, stackedIndex: null }]
+              }
+            }).map(ring => {
               const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isOpen = ring.is_open === 1
               const isJudgesNeeded = ring.judges_needed === 1
@@ -877,12 +917,17 @@ const StaffInterface = () => {
               
               return (
                 <div 
-                  key={ring.id} 
-                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isRttlNeeded ? 'ring-card-rttl-needed' : isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${isStackedRing && !isOpen ? 'ring-card-stacked' : ''}`}
-                  onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                  key={ring.isStackedRing ? `stacked-${ring.id}` : `ring-${ring.id}`}
+                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isRttlNeeded ? 'ring-card-rttl-needed' : isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${(isStackedRing || ring.isStackedRing) && !isOpen ? 'ring-card-stacked' : ''}`}
+                  onClick={() => navigate(`/staff/ring/${ring.parentRingId || ring.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <h3>Ring {ring.ring_number}</h3>
+                  <h3>
+                    {ring.isStackedRing 
+                      ? `Ring ${ring.parentRingNumber} - Stack ${ring.stackedIndex}`
+                      : `Ring ${ring.ring_number}`
+                    }
+                  </h3>
                   <div className="ring-badges">
                     {!isOpen && !isTeamSparring && (() => {
                       try {
@@ -897,7 +942,7 @@ const StaffInterface = () => {
                     {isOpen && (
                       <div className="open-badge">Open</div>
                     )}
-                    {isStackedRing && !isOpen && (
+                    {ring.isStackedRing && (
                       <div className="stacked-ring-badge">Stacked Ring</div>
                     )}
                     {isRttlNeeded && (

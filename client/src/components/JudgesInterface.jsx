@@ -875,7 +875,7 @@ const JudgesInterface = () => {
                   isTeamSparring={false}
                   showDelete={true}
                   onDelete={() => deleteStackedRing(stackedRing.id)}
-                  title={`Stacked Ring ${index + 2}`}
+                  title={`Stack ${index + 2}`}
                 />
               ))}
 
