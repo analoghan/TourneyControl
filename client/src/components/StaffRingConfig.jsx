@@ -91,6 +91,7 @@ const StaffRingConfig = () => {
     if (data.type === 'ring_update' && data.data.id === parseInt(ringId)) {
       setRing(data.data)
       loadBeltSelections(data.data)
+      fetchStackedRings() // Refetch stacked rings when ring updates
     } else if (data.type === 'tournament_ended') {
       if (ring && data.data.tournament_id === ring.tournament_id) {
         setTournamentEnded(true)
@@ -244,6 +245,7 @@ const StaffRingConfig = () => {
   
   // Stacked ring functions
   const addStackedRing = async () => {
+    console.log('addStackedRing called, ringId:', ringId)
     try {
       const res = await fetch(`/api/rings/${ringId}/stacked`, {
         method: 'POST',
@@ -265,11 +267,20 @@ const StaffRingConfig = () => {
         })
       })
       
+      console.log('Response status:', res.status)
+      
       if (res.ok) {
+        const data = await res.json()
+        console.log('Stacked ring created:', data)
         fetchStackedRings()
+      } else {
+        const errorText = await res.text()
+        console.error('Failed to create stacked ring:', res.status, errorText)
+        setErrorMessage('Failed to add stacked ring')
       }
     } catch (error) {
       console.error('Failed to add stacked ring:', error)
+      setErrorMessage('Failed to add stacked ring: ' + error.message)
     }
   }
   
@@ -731,7 +742,7 @@ const StaffRingConfig = () => {
               isTeamSparring={false}
               showDelete={true}
               onDelete={() => deleteStackedRing(stackedRing.id)}
-              title={`Stacked Ring ${index + 1}`}
+              title={`Stacked Ring ${index + 2}`}
             />
           ))}
 

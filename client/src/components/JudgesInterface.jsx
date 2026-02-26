@@ -96,6 +96,7 @@ const JudgesInterface = () => {
       // Also update selectedRing if it's the one that changed
       if (selectedRing && selectedRing.id === data.data.id) {
         setSelectedRing(data.data)
+        fetchStackedRings() // Refetch stacked rings when ring updates
       }
     } else if (data.type === 'tournament_ended') {
       if (data.data.tournament_id === selectedTournament) {
@@ -292,6 +293,7 @@ const JudgesInterface = () => {
   // Stacked ring functions
   const addStackedRing = async () => {
     if (!selectedRing) return
+    console.log('addStackedRing called, selectedRing.id:', selectedRing.id)
     try {
       const res = await fetch(`/api/rings/${selectedRing.id}/stacked`, {
         method: 'POST',
@@ -313,11 +315,20 @@ const JudgesInterface = () => {
         })
       })
       
+      console.log('Response status:', res.status)
+      
       if (res.ok) {
+        const data = await res.json()
+        console.log('Stacked ring created:', data)
         fetchStackedRings()
+      } else {
+        const errorText = await res.text()
+        console.error('Failed to create stacked ring:', res.status, errorText)
+        setErrorMessage('Failed to add stacked ring')
       }
     } catch (error) {
       console.error('Failed to add stacked ring:', error)
+      setErrorMessage('Failed to add stacked ring: ' + error.message)
     }
   }
   
@@ -864,7 +875,7 @@ const JudgesInterface = () => {
                   isTeamSparring={false}
                   showDelete={true}
                   onDelete={() => deleteStackedRing(stackedRing.id)}
-                  title={`Stacked Ring ${index + 1}`}
+                  title={`Stacked Ring ${index + 2}`}
                 />
               ))}
 
