@@ -508,49 +508,9 @@ const JudgesInterface = () => {
                 </div>
               </div>
 
-              {!isOpen && !isTeamSparring && !selectedAgeBrackets.includes('Tigers') && (
-                <div className="category-selector">
-                  <div className="division-type-box">
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Division:</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                      <button
-                        className={`status-toggle-btn status-toggle-division ${(selectedRing.division_type || 'Champion') === 'Champion' ? 'status-toggle-active' : ''}`}
-                        onClick={() => updateRingField('division_type', 'Champion')}
-                        disabled={tournamentEnded}
-                      >
-                        Champion
-                      </button>
-                      <button
-                        className={`status-toggle-btn status-toggle-division status-toggle-recreational ${(selectedRing.division_type || 'Champion') === 'Recreational' ? 'status-toggle-active' : ''}`}
-                        onClick={() => updateRingField('division_type', 'Recreational')}
-                        disabled={tournamentEnded}
-                      >
-                        Recreational
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {!isOpen && !isTeamSparring && (
-                <div className="category-selector">
-                  <label>Competitor Count:</label>
-                  <select 
-                    value={selectedRing.competitor_count || 1}
-                    onChange={(e) => updateRingField('competitor_count', parseInt(e.target.value))}
-                    className="category-dropdown"
-                    disabled={tournamentEnded}
-                  >
-                    {[...Array(16)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>{i + 1}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {!isOpen && (
                 <div className="category-selector">
-                  <label>Select Event:</label>
+                  <label>Current Event:</label>
                   <select 
                     value={selectedRing.current_event}
                     onChange={(e) => updateEvent(e.target.value)}
@@ -565,205 +525,266 @@ const JudgesInterface = () => {
               )}
 
               {!isOpen && (
-                isTeamSparring ? (
-                  <div className="category-selector">
-                    <label>Select Division:</label>
-                    <select 
-                      value={selectedRing.division || 'Bantam'}
-                      onChange={(e) => updateDivision(e.target.value)}
-                      className="category-dropdown"
-                      disabled={tournamentEnded}
-                    >
-                      {DIVISIONS.map(division => (
-                        <option key={division} value={division}>{division}</option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <>
+                <div style={{ margin: '1.5rem 0', borderTop: '2px solid #e5e7eb' }}></div>
+              )}
+
+              {!isOpen && (
+                <div style={{ 
+                  background: '#dbeafe', 
+                  border: '2px solid #3b82f6', 
+                  borderRadius: '8px', 
+                  padding: '1.5rem',
+                  marginTop: '1rem'
+                }}>
+                  <h3 style={{ 
+                    margin: '0 0 1rem 0', 
+                    color: '#000000', 
+                    fontSize: '1.1rem',
+                    fontWeight: '700'
+                  }}>Ring Setup</h3>
+                  
+                  {!isTeamSparring && !selectedAgeBrackets.includes('Tigers') && (
                     <div className="category-selector">
-                      <label>Select Gender:</label>
+                      <div className="division-type-box">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Division:</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                          <button
+                            className={`status-toggle-btn status-toggle-division ${(selectedRing.division_type || 'Champion') === 'Champion' ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('division_type', 'Champion')}
+                            disabled={tournamentEnded}
+                          >
+                            Champion
+                          </button>
+                          <button
+                            className={`status-toggle-btn status-toggle-division status-toggle-recreational ${(selectedRing.division_type || 'Champion') === 'Recreational' ? 'status-toggle-active' : ''}`}
+                            onClick={() => updateRingField('division_type', 'Recreational')}
+                            disabled={tournamentEnded}
+                          >
+                            Recreational
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isTeamSparring && (
+                    <div className="category-selector">
+                      <label>Competitor Count:</label>
                       <select 
-                        value={selectedRing.gender || 'Male'}
-                        onChange={(e) => updateGender(e.target.value)}
+                        value={selectedRing.competitor_count || 1}
+                        onChange={(e) => updateRingField('competitor_count', parseInt(e.target.value))}
                         className="category-dropdown"
                         disabled={tournamentEnded}
                       >
-                        {GENDERS.map(gender => (
-                          <option key={gender} value={gender}>{gender}</option>
+                        {[...Array(16)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>{i + 1}</option>
                         ))}
                       </select>
                     </div>
+                  )}
 
-                    <div className="age-bracket-selector">
-                      <label>Select Age Brackets:</label>
-                      <div className="checkbox-grid">
-                        {AGE_BRACKETS.map(bracket => (
-                          <button
-                            key={bracket}
-                            className={`belt-toggle-btn black-belt-btn ${selectedAgeBrackets.includes(bracket) ? 'belt-toggle-active' : ''}`}
-                            onClick={() => {
-                              let newAgeBrackets
-                              if (selectedAgeBrackets.includes(bracket)) {
-                                // Deselecting
-                                newAgeBrackets = selectedAgeBrackets.filter(b => b !== bracket)
-                              } else {
-                                // Selecting
-                                if (bracket === 'Tigers') {
-                                  // If Tigers is selected, clear all other selections
-                                  newAgeBrackets = ['Tigers']
-                                } else {
-                                  // If any other bracket is selected, remove Tigers if it exists
-                                  newAgeBrackets = [...selectedAgeBrackets.filter(b => b !== 'Tigers'), bracket]
-                                }
-                              }
-                              setSelectedAgeBrackets(newAgeBrackets)
-                              updateRingField('age_brackets', JSON.stringify(newAgeBrackets))
-                              
-                              // If Tigers is selected and Black Belts is the current rank, switch to Color Belts
-                              if (newAgeBrackets.includes('Tigers') && selectedRing.rank === 'Black Belts') {
-                                updateRingField('rank', 'Color Belts')
-                              }
-                            }}
-                            disabled={tournamentEnded}
-                          >
-                            {bracket}
-                          </button>
+                  {isTeamSparring ? (
+                    <div className="category-selector">
+                      <label>Select Division:</label>
+                      <select 
+                        value={selectedRing.division || 'Bantam'}
+                        onChange={(e) => updateDivision(e.target.value)}
+                        className="category-dropdown"
+                        disabled={tournamentEnded}
+                      >
+                        {DIVISIONS.map(division => (
+                          <option key={division} value={division}>{division}</option>
                         ))}
-                      </div>
+                      </select>
                     </div>
-
-                    <div className="rank-selector-box">
+                  ) : (
+                    <>
                       <div className="category-selector">
-                        <label>Select Rank:</label>
+                        <label>Select Gender:</label>
                         <select 
-                          value={selectedRing.rank || 'Color Belts'}
-                          onChange={(e) => updateRank(e.target.value)}
+                          value={selectedRing.gender || 'Male'}
+                          onChange={(e) => updateGender(e.target.value)}
                           className="category-dropdown"
                           disabled={tournamentEnded}
                         >
-                          {RANKS.filter(rank => {
-                            // Hide Black Belts option if Tigers age bracket is selected
-                            if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
-                              return false
-                            }
-                            return true
-                          }).map(rank => (
-                            <option key={rank} value={rank}>{rank}</option>
+                          {GENDERS.map(gender => (
+                            <option key={gender} value={gender}>{gender}</option>
                           ))}
                         </select>
                       </div>
 
-                      {selectedRing.rank === 'Color Belts' && (
-                        <div className="belt-ranks-section">
-                          <label>Select Color Belt Ranks:</label>
-                          <div className="checkbox-grid">
-                            {COLOR_BELT_RANKS.map(belt => (
-                              <button
-                                key={belt}
-                                className={`belt-toggle-btn color-belt-btn belt-${belt.toLowerCase().replace('/', '-')} ${selectedColorBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
-                                onClick={() => {
-                                  let newColorBelts
-                                  if (selectedColorBelts.includes(belt)) {
-                                    newColorBelts = selectedColorBelts.filter(b => b !== belt)
+                      <div className="age-bracket-selector">
+                        <label>Select Age Brackets:</label>
+                        <div className="checkbox-grid">
+                          {AGE_BRACKETS.map(bracket => (
+                            <button
+                              key={bracket}
+                              className={`belt-toggle-btn black-belt-btn ${selectedAgeBrackets.includes(bracket) ? 'belt-toggle-active' : ''}`}
+                              onClick={() => {
+                                let newAgeBrackets
+                                if (selectedAgeBrackets.includes(bracket)) {
+                                  // Deselecting
+                                  newAgeBrackets = selectedAgeBrackets.filter(b => b !== bracket)
+                                } else {
+                                  // Selecting
+                                  if (bracket === 'Tigers') {
+                                    // If Tigers is selected, clear all other selections
+                                    newAgeBrackets = ['Tigers']
                                   } else {
-                                    newColorBelts = [...selectedColorBelts, belt]
+                                    // If any other bracket is selected, remove Tigers if it exists
+                                    newAgeBrackets = [...selectedAgeBrackets.filter(b => b !== 'Tigers'), bracket]
                                   }
-                                  setSelectedColorBelts(newColorBelts)
-                                  updateRingField('color_belts', JSON.stringify(newColorBelts))
-                                }}
-                                disabled={tournamentEnded}
-                              >
-                                {belt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedRing.rank === 'Black Belts' && (
-                        <div className="belt-ranks-section">
-                          <label>Select Black Belt Ranks:</label>
-                          <div className="checkbox-grid">
-                            {BLACK_BELT_RANKS.filter(belt => {
-                              // Hide 4th-5th Degree and Masters for younger age brackets
-                              const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
-                              const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
-                              if (hasYoungerBracket) {
-                                if (belt === '4th-5th Degree' || belt === 'Masters') {
-                                  return false
                                 }
+                                setSelectedAgeBrackets(newAgeBrackets)
+                                updateRingField('age_brackets', JSON.stringify(newAgeBrackets))
+                                
+                                // If Tigers is selected and Black Belts is the current rank, switch to Color Belts
+                                if (newAgeBrackets.includes('Tigers') && selectedRing.rank === 'Black Belts') {
+                                  updateRingField('rank', 'Color Belts')
+                                }
+                              }}
+                              disabled={tournamentEnded}
+                            >
+                              {bracket}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rank-selector-box">
+                        <div className="category-selector">
+                          <label>Select Rank:</label>
+                          <select 
+                            value={selectedRing.rank || 'Color Belts'}
+                            onChange={(e) => updateRank(e.target.value)}
+                            className="category-dropdown"
+                            disabled={tournamentEnded}
+                          >
+                            {RANKS.filter(rank => {
+                              // Hide Black Belts option if Tigers age bracket is selected
+                              if (selectedAgeBrackets.includes('Tigers') && rank === 'Black Belts') {
+                                return false
                               }
                               return true
-                            }).map(belt => (
-                              <button
-                                key={belt}
-                                className={`belt-toggle-btn ${selectedBlackBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
-                                onClick={() => {
-                                  let newBlackBelts
-                                  if (selectedBlackBelts.includes(belt)) {
-                                    newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
-                                  } else {
-                                    newBlackBelts = [...selectedBlackBelts, belt]
-                                  }
-                                  setSelectedBlackBelts(newBlackBelts)
-                                  updateRingField('black_belts', JSON.stringify(newBlackBelts))
-                                }}
-                                disabled={tournamentEnded}
-                              >
-                                {belt}
-                              </button>
+                            }).map(rank => (
+                              <option key={rank} value={rank}>{rank}</option>
                             ))}
+                          </select>
+                        </div>
+
+                        {selectedRing.rank === 'Color Belts' && (
+                          <div className="belt-ranks-section">
+                            <label>Select Color Belt Ranks:</label>
+                            <div className="checkbox-grid">
+                              {COLOR_BELT_RANKS.map(belt => (
+                                <button
+                                  key={belt}
+                                  className={`belt-toggle-btn color-belt-btn belt-${belt.toLowerCase().replace('/', '-')} ${selectedColorBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                                  onClick={() => {
+                                    let newColorBelts
+                                    if (selectedColorBelts.includes(belt)) {
+                                      newColorBelts = selectedColorBelts.filter(b => b !== belt)
+                                    } else {
+                                      newColorBelts = [...selectedColorBelts, belt]
+                                    }
+                                    setSelectedColorBelts(newColorBelts)
+                                    updateRingField('color_belts', JSON.stringify(newColorBelts))
+                                  }}
+                                  disabled={tournamentEnded}
+                                >
+                                  {belt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedRing.rank === 'Black Belts' && (
+                          <div className="belt-ranks-section">
+                            <label>Select Black Belt Ranks:</label>
+                            <div className="checkbox-grid">
+                              {BLACK_BELT_RANKS.filter(belt => {
+                                // Hide 4th-5th Degree and Masters for younger age brackets
+                                const youngerAgeBrackets = ['8 and Under', '9-10', '11-12', '13-14', '15-17']
+                                const hasYoungerBracket = selectedAgeBrackets.some(bracket => youngerAgeBrackets.includes(bracket))
+                                if (hasYoungerBracket) {
+                                  if (belt === '4th-5th Degree' || belt === 'Masters') {
+                                    return false
+                                  }
+                                }
+                                return true
+                              }).map(belt => (
+                                <button
+                                  key={belt}
+                                  className={`belt-toggle-btn ${selectedBlackBelts.includes(belt) ? 'belt-toggle-active' : ''}`}
+                                  onClick={() => {
+                                    let newBlackBelts
+                                    if (selectedBlackBelts.includes(belt)) {
+                                      newBlackBelts = selectedBlackBelts.filter(b => b !== belt)
+                                    } else {
+                                      newBlackBelts = [...selectedBlackBelts, belt]
+                                    }
+                                    setSelectedBlackBelts(newBlackBelts)
+                                    updateRingField('black_belts', JSON.stringify(newBlackBelts))
+                                  }}
+                                  disabled={tournamentEnded}
+                                >
+                                  {belt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="category-selector">
+                        <div className="special-abilities-box">
+                          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Special Abilities:</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                            <button
+                              className={`status-toggle-btn status-toggle-physical ${selectedRing.special_abilities_physical === 1 ? 'status-toggle-active' : ''}`}
+                              onClick={() => updateRingField('special_abilities_physical', selectedRing.special_abilities_physical === 1 ? 0 : 1)}
+                              disabled={tournamentEnded}
+                            >
+                              Physical
+                            </button>
+                            <button
+                              className={`status-toggle-btn status-toggle-cognitive ${selectedRing.special_abilities_cognitive === 1 ? 'status-toggle-active' : ''}`}
+                              onClick={() => updateRingField('special_abilities_cognitive', selectedRing.special_abilities_cognitive === 1 ? 0 : 1)}
+                              disabled={tournamentEnded}
+                            >
+                              Cognitive
+                            </button>
+                            <button
+                              className={`status-toggle-btn status-toggle-autistic ${selectedRing.special_abilities_autistic === 1 ? 'status-toggle-active' : ''}`}
+                              onClick={() => updateRingField('special_abilities_autistic', selectedRing.special_abilities_autistic === 1 ? 0 : 1)}
+                              disabled={tournamentEnded}
+                            >
+                              Autistic
+                            </button>
                           </div>
                         </div>
-                      )}
-                    </div>
-
-                    <div className="category-selector">
-                      <div className="stacked-ring-box">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Stacked Ring:</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                          <button
-                            className={`status-toggle-btn status-toggle-stacked ${selectedRing.stacked_ring === 1 ? 'status-toggle-active' : ''}`}
-                            onClick={() => updateRingField('stacked_ring', selectedRing.stacked_ring === 1 ? 0 : 1)}
-                            disabled={tournamentEnded}
-                          >
-                            Stacked Ring
-                          </button>
-                        </div>
                       </div>
-                    </div>
+                    </>
+                  )}
+                </div>
+              )}
 
-                    <div className="category-selector">
-                      <div className="special-abilities-box">
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Special Abilities:</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                          <button
-                            className={`status-toggle-btn status-toggle-physical ${selectedRing.special_abilities_physical === 1 ? 'status-toggle-active' : ''}`}
-                            onClick={() => updateRingField('special_abilities_physical', selectedRing.special_abilities_physical === 1 ? 0 : 1)}
-                            disabled={tournamentEnded}
-                          >
-                            Physical
-                          </button>
-                          <button
-                            className={`status-toggle-btn status-toggle-cognitive ${selectedRing.special_abilities_cognitive === 1 ? 'status-toggle-active' : ''}`}
-                            onClick={() => updateRingField('special_abilities_cognitive', selectedRing.special_abilities_cognitive === 1 ? 0 : 1)}
-                            disabled={tournamentEnded}
-                          >
-                            Cognitive
-                          </button>
-                          <button
-                            className={`status-toggle-btn status-toggle-autistic ${selectedRing.special_abilities_autistic === 1 ? 'status-toggle-active' : ''}`}
-                            onClick={() => updateRingField('special_abilities_autistic', selectedRing.special_abilities_autistic === 1 ? 0 : 1)}
-                            disabled={tournamentEnded}
-                          >
-                            Autistic
-                          </button>
-                        </div>
-                      </div>
+              {!isOpen && !isTeamSparring && (
+                <div className="category-selector">
+                  <div className="stacked-ring-box">
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Stacked Ring:</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                      <button
+                        className={`status-toggle-btn status-toggle-stacked ${selectedRing.stacked_ring === 1 ? 'status-toggle-active' : ''}`}
+                        onClick={() => updateRingField('stacked_ring', selectedRing.stacked_ring === 1 ? 0 : 1)}
+                        disabled={tournamentEnded}
+                      >
+                        Stacked Ring
+                      </button>
                     </div>
-                  </>
-                )
+                  </div>
+                </div>
               )}
 
               {tournamentEnded && (
