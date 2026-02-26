@@ -322,6 +322,7 @@ const StaffRingConfig = () => {
                           <> (All Ranks)</> : 
                           <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                       )}
+                      {ring.competitor_count && <> | Competitors: {ring.competitor_count}</>}
                     </>
                   )}
                 </>
@@ -402,6 +403,22 @@ const StaffRingConfig = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {!isOpen && !isTeamSparring && (
+            <div className="category-selector">
+              <label>Competitor Count:</label>
+              <select 
+                value={ring.competitor_count || 1}
+                onChange={(e) => updateRingField('competitor_count', parseInt(e.target.value))}
+                className="category-dropdown"
+                disabled={tournamentEnded}
+              >
+                {[...Array(16)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
             </div>
           )}
 

@@ -298,6 +298,18 @@ function initDatabase() {
           }
         });
       }
+      
+      const hasCompetitorCountColumn = columns.some(col => col.name === 'competitor_count');
+      
+      if (!hasCompetitorCountColumn) {
+        db.run(`ALTER TABLE rings ADD COLUMN competitor_count INTEGER DEFAULT 1`, (err) => {
+          if (err) {
+            console.error('Error adding competitor_count column:', err);
+          } else {
+            console.log('Successfully added competitor_count column to rings table');
+          }
+        });
+      }
     });
     
     // Migration: Add timezone column to tournaments table if it doesn't exist

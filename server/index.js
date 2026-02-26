@@ -420,7 +420,7 @@ app.get('/api/rings/:id/sessions', (req, res) => {
 });
 
 app.put('/api/rings/:id', (req, res) => {
-  const { current_event, gender, age_bracket, age_brackets, rank, division, division_type, color_belts, black_belts, stacked_ring, is_open, judges_needed, rttl_needed, special_abilities_physical, special_abilities_cognitive, special_abilities_autistic, start_time, end_time } = req.body;
+  const { current_event, gender, age_bracket, age_brackets, rank, division, division_type, color_belts, black_belts, stacked_ring, is_open, judges_needed, rttl_needed, special_abilities_physical, special_abilities_cognitive, special_abilities_autistic, start_time, end_time, competitor_count } = req.body;
   
   // First, get the ring to find its tournament_id
   db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, ring) => {
@@ -506,6 +506,10 @@ app.put('/api/rings/:id', (req, res) => {
       if (special_abilities_autistic !== undefined) {
         updates.push('special_abilities_autistic = ?');
         values.push(special_abilities_autistic ? 1 : 0);
+      }
+      if (competitor_count !== undefined) {
+        updates.push('competitor_count = ?');
+        values.push(competitor_count);
       }
       if (start_time !== undefined) {
         updates.push('start_time = ?');

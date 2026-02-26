@@ -928,6 +928,20 @@ const StaffInterface = () => {
                           <div className="division-info">{ring.division || 'Bantam'}</div>
                         ) : (
                           <>
+                            {ring.competitor_count && (
+                              <div className="competitor-count-display" style={{ 
+                                background: '#e0e7ff', 
+                                color: '#1e40af', 
+                                padding: '0.5rem', 
+                                borderRadius: '4px', 
+                                border: '2px solid #1e40af',
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                marginBottom: '0.5rem'
+                              }}>
+                                Competitors: {ring.competitor_count}
+                              </div>
+                            )}
                             <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
                               <span className="category-item">{ring.gender || 'Male'}</span>
                               <span className="category-divider">|</span>

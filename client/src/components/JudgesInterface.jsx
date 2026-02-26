@@ -296,6 +296,7 @@ const JudgesInterface = () => {
       rank: 'Color Belts',
       division: 'Bantam',
       division_type: 'Champion',
+      competitor_count: 1,
       color_belts: '[]',
       black_belts: '[]',
       stacked_ring: 0,
@@ -447,6 +448,7 @@ const JudgesInterface = () => {
                               <> (All Ranks)</> : 
                               <> ({sortBlackBelts(selectedBlackBelts).join(', ')})</>
                           )}
+                          {selectedRing.competitor_count && <> | Competitors: {selectedRing.competitor_count}</>}
                         </>
                       )}
                     </>
@@ -527,6 +529,22 @@ const JudgesInterface = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {!isOpen && !isTeamSparring && (
+                <div className="category-selector">
+                  <label>Competitor Count:</label>
+                  <select 
+                    value={selectedRing.competitor_count || 1}
+                    onChange={(e) => updateRingField('competitor_count', parseInt(e.target.value))}
+                    className="category-dropdown"
+                    disabled={tournamentEnded}
+                  >
+                    {[...Array(16)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>{i + 1}</option>
+                    ))}
+                  </select>
                 </div>
               )}
 
