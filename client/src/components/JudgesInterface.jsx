@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
+import RingSetupBox from './RingSetupBox'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -76,6 +77,7 @@ const JudgesInterface = () => {
   
   const [rings, setRings] = useState([])
   const [selectedRing, setSelectedRing] = useState(null)
+  const [stackedRings, setStackedRings] = useState([])
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [tournamentEnded, setTournamentEnded] = useState(false)
@@ -155,12 +157,29 @@ const JudgesInterface = () => {
       } else {
         setSelectedAgeBrackets([selectedRing.age_bracket || '8 and Under'])
       }
+      
+      // Fetch stacked rings
+      fetchStackedRings()
     } else {
       setSelectedColorBelts([])
       setSelectedBlackBelts([])
       setSelectedAgeBrackets([])
+      setStackedRings([])
     }
   }, [selectedRing])
+
+  const fetchStackedRings = async () => {
+    if (!selectedRing) return
+    try {
+      const res = await fetch(`/api/rings/${selectedRing.id}/stacked`)
+      if (res.ok) {
+        const data = await res.json()
+        setStackedRings(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch stacked rings:', error)
+    }
+  }
 
   const fetchTournaments = async () => {
     const res = await fetch('/api/tournaments/active')
@@ -269,6 +288,72 @@ const JudgesInterface = () => {
   }
   const updateRank = (rank) => updateRingField('rank', rank)
   const updateDivision = (division) => updateRingField('division', division)
+  
+  // Stacked ring functions
+  const addStackedRing = async () => {
+    if (!selectedRing) return
+    try {
+      const res = await fetch(`/api/rings/${selectedRing.id}/stacked`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_event: 'Forms',
+          gender: 'Male',
+          age_bracket: '8 and Under',
+          age_brackets: '["8 and Under"]',
+          rank: 'Color Belts',
+          division: 'Bantam',
+          division_type: 'Champion',
+          color_belts: '[]',
+          black_belts: '[]',
+          special_abilities_physical: 0,
+          special_abilities_cognitive: 0,
+          special_abilities_autistic: 0,
+          competitor_count: 1
+        })
+      })
+      
+      if (res.ok) {
+        fetchStackedRings()
+      }
+    } catch (error) {
+      console.error('Failed to add stacked ring:', error)
+    }
+  }
+  
+  const updateStackedRing = async (stackedRingId, updates) => {
+    try {
+      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+      
+      if (res.ok) {
+        fetchStackedRings()
+      }
+    } catch (error) {
+      console.error('Failed to update stacked ring:', error)
+    }
+  }
+  
+  const deleteStackedRing = async (stackedRingId) => {
+    if (!confirm('Are you sure you want to delete this stacked ring?')) {
+      return
+    }
+    
+    try {
+      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        fetchStackedRings()
+      }
+    } catch (error) {
+      console.error('Failed to delete stacked ring:', error)
+    }
+  }
   
   const handleStartRing = async () => {
     if (!selectedRing) return
@@ -770,20 +855,39 @@ const JudgesInterface = () => {
                 </div>
               )}
 
+              {!isOpen && !isTeamSparring && stackedRings.map((stackedRing, index) => (
+                <RingSetupBox
+                  key={stackedRing.id}
+                  data={stackedRing}
+                  onUpdate={(updates) => updateStackedRing(stackedRing.id, updates)}
+                  disabled={tournamentEnded}
+                  isTeamSparring={false}
+                  showDelete={true}
+                  onDelete={() => deleteStackedRing(stackedRing.id)}
+                  title={`Stacked Ring ${index + 1}`}
+                />
+              ))}
+
               {!isOpen && !isTeamSparring && (
                 <div className="category-selector">
-                  <div className="stacked-ring-box">
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#2c3e50' }}>Stacked Ring:</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                      <button
-                        className={`status-toggle-btn status-toggle-stacked ${selectedRing.stacked_ring === 1 ? 'status-toggle-active' : ''}`}
-                        onClick={() => updateRingField('stacked_ring', selectedRing.stacked_ring === 1 ? 0 : 1)}
-                        disabled={tournamentEnded}
-                      >
-                        Stacked Ring
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    onClick={addStackedRing}
+                    disabled={tournamentEnded}
+                    style={{
+                      width: '100%',
+                      padding: '1rem',
+                      background: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: tournamentEnded ? 'not-allowed' : 'pointer',
+                      opacity: tournamentEnded ? 0.5 : 1
+                    }}
+                  >
+                    + Add Stacked Ring
+                  </button>
                 </div>
               )}
 

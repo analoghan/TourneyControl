@@ -53,6 +53,27 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS stacked_rings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ring_id INTEGER NOT NULL,
+      stack_order INTEGER NOT NULL,
+      current_event TEXT DEFAULT 'Forms',
+      gender TEXT DEFAULT 'Male',
+      age_bracket TEXT DEFAULT '8 and Under',
+      age_brackets TEXT DEFAULT '["8 and Under"]',
+      rank TEXT DEFAULT 'Color Belts',
+      division TEXT DEFAULT 'Bantam',
+      division_type TEXT DEFAULT 'Champion',
+      color_belts TEXT DEFAULT '[]',
+      black_belts TEXT DEFAULT '[]',
+      special_abilities_physical INTEGER DEFAULT 0,
+      special_abilities_cognitive INTEGER DEFAULT 0,
+      special_abilities_autistic INTEGER DEFAULT 0,
+      competitor_count INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE
+    )`);
     
     // Migration: Add ata_number column to judges table if it doesn't exist
     db.all(`PRAGMA table_info(judges)`, (err, columns) => {

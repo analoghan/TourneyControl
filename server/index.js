@@ -875,6 +875,213 @@ app.post('/api/admin/cleanup-sessions', (req, res) => {
   );
 });
 
+// Stacked Rings API Endpoints
+
+// Get all stacked rings for a ring
+app.get('/api/rings/:ringId/stacked', (req, res) => {
+  db.all(
+    'SELECT * FROM stacked_rings WHERE ring_id = ? ORDER BY stack_order',
+    [req.params.ringId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+// Create a new stacked ring
+app.post('/api/rings/:ringId/stacked', (req, res) => {
+  const { ringId } = req.params;
+  const {
+    current_event = 'Forms',
+    gender = 'Male',
+    age_bracket = '8 and Under',
+    age_brackets = '["8 and Under"]',
+    rank = 'Color Belts',
+    division = 'Bantam',
+    division_type = 'Champion',
+    color_belts = '[]',
+    black_belts = '[]',
+    special_abilities_physical = 0,
+    special_abilities_cognitive = 0,
+    special_abilities_autistic = 0,
+    competitor_count = 1
+  } = req.body;
+
+  // Get the current max stack_order for this ring
+  db.get(
+    'SELECT MAX(stack_order) as max_order FROM stacked_rings WHERE ring_id = ?',
+    [ringId],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      const stackOrder = (result.max_order || 0) + 1;
+      
+      db.run(
+        `INSERT INTO stacked_rings (
+          ring_id, stack_order, current_event, gender, age_bracket, age_brackets,
+          rank, division, division_type, color_belts, black_belts,
+          special_abilities_physical, special_abilities_cognitive, special_abilities_autistic,
+          competitor_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          ringId, stackOrder, current_event, gender, age_bracket, age_brackets,
+          rank, division, division_type, color_belts, black_belts,
+          special_abilities_physical ? 1 : 0,
+          special_abilities_cognitive ? 1 : 0,
+          special_abilities_autistic ? 1 : 0,
+          competitor_count
+        ],
+        function(err) {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          db.get('SELECT * FROM stacked_rings WHERE id = ?', [this.lastID], (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            // Broadcast update
+            db.get('SELECT * FROM rings WHERE id = ?', [ringId], (err, ring) => {
+              if (!err && ring) {
+                broadcast({ type: 'ring_update', data: ring });
+              }
+            });
+            
+            res.json(row);
+          });
+        }
+      );
+    }
+  );
+});
+
+// Update a stacked ring
+app.put('/api/stacked-rings/:id', (req, res) => {
+  const {
+    current_event, gender, age_bracket, age_brackets, rank, division,
+    division_type, color_belts, black_belts, special_abilities_physical,
+    special_abilities_cognitive, special_abilities_autistic, competitor_count
+  } = req.body;
+
+  const updates = [];
+  const values = [];
+
+  if (current_event !== undefined) {
+    updates.push('current_event = ?');
+    values.push(current_event);
+  }
+  if (gender !== undefined) {
+    updates.push('gender = ?');
+    values.push(gender);
+  }
+  if (age_bracket !== undefined) {
+    updates.push('age_bracket = ?');
+    values.push(age_bracket);
+  }
+  if (age_brackets !== undefined) {
+    updates.push('age_brackets = ?');
+    values.push(age_brackets);
+  }
+  if (rank !== undefined) {
+    updates.push('rank = ?');
+    values.push(rank);
+  }
+  if (division !== undefined) {
+    updates.push('division = ?');
+    values.push(division);
+  }
+  if (division_type !== undefined) {
+    updates.push('division_type = ?');
+    values.push(division_type);
+  }
+  if (color_belts !== undefined) {
+    updates.push('color_belts = ?');
+    values.push(color_belts);
+  }
+  if (black_belts !== undefined) {
+    updates.push('black_belts = ?');
+    values.push(black_belts);
+  }
+  if (special_abilities_physical !== undefined) {
+    updates.push('special_abilities_physical = ?');
+    values.push(special_abilities_physical ? 1 : 0);
+  }
+  if (special_abilities_cognitive !== undefined) {
+    updates.push('special_abilities_cognitive = ?');
+    values.push(special_abilities_cognitive ? 1 : 0);
+  }
+  if (special_abilities_autistic !== undefined) {
+    updates.push('special_abilities_autistic = ?');
+    values.push(special_abilities_autistic ? 1 : 0);
+  }
+  if (competitor_count !== undefined) {
+    updates.push('competitor_count = ?');
+    values.push(competitor_count);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
+
+  values.push(req.params.id);
+  const query = `UPDATE stacked_rings SET ${updates.join(', ')} WHERE id = ?`;
+
+  db.run(query, values, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    db.get('SELECT * FROM stacked_rings WHERE id = ?', [req.params.id], (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      // Broadcast update
+      if (row) {
+        db.get('SELECT * FROM rings WHERE id = ?', [row.ring_id], (err, ring) => {
+          if (!err && ring) {
+            broadcast({ type: 'ring_update', data: ring });
+          }
+        });
+      }
+      
+      res.json(row);
+    });
+  });
+});
+
+// Delete a stacked ring
+app.delete('/api/stacked-rings/:id', (req, res) => {
+  // First get the ring_id before deleting
+  db.get('SELECT ring_id FROM stacked_rings WHERE id = ?', [req.params.id], (err, stackedRing) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!stackedRing) return res.status(404).json({ error: 'Stacked ring not found' });
+    
+    db.run('DELETE FROM stacked_rings WHERE id = ?', [req.params.id], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      // Reorder remaining stacked rings
+      db.all(
+        'SELECT id FROM stacked_rings WHERE ring_id = ? ORDER BY stack_order',
+        [stackedRing.ring_id],
+        (err, rows) => {
+          if (!err && rows) {
+            rows.forEach((row, index) => {
+              db.run(
+                'UPDATE stacked_rings SET stack_order = ? WHERE id = ?',
+                [index + 1, row.id]
+              );
+            });
+          }
+          
+          // Broadcast update
+          db.get('SELECT * FROM rings WHERE id = ?', [stackedRing.ring_id], (err, ring) => {
+            if (!err && ring) {
+              broadcast({ type: 'ring_update', data: ring });
+            }
+          });
+          
+          res.json({ message: 'Stacked ring deleted successfully' });
+        }
+      );
+    });
+  });
+});
+
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
