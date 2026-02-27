@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Tournament Control System - AWS Lightsail Deployment'
+
+Parameters:
+  InstanceName:
+    Type: String
+    Default: tournament-control
+    Description: Name for the Lightsail instance
+  
+  BundleId:
+    Type: String
+    Default: nano_3_0
+    Description: Lightsail bundle size (nano_3_0 = $3.50/month, micro_3_0 = $5/month)
+    AllowedValues:
+      - nano_3_0
+      - micro_3_0
+      - small_3_0
+  
+  GitRepoUrl:
+    Type: String
+    Description: Your GitHub repository URL (e.g., https://github.com/username/repo.git)
+    Default: ''
+  
+  StaffPassword:
+    Type: String
+    NoEcho: true
+    Default: compete2win
+    Description: Password for staff login
+  
+  JudgesPassword:
+    Type: String
+    NoEcho: true
+    Default: ata
+    Description: Password for judges login
+
+Resources:
+  TournamentInstance:
+    Type: AWS::Lightsail::Instance
+    Properties:
+      InstanceName: !Ref InstanceName
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs ''
+      BlueprintId: ubuntu_22_04
+      BundleId: !Ref BundleId
+      UserData: !Sub |
+        #!/bin/bash
+        set -e
+        
+        # Update system
+        apt-get update
+        apt-get upgrade -y
+        
+        # Install Node.js 18.x
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        apt-get install -y nodejs git
+        
+        # Install PM2 globally
+        npm install -g pm2
+        
+        # Create app directory
+        mkdir -p /opt/tournament-control
+        cd /opt/tournament-control
+        
+        # Clone repository if URL provided
+        if [ -n "${GitRepoUrl}" ]; then
+          git clone ${GitRepoUrl} .
+        else
+          echo "No Git repo URL provided. You'll need to upload your code manually."
+          exit 0
+        fi
+        
+        # Create .env file
+        cat > .env << 'EOF'
+        PORT=3001
+        NODE_ENV=production
+        STAFF_PASSWORD=${StaffPassword}
+        JUDGES_PASSWORD=${JudgesPassword}
+        EOF
+        
+        # Install dependencies
+        npm run install-all
+        
+        # Build frontend
+        npm run build
+        
+        # Set proper permissions
+        chown -R ubuntu:ubuntu /opt/tournament-control
+        
+        # Create PM2 ecosystem file for proper env var handling
+        cat > /opt/tournament-control/ecosystem.config.js << 'EOFECO'
+        module.exports = {
+          apps: [{
+            name: 'tournament-control',
+            script: './server/index.js',
+            env: {
+              PORT: 3001,
+              NODE_ENV: 'production',
+              STAFF_PASSWORD: '${StaffPassword}',
+              JUDGES_PASSWORD: '${JudgesPassword}'
+            }
+          }]
+        };
+        EOFECO
+        
+        chown ubuntu:ubuntu /opt/tournament-control/ecosystem.config.js
+        
+        # Start application with PM2 as ubuntu user using ecosystem file
+        su - ubuntu -c "cd /opt/tournament-control && pm2 start ecosystem.config.js"
+        su - ubuntu -c "pm2 save"
+        
+        # Setup PM2 to start on boot
+        env PATH=$PATH:/usr/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu
+        
+        # Install and configure nginx
+        apt-get install -y nginx
+        
+        # Create nginx config
+        cat > /etc/nginx/sites-available/tournament << 'NGINXEOF'
+        server {
+            listen 80;
+            server_name _;
+            
+            location / {
+                proxy_pass http://localhost:3001;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_cache_bypass $http_upgrade;
+            }
+        }
+        NGINXEOF
+        
+        # Enable nginx config
+        ln -sf /etc/nginx/sites-available/tournament /etc/nginx/sites-enabled/
+        rm -f /etc/nginx/sites-enabled/default
+        
+        # Test and restart nginx
+        nginx -t
+        systemctl restart nginx
+        systemctl enable nginx
+        
+        echo "Tournament Control System deployment complete!"
+      
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+        - Key: Application
+          Value: TournamentControl
+
+Outputs:
+  InstanceName:
+    Description: Lightsail instance name
+    Value: !Ref TournamentInstance
+  
+  PublicIpAddress:
+    Description: Public IP address for your tournament system (get from Lightsail console)
+    Value: 'Check Lightsail console for the public IP address'
+  
+  ManualStaticIpInstructions:
+    Description: How to attach a static IP manually
+    Value: 'Go to Lightsail console → Networking → Create static IP → Attach to your instance'
+  
+  SSHCommand:
+    Description: SSH command to connect to your instance (replace IP_ADDRESS)
+    Value: 'ssh ubuntu@IP_ADDRESS'
+  
+  NextSteps:
+    Description: What to do next
+    Value: 'Wait 5-10 minutes for setup to complete, then access the URL above. SSH in to check logs: pm2 logs'

@@ -1037,8 +1037,11 @@ app.put('/api/stacked-rings/:id', (req, res) => {
     db.get('SELECT * FROM stacked_rings WHERE id = ?', [req.params.id], (err, row) => {
       if (err) return res.status(500).json({ error: err.message });
       
-      // Broadcast update
+      // Broadcast stacked ring update
       if (row) {
+        broadcast({ type: 'stacked_ring_update', data: row });
+        
+        // Also broadcast parent ring update to refresh the main ring display
         db.get('SELECT * FROM rings WHERE id = ?', [row.ring_id], (err, ring) => {
           if (!err && ring) {
             broadcast({ type: 'ring_update', data: ring });

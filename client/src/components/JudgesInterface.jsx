@@ -98,6 +98,11 @@ const JudgesInterface = () => {
         setSelectedRing(data.data)
         fetchStackedRings() // Refetch stacked rings when ring updates
       }
+    } else if (data.type === 'stacked_ring_update') {
+      // Update stacked ring in the list
+      setStackedRings(prev => prev.map(sr => 
+        sr.id === data.data.id ? data.data : sr
+      ))
     } else if (data.type === 'tournament_ended') {
       if (data.data.tournament_id === selectedTournament) {
         setTournamentEnded(true)

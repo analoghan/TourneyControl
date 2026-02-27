@@ -1,0 +1,366 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Tournament Control System - EC2 t4g.nano Deployment (ARM-based, most cost-effective)'
+
+Parameters:
+  InstanceName:
+    Type: String
+    Default: tournament-control
+    Description: Name tag for the EC2 instance
+  
+  InstanceType:
+    Type: String
+    Default: t4g.nano
+    Description: EC2 instance type (t4g.nano is ARM-based and cheapest)
+    AllowedValues:
+      - t4g.nano
+      - t4g.micro
+      - t4g.small
+      - t3.nano
+      - t3.micro
+  
+  GitRepoUrl:
+    Type: String
+    Description: Your GitHub repository URL (e.g., https://github.com/username/repo.git)
+    Default: ''
+  
+  StaffPassword:
+    Type: String
+    NoEcho: true
+    Default: compete2win
+    Description: Password for staff login
+  
+  JudgesPassword:
+    Type: String
+    NoEcho: true
+    Default: ata
+    Description: Password for judges login
+  
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 Key Pair for SSH access (create one in EC2 console if needed)
+  
+  AllowedSSHCIDR:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: CIDR block allowed to SSH (0.0.0.0/0 = anywhere, or restrict to your IP)
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+
+Mappings:
+  # ARM64 Ubuntu 22.04 LTS AMIs by region
+  RegionMap:
+    us-east-1:
+      AMI: ami-0c7217cdde317cfec
+    us-east-2:
+      AMI: ami-0a695f0d95cefc163
+    us-west-1:
+      AMI: ami-0ce2cb35386fc22e9
+    us-west-2:
+      AMI: ami-0f1a5f5ada0e7da53
+    eu-west-1:
+      AMI: ami-0905a3c97561e0b69
+    eu-central-1:
+      AMI: ami-0e067cc8a2b58de59
+    ap-southeast-1:
+      AMI: ami-0497a974f8d5dcef8
+    ap-southeast-2:
+      AMI: ami-0310483fb2b488153
+    ap-northeast-1:
+      AMI: ami-0d52744d6551d851e
+
+Resources:
+  TournamentVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-vpc'
+
+  TournamentInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-igw'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref TournamentVPC
+      InternetGatewayId: !Ref TournamentInternetGateway
+
+  TournamentSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref TournamentVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-subnet'
+
+  TournamentRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref TournamentVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-rt'
+
+  TournamentRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref TournamentRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref TournamentInternetGateway
+
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TournamentSubnet
+      RouteTableId: !Ref TournamentRouteTable
+
+  TournamentSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${InstanceName}-sg'
+      GroupDescription: Security group for Tournament Control System
+      VpcId: !Ref TournamentVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref AllowedSSHCIDR
+          Description: SSH access
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP access
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS access
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-sg'
+
+  TournamentEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-eip'
+
+  TournamentEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref TournamentInstance
+      EIP: !Ref TournamentEIP
+
+  TournamentInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      SubnetId: !Ref TournamentSubnet
+      SecurityGroupIds:
+        - !Ref TournamentSecurityGroup
+      IamInstanceProfile: !Ref TournamentInstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 8
+            VolumeType: gp3
+            DeleteOnTermination: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          
+          # Log everything
+          exec > >(tee /var/log/user-data.log)
+          exec 2>&1
+          
+          echo "Starting Tournament Control System deployment..."
+          
+          # Update system
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+          
+          # Install Node.js 18.x (ARM64 compatible)
+          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+          apt-get install -y nodejs git
+          
+          # Verify installation
+          node --version
+          npm --version
+          
+          # Install PM2 globally
+          npm install -g pm2
+          
+          # Create app directory
+          mkdir -p /opt/tournament-control
+          cd /opt/tournament-control
+          
+          # Clone repository if URL provided
+          if [ -n "${GitRepoUrl}" ]; then
+            echo "Cloning repository: ${GitRepoUrl}"
+            git clone ${GitRepoUrl} .
+          else
+            echo "No Git repo URL provided. Manual upload required."
+            touch /opt/tournament-control/MANUAL_UPLOAD_REQUIRED
+            exit 0
+          fi
+          
+          # Create .env file
+          cat > .env << 'EOF'
+          PORT=3001
+          NODE_ENV=production
+          STAFF_PASSWORD=${StaffPassword}
+          JUDGES_PASSWORD=${JudgesPassword}
+          EOF
+          
+          # Install dependencies
+          echo "Installing dependencies..."
+          npm run install-all
+          
+          # Build frontend
+          echo "Building frontend..."
+          npm run build
+          
+          # Set proper permissions
+          chown -R ubuntu:ubuntu /opt/tournament-control
+          
+          # Start application with PM2 as ubuntu user
+          echo "Starting application with PM2..."
+          su - ubuntu -c "cd /opt/tournament-control && pm2 start server/index.js --name tournament-control"
+          su - ubuntu -c "pm2 save"
+          
+          # Setup PM2 to start on boot
+          env PATH=$PATH:/usr/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu
+          
+          # Install and configure nginx
+          echo "Installing nginx..."
+          apt-get install -y nginx
+          
+          # Create nginx config
+          cat > /etc/nginx/sites-available/tournament << 'NGINXEOF'
+          server {
+              listen 80;
+              server_name _;
+              
+              # Increase buffer sizes for WebSocket
+              proxy_buffer_size 128k;
+              proxy_buffers 4 256k;
+              proxy_busy_buffers_size 256k;
+              
+              location / {
+                  proxy_pass http://localhost:3001;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+                  
+                  # WebSocket timeout settings
+                  proxy_read_timeout 86400;
+                  proxy_send_timeout 86400;
+              }
+          }
+          NGINXEOF
+          
+          # Enable nginx config
+          ln -sf /etc/nginx/sites-available/tournament /etc/nginx/sites-enabled/
+          rm -f /etc/nginx/sites-enabled/default
+          
+          # Test and restart nginx
+          nginx -t
+          systemctl restart nginx
+          systemctl enable nginx
+          
+          # Setup automatic security updates
+          apt-get install -y unattended-upgrades
+          dpkg-reconfigure -plow unattended-upgrades
+          
+          echo "Tournament Control System deployment complete!"
+          echo "Access your application at: http://${TournamentEIP}"
+      
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+        - Key: Application
+          Value: TournamentControl
+
+  TournamentInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Tags:
+        - Key: Name
+          Value: !Sub '${InstanceName}-role'
+
+  TournamentInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref TournamentInstanceRole
+
+Outputs:
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref TournamentInstance
+  
+  PublicIP:
+    Description: Elastic IP address for your tournament system
+    Value: !Ref TournamentEIP
+  
+  ApplicationUrl:
+    Description: URL to access your tournament system
+    Value: !Sub 'http://${TournamentEIP}'
+  
+  SSHCommand:
+    Description: SSH command to connect to your instance
+    Value: !Sub 'ssh -i /path/to/${KeyPairName}.pem ubuntu@${TournamentEIP}'
+  
+  InstanceType:
+    Description: EC2 instance type deployed
+    Value: !Ref InstanceType
+  
+  EstimatedMonthlyCost:
+    Description: Estimated monthly cost (excluding data transfer)
+    Value: !Sub |
+      ${InstanceType}: ~$3-4/month (t4g.nano), ~$6-7/month (t4g.micro)
+      Free tier eligible for 12 months (750 hours/month)
+  
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref TournamentSecurityGroup
+  
+  NextSteps:
+    Description: What to do next
+    Value: 'Wait 5-10 minutes for setup to complete, then access the URL above. SSH in to check logs: pm2 logs'

@@ -104,6 +104,16 @@ const StaffInterface = () => {
   useWebSocket((data) => {
     if (data.type === 'ring_update') {
       setRings(prev => prev.map(r => r.id === data.data.id ? data.data : r))
+    } else if (data.type === 'stacked_ring_update') {
+      // Update the stacked ring in the stackedRingsMap
+      setStackedRingsMap(prev => {
+        const ringId = data.data.ring_id
+        const currentStacked = prev[ringId] || []
+        const updatedStacked = currentStacked.map(sr => 
+          sr.id === data.data.id ? data.data : sr
+        )
+        return { ...prev, [ringId]: updatedStacked }
+      })
     } else if (data.type === 'tournament_status_change') {
       setTournaments(prev => prev.map(t => 
         t.id === data.data.id ? data.data : t
