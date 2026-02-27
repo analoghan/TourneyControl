@@ -90,8 +90,12 @@ When you're ready to run an event:
    - You can select multiple belts
    - Click again to deselect
    
+   **Set Competitor Count:**
+   - Enter the number of competitors in this division
+   - Helps staff track ring activity and plan accordingly
+   - Updates in real-time on staff dashboard
+   
    **Optional Settings:**
-   - **Stacked Ring** (Blue button): Toggle if multiple age groups are combined
    - **Special Abilities**: Select if applicable
      - Physical (Green)
      - Cognitive (Orange)
@@ -99,6 +103,34 @@ When you're ready to run an event:
 
 4. **For Team Sparring Events:**
    - Select Division: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive
+   - Set Competitor Count (number of teams competing)
+
+#### Stacked Rings (Multiple Divisions)
+
+When you need to run multiple divisions back-to-back in the same ring:
+
+1. **Set up your main ring** with the first division's settings
+2. **Click "+ Add Stacked Ring"** button
+3. A new configuration box appears labeled "Stack 2"
+4. **Configure the stacked ring** with different settings:
+   - Division (Recreational or Champion)
+   - Competitor Count
+   - Gender
+   - Age Bracket
+   - Rank
+   - Special Abilities
+5. **Add more stacked rings** as needed (Stack 3, Stack 4, etc.)
+6. **Delete a stacked ring** by clicking the "Delete" button on that stack
+7. **All stacks share the same Current Event** from the main ring
+
+**Stacked Ring Benefits:**
+- Plan multiple divisions in sequence
+- Staff can see all upcoming divisions for your ring
+- Competitor counts help with scheduling
+- Each stack can have different settings
+- Updates in real-time across all interfaces
+
+**Note:** The main ring is "Stack 1" when stacked rings exist
 
 #### Current Status Display
 
@@ -173,6 +205,39 @@ At the top of your screen, you'll see a gray box showing your current ring confi
 
 ### Managing Active Tournaments
 
+#### Tournament Chat
+
+Stay connected with your tournament team using the built-in chat feature:
+
+**Accessing Chat:**
+- Chat appears at the top of the staff page, below the active tournament section
+- Visible to all staff members viewing the same tournament
+
+**Using Chat:**
+1. **Set Your Display Name:**
+   - Enter your name in the "Your Name" field
+   - Name is saved and remembered for future messages
+   - Default is "Staff" if no name is set
+
+2. **Sending Messages:**
+   - Type your message in the input field
+   - Press Enter or click "Send"
+   - Messages appear instantly for all staff members
+
+3. **Viewing Messages:**
+   - Messages display in compact format: "Name: Message"
+   - Timestamp shown on the right
+   - Alternating row colors for easy reading
+   - Scroll up to view message history
+   - New messages appear at the bottom
+
+**Chat Tips:**
+- Use for quick coordination between staff members
+- Announce important updates or changes
+- Request assistance or resources
+- All messages are saved to the tournament database
+- Chat is tournament-specific (each tournament has its own chat)
+
 #### Editing Ring Count
 
 Need to add or remove rings during an active tournament?
@@ -200,7 +265,14 @@ Your dashboard shows all rings in a grid layout with color-coded information:
 - Current status badges
 - Event type (color-coded)
 - Categories (Gender, Age, Rank, Division)
-- Special indicators (Stacked Ring, Special Abilities)
+- **Competitor Count** - Number of competitors in the division
+- Special indicators (Stacked Ring badge, Special Abilities)
+- **Stacked Rings** - Additional divisions queued for this ring
+  - Each stacked ring shows as a separate card
+  - Labeled as "Ring X - Stack 2", "Ring X - Stack 3", etc.
+  - Blue "Stacked Ring" badge on all stacked divisions
+  - Shows individual settings for each stack
+  - All stacks share the parent ring's Current Event
 - **Ring Status Footer**: Shows timing status
   - "READY TO START" - Ring not started
   - "RING IN PROGRESS - STARTED AT: [time]" - Currently running
@@ -224,12 +296,23 @@ When you click a ring card, you can configure it just like judges do:
 1. Set ring status (Open, Judges Needed)
 2. Select event type
 3. Choose categories
-4. Set special options
+4. Set competitor count
+5. Add stacked rings for multiple divisions
+6. Set special options
+
+**Stacked Rings (Staff View):**
+- Click "+ Add Stacked Ring" to queue additional divisions
+- Each stack can have different settings (division type, competitor count, age, gender, rank)
+- All stacks share the Current Event from the main ring
+- Delete individual stacks as needed
+- Changes sync in real-time to judge interfaces
 
 This is useful for:
 - Pre-configuring rings before judges arrive
+- Planning multiple divisions in sequence
 - Fixing incorrect settings
 - Managing rings without assigned judges
+- Coordinating complex tournament schedules
 
 ### Generating Tournament Reports
 
@@ -301,6 +384,9 @@ This can happen with rings that were in progress when the tournament was ended o
 ✅ **DO:**
 - Monitor the "RTTL Needed" alert section first (highest priority)
 - Check "Judges Needed" alert section regularly
+- Use chat to coordinate with other staff members
+- Set competitor counts to help with scheduling
+- Use stacked rings to plan multiple divisions in sequence
 - Generate reports periodically to track tournament progress
 - Pre-configure rings if you have time before judges arrive
 - Edit ring count if you need more or fewer rings
@@ -314,6 +400,7 @@ This can happen with rings that were in progress when the tournament was ended o
 - Start a tournament before judges are ready
 - Forget to end the tournament when complete
 - Restart a tournament without understanding it clears all ring timing
+- Forget to update competitor counts as divisions change
 
 ---
 
@@ -454,6 +541,41 @@ This is expected behavior:
 2. The ring should automatically set to "Open" after ending
 3. Turn off "Ring Open" before starting new session
 4. If stuck, ask staff to use "Clear Timing" button
+
+### "Chat messages aren't appearing"
+
+**Solution:**
+1. Check your internet connection
+2. Refresh the browser page
+3. Make sure you're viewing the correct tournament
+4. Chat is tournament-specific - each tournament has its own chat
+5. Messages are stored in the database and persist across sessions
+
+### "Stacked rings aren't updating in real-time"
+
+**Solution:**
+1. Check your internet connection
+2. Refresh the browser page
+3. Make sure WebSocket connection is active (check browser console)
+4. Changes should appear within 1-2 seconds
+5. If issues persist, try a different browser
+
+### "I can't add a stacked ring"
+
+**Solution:**
+1. Make sure "Ring Open" is turned OFF
+2. Ensure you have a valid event selected
+3. Check that you're not at the maximum number of stacks
+4. Refresh the page if the button doesn't respond
+5. Check browser console for any error messages
+
+### "Competitor count isn't showing on staff dashboard"
+
+**Solution:**
+1. Make sure you entered a number in the competitor count field
+2. Refresh the staff dashboard
+3. Check that the ring configuration was saved
+4. Updates should appear in real-time via WebSocket
 
 ### "The page isn't updating in real-time"
 

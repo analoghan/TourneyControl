@@ -416,9 +416,15 @@
                                 <li>You can select multiple belts - Click again to deselect</li>
                             </ul>
                         </li>
+                        <li><strong>Set Competitor Count:</strong>
+                            <ul>
+                                <li>Enter the number of competitors in this division</li>
+                                <li>Helps staff track ring activity and plan accordingly</li>
+                                <li>Updates in real-time on staff dashboard</li>
+                            </ul>
+                        </li>
                         <li><strong>Optional Settings:</strong>
                             <ul>
-                                <li><span class="badge badge-blue">Stacked Ring</span> - Select this if you have multiple separate ages/ranks/genders, requiring multiple packets.</li>
                                 <li><strong>Special Abilities:</strong> Select if applicable
                                     <ul>
                                         <li><span class="badge badge-green">Physical</span></li>
@@ -433,9 +439,42 @@
                 <li><strong>For Team Sparring Events:</strong>
                     <ul>
                         <li>Select Division: Bantam, Rookie, Junior Varsity, Varsity, Elite, Premier, Legends, Executive</li>
+                        <li>Set Competitor Count (number of teams competing)</li>
                     </ul>
                 </li>
             </ol>
+
+            <h4>Stacked Rings (Multiple Divisions)</h4>
+            <p>When you need to run multiple divisions back-to-back in the same ring:</p>
+            <ol>
+                <li><strong>Set up your main ring</strong> with the first division's settings</li>
+                <li><strong>Click "+ Add Stacked Ring"</strong> button</li>
+                <li>A new configuration box appears labeled "Stack 2"</li>
+                <li><strong>Configure the stacked ring</strong> with different settings:
+                    <ul>
+                        <li>Division (Recreational or Champion)</li>
+                        <li>Competitor Count</li>
+                        <li>Gender</li>
+                        <li>Age Bracket</li>
+                        <li>Rank</li>
+                        <li>Special Abilities</li>
+                    </ul>
+                </li>
+                <li><strong>Add more stacked rings</strong> as needed (Stack 3, Stack 4, etc.)</li>
+                <li><strong>Delete a stacked ring</strong> by clicking the "Delete" button on that stack</li>
+                <li><strong>All stacks share the same Current Event</strong> from the main ring</li>
+            </ol>
+
+            <p><strong>Stacked Ring Benefits:</strong></p>
+            <ul>
+                <li>Plan multiple divisions in sequence</li>
+                <li>Staff can see all upcoming divisions for your ring</li>
+                <li>Competitor counts help with scheduling</li>
+                <li>Each stack can have different settings</li>
+                <li>Updates in real-time across all interfaces</li>
+            </ul>
+
+            <p><strong>Note:</strong> The main ring is "Stack 1" when stacked rings exist</p>
 
             <h4>Current Status Display</h4>
             <p>At the top of your screen, you'll see a gray box showing your current ring configuration:</p>
@@ -497,6 +536,51 @@
 
             <h3>Managing Active Tournaments</h3>
 
+            <h4>Tournament Chat</h4>
+            <p>Stay connected with your tournament team using the built-in chat feature:</p>
+
+            <p><strong>Accessing Chat:</strong></p>
+            <ul>
+                <li>Chat appears at the top of the staff page, below the active tournament section</li>
+                <li>Visible to all staff members viewing the same tournament</li>
+            </ul>
+
+            <p><strong>Using Chat:</strong></p>
+            <ol>
+                <li><strong>Set Your Display Name:</strong>
+                    <ul>
+                        <li>Enter your name in the "Your Name" field</li>
+                        <li>Name is saved and remembered for future messages</li>
+                        <li>Default is "Staff" if no name is set</li>
+                    </ul>
+                </li>
+                <li><strong>Sending Messages:</strong>
+                    <ul>
+                        <li>Type your message in the input field</li>
+                        <li>Press Enter or click "Send"</li>
+                        <li>Messages appear instantly for all staff members</li>
+                    </ul>
+                </li>
+                <li><strong>Viewing Messages:</strong>
+                    <ul>
+                        <li>Messages display in compact format: "Name: Message"</li>
+                        <li>Timestamp shown on the right</li>
+                        <li>Alternating row colors for easy reading</li>
+                        <li>Scroll up to view message history</li>
+                        <li>New messages appear at the bottom</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <p><strong>Chat Tips:</strong></p>
+            <ul>
+                <li>Use for quick coordination between staff members</li>
+                <li>Announce important updates or changes</li>
+                <li>Request assistance or resources</li>
+                <li>All messages are saved to the tournament database</li>
+                <li>Chat is tournament-specific (each tournament has its own chat)</li>
+            </ul>
+
             <h4>Editing Ring Count</h4>
             <p>Need to add or remove rings during an active tournament?</p>
             <ol>
@@ -554,7 +638,17 @@
                 <li>Current status badges (Open, RTTL Needed, Judges Needed, Stacked Ring)</li>
                 <li>Event type (color-coded)</li>
                 <li>Categories (Gender, Age, Rank, Division)</li>
+                <li><strong>Competitor Count</strong> - Number of competitors in the division</li>
                 <li>Special indicators (Special Abilities)</li>
+                <li><strong>Stacked Rings</strong> - Additional divisions queued for this ring
+                    <ul>
+                        <li>Each stacked ring shows as a separate card</li>
+                        <li>Labeled as "Ring X - Stack 2", "Ring X - Stack 3", etc.</li>
+                        <li>Blue "Stacked Ring" badge on all stacked divisions</li>
+                        <li>Shows individual settings for each stack</li>
+                        <li>All stacks share the parent ring's Current Event</li>
+                    </ul>
+                </li>
                 <li><strong>Ring Status Footer:</strong> Shows timing status:
                     <ul>
                         <li>"READY TO START" - Ring not started</li>
@@ -583,14 +677,27 @@
                 <li>Set ring status (Open, Judges Needed)</li>
                 <li>Select event type</li>
                 <li>Choose categories</li>
+                <li>Set competitor count</li>
+                <li>Add stacked rings for multiple divisions</li>
                 <li>Set special options</li>
             </ol>
+
+            <p><strong>Stacked Rings (Staff View):</strong></p>
+            <ul>
+                <li>Click "+ Add Stacked Ring" to queue additional divisions</li>
+                <li>Each stack can have different settings (division type, competitor count, age, gender, rank)</li>
+                <li>All stacks share the Current Event from the main ring</li>
+                <li>Delete individual stacks as needed</li>
+                <li>Changes sync in real-time to judge interfaces</li>
+            </ul>
 
             <p>This is useful for:</p>
             <ul>
                 <li>Pre-configuring rings before judges arrive</li>
+                <li>Planning multiple divisions in sequence</li>
                 <li>Fixing incorrect settings</li>
                 <li>Managing rings without assigned judges</li>
+                <li>Coordinating complex tournament schedules</li>
             </ul>
 
             <h3>Generating Tournament Reports</h3>
@@ -676,6 +783,9 @@
                 <ul>
                     <li>Monitor the "RTTL Needed" alert section first (highest priority)</li>
                     <li>Check "Judges Needed" alert section regularly</li>
+                    <li>Use chat to coordinate with other staff members</li>
+                    <li>Set competitor counts to help with scheduling</li>
+                    <li>Use stacked rings to plan multiple divisions in sequence</li>
                     <li>Generate reports periodically to track tournament progress</li>
                     <li>Pre-configure rings if you have time before judges arrive</li>
                     <li>Edit ring count if you need more or fewer rings</li>
@@ -693,6 +803,7 @@
                     <li>Start a tournament before judges are ready</li>
                     <li>Forget to end the tournament when complete</li>
                     <li>Restart a tournament without understanding it clears all ring timing</li>
+                    <li>Forget to update competitor counts as divisions change</li>
                 </ul>
             </div>
         </div>
@@ -901,6 +1012,45 @@
             <h3>"What's the difference between a session and a packet?"</h3>
             <p><strong>Answer:</strong></p>
             <p>They're the same thing! Each time you start and end a ring, you create one session/packet. The system tracks all of these separately for reporting purposes.</p>
+
+            <h3>"Chat messages aren't appearing"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Check your internet connection</li>
+                <li>Refresh the browser page</li>
+                <li>Make sure you're viewing the correct tournament</li>
+                <li>Chat is tournament-specific - each tournament has its own chat</li>
+                <li>Messages are stored in the database and persist across sessions</li>
+            </ol>
+
+            <h3>"Stacked rings aren't updating in real-time"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Check your internet connection</li>
+                <li>Refresh the browser page</li>
+                <li>Make sure WebSocket connection is active (check browser console)</li>
+                <li>Changes should appear within 1-2 seconds</li>
+                <li>If issues persist, try a different browser</li>
+            </ol>
+
+            <h3>"I can't add a stacked ring"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Make sure "Ring Open" is turned OFF</li>
+                <li>Ensure you have a valid event selected</li>
+                <li>Check that you're not at the maximum number of stacks</li>
+                <li>Refresh the page if the button doesn't respond</li>
+                <li>Check browser console for any error messages</li>
+            </ol>
+
+            <h3>"Competitor count isn't showing on staff dashboard"</h3>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Make sure you entered a number in the competitor count field</li>
+                <li>Refresh the staff dashboard</li>
+                <li>Check that the ring configuration was saved</li>
+                <li>Updates should appear in real-time via WebSocket</li>
+            </ol>
 
             <h3>"I forgot my password"</h3>
             <p><strong>Solution:</strong> Contact your tournament director or system administrator for login credentials.</p>
