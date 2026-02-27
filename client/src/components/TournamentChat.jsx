@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useWebSocket } from '../hooks/useWebSocket'
 
 const TournamentChat = ({ tournamentId, tournamentName }) => {
   const [messages, setMessages] = useState([])
@@ -10,38 +9,32 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
   const [isEditingName, setIsEditingName] = useState(false)
   const messagesEndRef = useRef(null)
 
-  useWebSocket((data) => {
-    if (data.type === 'chat_message' && data.data.tournament_id === tournamentId) {
-      setMessages(prev => {
-        // Check if message already exists to prevent duplicates
-        if (prev.some(msg => msg.id === data.data.id)) {
-          return prev
-        }
-        return [...prev, data.data]
-      })
-    }
-  })
-
+  // Poll for new messages every 500ms for faster updates
   useEffect(() => {
     if (tournamentId) {
       fetchMessages()
+      const interval = setInterval(fetchMessages, 500)
+      return () => clearInterval(interval)
     }
   }, [tournamentId])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   const fetchMessages = async () => {
     try {
       const res = await fetch(`/api/tournaments/${tournamentId}/chat`)
       if (res.ok) {
         const data = await res.json()
+        const isFirstLoad = messages.length === 0
         setMessages(data)
+        
+        // Scroll to bottom only on first load, within the chat container only
+        if (isFirstLoad && data.length > 0) {
+          setTimeout(() => {
+            const messagesContainer = messagesEndRef.current?.parentElement
+            if (messagesContainer) {
+              messagesContainer.scrollTop = messagesContainer.scrollHeight
+            }
+          }, 100)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch chat messages:', error)
@@ -65,6 +58,8 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
       
       if (res.ok) {
         setNewMessage('')
+        // Immediately fetch messages after sending to show it faster
+        fetchMessages()
       }
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -108,17 +103,17 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
         )}
       </div>
       
-      <div className="chat-messages">
+      <div className="chat-messages" style={{ height: '180px', maxHeight: '180px', overflowY: 'scroll' }}>
         {messages.length === 0 ? (
           <div className="chat-empty">No messages yet. Start the conversation!</div>
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className="chat-message">
-              <div className="chat-message-header">
-                <span className="chat-sender">{msg.sender_name}</span>
-                <span className="chat-time">{formatTime(msg.created_at)}</span>
+              <div className="chat-message-content">
+                <span className="chat-sender">{msg.sender_name}:</span>
+                <span className="chat-message-text">{msg.message}</span>
               </div>
-              <div className="chat-message-text">{msg.message}</div>
+              <span className="chat-time">{formatTime(msg.created_at)}</span>
             </div>
           ))
         )}

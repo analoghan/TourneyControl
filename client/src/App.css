@@ -1818,6 +1818,7 @@ body.login-body {
   border: 2px solid #dc2626;
   border-radius: 6px;
   padding: 0.75rem 1rem;
+  margin-top: 1rem;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
   animation: flash-alert 2s ease-in-out infinite;
@@ -2638,28 +2639,30 @@ body.login-body {
 /* Tournament Chat Styles */
 .tournament-chat {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 3px solid #3b82f6;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
   display: flex;
   flex-direction: column;
-  height: 500px;
   margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .chat-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #3b82f6;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  border-radius: 8px 8px 0 0;
+  background: #dbeafe;
+  flex-shrink: 0;
 }
 
 .chat-header h3 {
   margin: 0;
-  color: #2c3e50;
-  font-size: 1.2rem;
+  color: #1e40af;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .chat-name-display {
@@ -2667,11 +2670,11 @@ body.login-body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
-  color: #6c757d;
+  color: #1e40af;
 }
 
 .chat-name-display strong {
-  color: #2c3e50;
+  color: #1e40af;
 }
 
 .btn-edit-name {
@@ -2698,7 +2701,7 @@ body.login-body {
 
 .chat-name-edit input {
   padding: 0.4rem 0.6rem;
-  border: 1px solid #d1d5db;
+  border: 2px solid #3b82f6;
   border-radius: 4px;
   font-size: 0.9rem;
 }
@@ -2733,12 +2736,31 @@ body.login-body {
 }
 
 .chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
+  height: 180px;
+  max-height: 180px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  background: #f8fafc;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
 }
 
 .chat-empty {
@@ -2749,10 +2771,28 @@ body.login-body {
 }
 
 .chat-message {
-  background: #f3f4f6;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border-left: 3px solid #3b82f6;
+  padding: 0.35rem 0.75rem;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.chat-message:nth-child(odd) {
+  background: #ffffff;
+}
+
+.chat-message:nth-child(even) {
+  background: #f1f5f9;
+}
+
+.chat-message-content {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  min-width: 0;
 }
 
 .chat-message-header {
@@ -2764,51 +2804,61 @@ body.login-body {
 
 .chat-sender {
   font-weight: 700;
-  color: #2c3e50;
+  color: #1e40af;
   font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .chat-time {
   font-size: 0.75rem;
   color: #9ca3af;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.1rem;
 }
 
 .chat-message-text {
   color: #4b5563;
-  line-height: 1.5;
+  line-height: 1.4;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .chat-input-form {
   display: flex;
   gap: 0.5rem;
-  padding: 1rem;
-  border-top: 2px solid #e5e7eb;
-  background: #f8f9fa;
-  border-radius: 0 0 8px 8px;
+  padding: 0.75rem 1rem;
+  border-top: 2px solid #3b82f6;
+  background: #dbeafe;
+  flex-shrink: 0;
 }
 
 .chat-input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #3b82f6;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: border-color 0.2s;
+  background: white;
 }
 
 .chat-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .chat-send-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: #3b82f6;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -2825,7 +2875,8 @@ body.login-body {
 
 @media (max-width: 768px) {
   .tournament-chat {
-    height: 400px;
+    height: 300px;
+    max-height: 300px;
   }
   
   .chat-header {

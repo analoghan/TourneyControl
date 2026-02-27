@@ -811,6 +811,13 @@ const StaffInterface = () => {
             </div>
           </div>
 
+          {selectedTournament && (
+            <TournamentChat 
+              tournamentId={selectedTournament}
+              tournamentName={tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
+            />
+          )}
+
           {rings.filter(r => r.rttl_needed === 1).length > 0 && (
             <div className="rttl-needed-alert">
               <h4>🚨 RTTL Needed:</h4>
@@ -1067,13 +1074,6 @@ const StaffInterface = () => {
               )
             })}
           </div>
-
-          {selectedTournament && (
-            <TournamentChat 
-              tournamentId={selectedTournament}
-              tournamentName={tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
-            />
-          )}
         </>
       )}
     </div>
