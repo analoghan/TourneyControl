@@ -20,10 +20,6 @@
 3. Click your role and enter your password
 4. Your login will be remembered for 48 hours
 
-**Default Passwords:**
-- Judges: `ata`
-- Staff: `compete2win`
-
 ---
 
 ## Judge Guide
@@ -587,9 +583,7 @@ This is expected behavior:
 
 ### "I forgot my password"
 
-**Solution:** Contact your tournament director or system administrator. Default passwords are:
-- Judges: `ata`
-- Staff: `compete2win`
+**Solution:** Contact your tournament director or system administrator.
 
 ---
 
