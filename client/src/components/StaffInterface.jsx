@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
+import TournamentChat from './TournamentChat'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -1066,6 +1067,13 @@ const StaffInterface = () => {
               )
             })}
           </div>
+
+          {selectedTournament && (
+            <TournamentChat 
+              tournamentId={selectedTournament}
+              tournamentName={tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
+            />
+          )}
         </>
       )}
     </div>

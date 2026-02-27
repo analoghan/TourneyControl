@@ -74,7 +74,15 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE
     )`);
-    
+
+    db.run(`CREATE TABLE IF NOT EXISTS chat_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tournament_id INTEGER NOT NULL,
+      message TEXT NOT NULL,
+      sender_name TEXT DEFAULT 'Staff',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
+    )`);
     // Migration: Add ata_number column to judges table if it doesn't exist
     db.all(`PRAGMA table_info(judges)`, (err, columns) => {
       if (err) {

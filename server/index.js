@@ -562,6 +562,19 @@ app.put('/api/rings/:id', (req, res) => {
       db.run(query, values, (err) => {
         if (err) return res.status(500).json({ error: err.message });
         
+        // If current_event was updated, also update all stacked rings for this ring
+        if (current_event !== undefined) {
+          db.run(
+            'UPDATE stacked_rings SET current_event = ? WHERE ring_id = ?',
+            [current_event, req.params.id],
+            (err) => {
+              if (err) {
+                console.error('Error updating stacked rings current_event:', err);
+              }
+            }
+          );
+        }
+        
         db.get('SELECT * FROM rings WHERE id = ?', [req.params.id], (err, row) => {
           if (err) return res.status(500).json({ error: err.message });
           broadcast({ type: 'ring_update', data: row });
@@ -1080,6 +1093,46 @@ app.delete('/api/stacked-rings/:id', (req, res) => {
       );
     });
   });
+});
+
+// Chat endpoints
+
+// Get all chat messages for a tournament
+app.get('/api/tournaments/:tournamentId/chat', (req, res) => {
+  db.all(
+    'SELECT * FROM chat_messages WHERE tournament_id = ? ORDER BY created_at ASC',
+    [req.params.tournamentId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+// Post a new chat message
+app.post('/api/tournaments/:tournamentId/chat', (req, res) => {
+  const { message, sender_name } = req.body;
+  
+  if (!message || !message.trim()) {
+    return res.status(400).json({ error: 'Message cannot be empty' });
+  }
+  
+  db.run(
+    'INSERT INTO chat_messages (tournament_id, message, sender_name) VALUES (?, ?, ?)',
+    [req.params.tournamentId, message.trim(), sender_name || 'Staff'],
+    function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      db.get('SELECT * FROM chat_messages WHERE id = ?', [this.lastID], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Broadcast new message to all connected clients
+        broadcast({ type: 'chat_message', data: row });
+        
+        res.json(row);
+      });
+    }
+  );
 });
 
 const PORT = process.env.PORT || 3001;
