@@ -6,8 +6,8 @@ export const useWebSocket = (onMessage) => {
     const isDevelopment = import.meta.env.DEV
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.hostname
-    const port = isDevelopment ? '3001' : (window.location.port || '3001')
-    const wsUrl = `${protocol}//${host}:${port}`
+    const port = isDevelopment ? '3001' : window.location.port
+    const wsUrl = port ? `${protocol}//${host}:${port}` : `${protocol}//${host}`
     
     console.log('Connecting to WebSocket:', wsUrl)
     const ws = new WebSocket(wsUrl)

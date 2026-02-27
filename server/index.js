@@ -822,12 +822,6 @@ app.get('/api/tournaments/:id/report', (req, res) => {
   });
 });
 
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-}
-
 // Admin endpoint to clean up incomplete sessions
 app.post('/api/admin/cleanup-sessions', (req, res) => {
   // Find all sessions with start_time but no end_time
@@ -1134,6 +1128,13 @@ app.post('/api/tournaments/:tournamentId/chat', (req, res) => {
     }
   );
 });
+
+// Serve React app for all other routes in production (MUST BE LAST!)
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
