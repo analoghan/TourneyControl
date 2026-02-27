@@ -12,7 +12,13 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
 
   useWebSocket((data) => {
     if (data.type === 'chat_message' && data.data.tournament_id === tournamentId) {
-      setMessages(prev => [...prev, data.data])
+      setMessages(prev => {
+        // Check if message already exists to prevent duplicates
+        if (prev.some(msg => msg.id === data.data.id)) {
+          return prev
+        }
+        return [...prev, data.data]
+      })
     }
   })
 
