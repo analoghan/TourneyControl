@@ -24,13 +24,13 @@ Parameters:
   StaffPassword:
     Type: String
     NoEcho: true
-    Default: compete2win
+    Default: PASSWORS
     Description: Password for staff login
   
   JudgesPassword:
     Type: String
     NoEcho: true
-    Default: ata
+    Default: PASSWORD
     Description: Password for judges login
 
 Resources:
