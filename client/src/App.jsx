@@ -23,15 +23,15 @@ function NavBar() {
   
   const getTitle = () => {
     if (location.pathname === '/judges') {
-      return 'ATA Region 102 Tournament Control - Judges Dashboard'
+      return 'ATA Tourney Control - Judges Dashboard'
     } else if (location.pathname === '/staff') {
-      return 'ATA Region 102 Tournament Control - Staff Dashboard'
+      return 'ATA Tourney Control - Staff Dashboard'
     } else if (location.pathname === '/staff/judge-management') {
-      return 'ATA Region 102 Tournament Control - Judge Management'
+      return 'ATA Tourney Control - Judge Management'
     } else if (location.pathname.startsWith('/staff/ring/')) {
-      return 'ATA Region 102 Tournament Control - Ring Configuration'
+      return 'ATA Tourney Control - Ring Configuration'
     }
-    return 'ATA Region 102 Tournament Control'
+    return 'ATA Tourney Control'
   }
   
   const handleLogout = () => {

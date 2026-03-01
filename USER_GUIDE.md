@@ -1,4 +1,4 @@
-# ATA Region 102 Tournament Control - User Guide
+# ATA Tourney Control - User Guide
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -13,7 +13,7 @@
 
 ### Logging In
 
-1. Open the Tournament Control application in your web browser
+1. Open the ATA Tourney Control application in your web browser
 2. You'll see two login options:
    - **Judge Login** (⚖️) - For ring judges
    - **Tournament Staff Login** (🥋) - For tournament organizers
@@ -600,4 +600,4 @@ If you encounter issues not covered in this guide:
 
 **"To Compete Is To Win"**
 
-*ATA Region 102 Tournament Control System*
+*ATA Tourney Control System*

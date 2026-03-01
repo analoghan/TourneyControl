@@ -97,7 +97,7 @@ const LoginPage = () => {
   return (
     <div className="container">
       <div className="landing-page">
-        <h1>ATA Region 102 Tournament Control</h1>
+        <h1>ATA Tourney Control</h1>
         <p className="landing-subtitle">Select your role to continue</p>
         
         <div className="role-selection">
