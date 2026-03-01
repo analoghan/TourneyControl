@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const TournamentChat = ({ tournamentId, tournamentName }) => {
+const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) => {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [senderName, setSenderName] = useState(() => {
@@ -110,10 +110,13 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
   }
 
   const formatTime = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleTimeString('en-US', {
+    // SQLite stores timestamps as UTC strings without timezone info
+    // Append 'Z' to indicate UTC, then convert to tournament timezone
+    const utcDate = new Date(dateString + 'Z')
+    return utcDate.toLocaleTimeString('en-US', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: tournamentTimezone || 'America/New_York'
     })
   }
 

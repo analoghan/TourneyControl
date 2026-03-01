@@ -825,6 +825,7 @@ const StaffInterface = () => {
             <TournamentChat 
               tournamentId={selectedTournament}
               tournamentName={tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
+              tournamentTimezone={tournaments.find(t => t.id === selectedTournament)?.timezone || 'America/New_York'}
             />
           )}
 
