@@ -86,6 +86,12 @@ const StaffRingConfig = () => {
   const [selectedAgeBrackets, setSelectedAgeBrackets] = useState([])
   const [showStartModal, setShowStartModal] = useState(false)
   const [showEndModal, setShowEndModal] = useState(false)
+  const [judges, setJudges] = useState([])
+  const [ringJudges, setRingJudges] = useState({
+    'Center': null,
+    'Corner A': null,
+    'Corner B': null
+  })
 
   useWebSocket((data) => {
     if (data.type === 'ring_update' && data.data.id === parseInt(ringId)) {
@@ -108,6 +114,8 @@ const StaffRingConfig = () => {
   useEffect(() => {
     fetchRing()
     fetchStackedRings()
+    fetchJudges()
+    fetchRingJudges()
   }, [ringId])
 
   const fetchStackedRings = async () => {
@@ -119,6 +127,76 @@ const StaffRingConfig = () => {
       }
     } catch (error) {
       console.error('Failed to fetch stacked rings:', error)
+    }
+  }
+
+  const fetchJudges = async () => {
+    try {
+      const res = await fetch('/api/judges')
+      if (res.ok) {
+        const data = await res.json()
+        setJudges(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch judges:', error)
+    }
+  }
+
+  const fetchRingJudges = async () => {
+    try {
+      const res = await fetch(`/api/rings/${ringId}/judges`)
+      if (res.ok) {
+        const data = await res.json()
+        const judgeMap = {
+          'Center': null,
+          'Corner A': null,
+          'Corner B': null
+        }
+        data.forEach(assignment => {
+          judgeMap[assignment.position] = assignment
+        })
+        setRingJudges(judgeMap)
+      }
+    } catch (error) {
+      console.error('Failed to fetch ring judges:', error)
+    }
+  }
+
+  const assignJudge = async (position, judgeId) => {
+    if (!ring) return
+    
+    try {
+      // Remove existing assignment for this position
+      if (ringJudges[position]) {
+        await fetch(`/api/rings/${ringId}/judges/${position}`, {
+          method: 'DELETE'
+        })
+      }
+      
+      // Assign new judge if one was selected
+      if (judgeId) {
+        const res = await fetch(`/api/rings/${ringId}/judges`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            judge_id: parseInt(judgeId),
+            tournament_id: ring.tournament_id,
+            position
+          })
+        })
+        
+        if (!res.ok) {
+          const error = await res.json()
+          alert(`Failed to assign judge: ${error.error}`)
+          return
+        }
+      }
+      
+      // Refresh assignments
+      fetchRingJudges()
+    } catch (error) {
+      console.error('Failed to assign judge:', error)
+      alert('Failed to assign judge')
     }
   }
 
@@ -735,6 +813,76 @@ const StaffRingConfig = () => {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {!isOpen && (
+            <div style={{ 
+              background: '#fef3c7', 
+              border: '2px solid #f59e0b', 
+              borderRadius: '8px', 
+              padding: '1.5rem',
+              marginTop: '1rem'
+            }}>
+              <h3 style={{ 
+                margin: '0 0 1rem 0', 
+                color: '#000000', 
+                fontSize: '1.1rem',
+                fontWeight: '700'
+              }}>Judge Assignments</h3>
+              
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                <div className="category-selector">
+                  <label>Center Judge:</label>
+                  <select 
+                    value={ringJudges['Center']?.judge_id || ''}
+                    onChange={(e) => assignJudge('Center', e.target.value)}
+                    className="category-dropdown"
+                    disabled={tournamentEnded}
+                  >
+                    <option value="">-- Select Judge --</option>
+                    {judges.map(judge => (
+                      <option key={judge.id} value={judge.id}>
+                        {judge.first_name} {judge.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="category-selector">
+                  <label>Corner Judge A:</label>
+                  <select 
+                    value={ringJudges['Corner A']?.judge_id || ''}
+                    onChange={(e) => assignJudge('Corner A', e.target.value)}
+                    className="category-dropdown"
+                    disabled={tournamentEnded}
+                  >
+                    <option value="">-- Select Judge --</option>
+                    {judges.map(judge => (
+                      <option key={judge.id} value={judge.id}>
+                        {judge.first_name} {judge.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="category-selector">
+                  <label>Corner Judge B:</label>
+                  <select 
+                    value={ringJudges['Corner B']?.judge_id || ''}
+                    onChange={(e) => assignJudge('Corner B', e.target.value)}
+                    className="category-dropdown"
+                    disabled={tournamentEnded}
+                  >
+                    <option value="">-- Select Judge --</option>
+                    {judges.map(judge => (
+                      <option key={judge.id} value={judge.id}>
+                        {judge.first_name} {judge.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           )}
 

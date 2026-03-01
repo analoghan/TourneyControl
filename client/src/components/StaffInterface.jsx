@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import TournamentChat from './TournamentChat'
@@ -827,6 +827,18 @@ const StaffInterface = () => {
               tournamentName={tournaments.find(t => t.id === selectedTournament)?.name || 'Tournament'}
               tournamentTimezone={tournaments.find(t => t.id === selectedTournament)?.timezone || 'America/New_York'}
             />
+          )}
+
+          {selectedTournament && (
+            <div className="tournament-select" style={{ marginTop: '1.5rem' }}>
+              <label>Judge Tracker:</label>
+              <Link 
+                to={`/staff/judge-tracker/${selectedTournament}`}
+                className="nav-button"
+              >
+                View Judge Tracker
+              </Link>
+            </div>
           )}
 
           {rings.filter(r => r.rttl_needed === 1).length > 0 && (

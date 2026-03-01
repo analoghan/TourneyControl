@@ -5,6 +5,7 @@ import JudgesInterface from './components/JudgesInterface'
 import StaffInterface from './components/StaffInterface'
 import StaffRingConfig from './components/StaffRingConfig'
 import JudgeManagement from './components/JudgeManagement'
+import JudgeTracker from './components/JudgeTracker'
 import LoginPage from './components/LoginPage'
 import './App.css'
 
@@ -27,7 +28,9 @@ function NavBar() {
     } else if (location.pathname === '/staff') {
       return 'ATA Tourney Control - Staff Dashboard'
     } else if (location.pathname === '/staff/judge-management') {
-      return 'ATA Tourney Control - Judge Management'
+      return 'ATA Tourney Control - Judge Database'
+    } else if (location.pathname.startsWith('/staff/judge-tracker/')) {
+      return 'ATA Tourney Control - Judge Tracker'
     } else if (location.pathname.startsWith('/staff/ring/')) {
       return 'ATA Tourney Control - Ring Configuration'
     }
@@ -135,7 +138,7 @@ function NavBar() {
                 Switch to Judge
               </button>
               <Link to="/staff/judge-management" className="nav-button">
-                Judge Management
+                Judge Database
               </Link>
             </>
           )}
@@ -204,6 +207,7 @@ function AppContent() {
         <Route path="/staff" element={<StaffInterface />} />
         <Route path="/staff/ring/:ringId" element={<StaffRingConfig />} />
         <Route path="/staff/judge-management" element={<JudgeManagement />} />
+        <Route path="/staff/judge-tracker/:tournamentId" element={<JudgeTracker />} />
       </Routes>
     </div>
   )

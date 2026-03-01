@@ -31,6 +31,7 @@ const JudgeManagement = () => {
   const [ataNumber, setAtaNumber] = useState('')
   const [rank, setRank] = useState('1st Degree')
   const [age, setAge] = useState('')
+  const [gender, setGender] = useState('Male')
   const [judgingLevel, setJudgingLevel] = useState('N/A')
   const [competing, setCompeting] = useState(false)
   const [competingCreativeXMA, setCompetingCreativeXMA] = useState(false)
@@ -82,6 +83,7 @@ const JudgeManagement = () => {
     setAtaNumber('')
     setRank('1st Degree')
     setAge('')
+    setGender('Male')
     setJudgingLevel('N/A')
     setCompeting(false)
     setCompetingCreativeXMA(false)
@@ -102,6 +104,7 @@ const JudgeManagement = () => {
       ata_number: ataNumber.trim(),
       rank: rank.trim(),
       age: parseInt(age),
+      gender: gender,
       judging_level: judgingLevel.trim(),
       competing: competing ? 1 : 0,
       competing_creative_xma: competingCreativeXMA ? 1 : 0,
@@ -149,6 +152,7 @@ const JudgeManagement = () => {
     setAtaNumber(judge.ata_number || '')
     setRank(judge.rank)
     setAge(judge.age.toString())
+    setGender(judge.gender || 'Male')
     setJudgingLevel(judge.judging_level)
     setCompeting(judge.competing === 1)
     setCompetingCreativeXMA(judge.competing_creative_xma === 1)
@@ -174,7 +178,7 @@ const JudgeManagement = () => {
   return (
     <div className="container">
       <div className="judge-management-header">
-        <h2>Judge Management</h2>
+        <h2>Judge Database</h2>
       </div>
 
       <div className="judge-management-actions">
@@ -245,6 +249,13 @@ const JudgeManagement = () => {
                   max="120"
                   required
                 />
+              </div>
+              <div className="form-field">
+                <label>Gender:</label>
+                <select value={gender} onChange={(e) => setGender(e.target.value)}>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
               </div>
               <div className="form-field">
                 <label>Judging Level:</label>

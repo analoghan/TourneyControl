@@ -36,6 +36,7 @@ function initDatabase() {
       ata_number TEXT NOT NULL,
       rank TEXT NOT NULL,
       age INTEGER NOT NULL,
+      gender TEXT DEFAULT 'Male',
       judging_level TEXT NOT NULL,
       competing INTEGER DEFAULT 0,
       competing_creative_xma INTEGER DEFAULT 0,
@@ -83,6 +84,33 @@ function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS tournament_judges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tournament_id INTEGER NOT NULL,
+      judge_id INTEGER NOT NULL,
+      checked_in INTEGER DEFAULT 0,
+      check_in_time DATETIME,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+      FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE CASCADE,
+      UNIQUE(tournament_id, judge_id)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS ring_assignments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ring_id INTEGER NOT NULL,
+      judge_id INTEGER NOT NULL,
+      tournament_id INTEGER NOT NULL,
+      position TEXT NOT NULL,
+      assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE,
+      FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE CASCADE,
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+      UNIQUE(ring_id, position)
+    )`);
+
     // Migration: Add ata_number column to judges table if it doesn't exist
     db.all(`PRAGMA table_info(judges)`, (err, columns) => {
       if (err) {
@@ -356,6 +384,46 @@ function initDatabase() {
             console.error('Error adding timezone column:', err);
           } else {
             console.log('Successfully added timezone column to tournaments table');
+          }
+        });
+      }
+    });
+
+    // Migration: Add position column to ring_assignments table if it doesn't exist
+    db.all(`PRAGMA table_info(ring_assignments)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking ring_assignments table schema:', err);
+        return;
+      }
+      
+      const hasPositionColumn = columns.some(col => col.name === 'position');
+      
+      if (!hasPositionColumn) {
+        db.run(`ALTER TABLE ring_assignments ADD COLUMN position TEXT NOT NULL DEFAULT 'Center'`, (err) => {
+          if (err) {
+            console.error('Error adding position column:', err);
+          } else {
+            console.log('Successfully added position column to ring_assignments table');
+          }
+        });
+      }
+    });
+
+    // Migration: Add gender column to judges table if it doesn't exist
+    db.all(`PRAGMA table_info(judges)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking judges table schema:', err);
+        return;
+      }
+      
+      const hasGenderColumn = columns.some(col => col.name === 'gender');
+      
+      if (!hasGenderColumn) {
+        db.run(`ALTER TABLE judges ADD COLUMN gender TEXT DEFAULT 'Male'`, (err) => {
+          if (err) {
+            console.error('Error adding gender column:', err);
+          } else {
+            console.log('Successfully added gender column to judges table');
           }
         });
       }
