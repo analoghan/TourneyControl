@@ -113,11 +113,27 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
     // SQLite stores timestamps as UTC strings without timezone info
     // Append 'Z' to indicate UTC, then convert to tournament timezone
     const utcDate = new Date(dateString + 'Z')
-    return utcDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
+    
+    // Get timezone abbreviation
+    const timezoneMap = {
+      'America/New_York': 'ET',
+      'America/Chicago': 'CT',
+      'America/Denver': 'MT',
+      'America/Los_Angeles': 'PT'
+    }
+    const tzAbbr = timezoneMap[tournamentTimezone] || 'ET'
+    
+    // Format: Sat, Feb 28, 3:35 PM ET
+    const formatted = utcDate.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
       minute: '2-digit',
       timeZone: tournamentTimezone || 'America/New_York'
     })
+    
+    return `${formatted} ${tzAbbr}`
   }
 
   return (
