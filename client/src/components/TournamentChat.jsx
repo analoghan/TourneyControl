@@ -8,6 +8,9 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
   })
   const [isEditingName, setIsEditingName] = useState(false)
   const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
+  const wasAtBottomRef = useRef(true) // Track if user was at bottom before update
+  const isFirstLoadRef = useRef(true) // Track if this is the first load
 
   // Poll for new messages every 500ms for faster updates
   useEffect(() => {
@@ -18,22 +21,53 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
     }
   }, [tournamentId])
 
+  // Check if user is at the bottom of the chat
+  const isAtBottom = () => {
+    const container = messagesContainerRef.current
+    if (!container) return true
+    
+    const threshold = 30 // pixels from bottom
+    const position = container.scrollTop + container.clientHeight
+    const bottom = container.scrollHeight
+    
+    return bottom - position < threshold
+  }
+
+  // Handle scroll events to track if user is at bottom
+  const handleScroll = () => {
+    const atBottom = isAtBottom()
+    wasAtBottomRef.current = atBottom
+  }
+
+  const scrollToBottom = () => {
+    const container = messagesContainerRef.current
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
+  }
+
   const fetchMessages = async () => {
     try {
+      // Check position BEFORE fetching
+      const shouldAutoScroll = isFirstLoadRef.current || wasAtBottomRef.current
+      
       const res = await fetch(`/api/tournaments/${tournamentId}/chat`)
       if (res.ok) {
         const data = await res.json()
-        const isFirstLoad = messages.length === 0
-        setMessages(data)
         
-        // Scroll to bottom only on first load, within the chat container only
-        if (isFirstLoad && data.length > 0) {
-          setTimeout(() => {
-            const messagesContainer = messagesEndRef.current?.parentElement
-            if (messagesContainer) {
-              messagesContainer.scrollTop = messagesContainer.scrollHeight
-            }
-          }, 100)
+        // Only update if messages actually changed
+        if (JSON.stringify(data) !== JSON.stringify(messages)) {
+          setMessages(data)
+          
+          // Mark that we've loaded at least once
+          if (isFirstLoadRef.current) {
+            isFirstLoadRef.current = false
+          }
+          
+          // Only scroll if we should
+          if (shouldAutoScroll) {
+            setTimeout(scrollToBottom, 50)
+          }
         }
       }
     } catch (error) {
@@ -59,7 +93,11 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
       if (res.ok) {
         setNewMessage('')
         // Immediately fetch messages after sending to show it faster
-        fetchMessages()
+        // Force scroll to bottom after sending
+        setTimeout(() => {
+          fetchMessages()
+          setTimeout(scrollToBottom, 100)
+        }, 50)
       }
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -103,7 +141,12 @@ const TournamentChat = ({ tournamentId, tournamentName }) => {
         )}
       </div>
       
-      <div className="chat-messages" style={{ height: '180px', maxHeight: '180px', overflowY: 'scroll' }}>
+      <div 
+        ref={messagesContainerRef}
+        className="chat-messages" 
+        style={{ height: '180px', maxHeight: '180px', overflowY: 'scroll' }}
+        onScroll={handleScroll}
+      >
         {messages.length === 0 ? (
           <div className="chat-empty">No messages yet. Start the conversation!</div>
         ) : (
