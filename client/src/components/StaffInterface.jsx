@@ -88,6 +88,7 @@ const StaffInterface = () => {
   const [stackedRingsMap, setStackedRingsMap] = useState({}) // Map of ringId -> stacked rings array
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
+  const [ringSortOrder, setRingSortOrder] = useState('ring') // 'ring' or 'event'
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(24)
   const [timezone, setTimezone] = useState('America/New_York')
@@ -898,8 +899,47 @@ const StaffInterface = () => {
             </div>
           )}
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <label style={{ fontWeight: '600', color: '#2c3e50' }}>Sort by:</label>
+            <button
+              className={`status-toggle-btn ${ringSortOrder === 'ring' ? 'status-toggle-active' : ''}`}
+              onClick={() => setRingSortOrder('ring')}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+            >
+              Ring Order
+            </button>
+            <button
+              className={`status-toggle-btn ${ringSortOrder === 'event' ? 'status-toggle-active' : ''}`}
+              onClick={() => setRingSortOrder('event')}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+            >
+              Current Event
+            </button>
+          </div>
+
           <div className="rings-grid">
-            {rings.flatMap(ring => {
+            {[...rings].sort((a, b) => {
+              if (ringSortOrder === 'event') {
+                const eventOrder = {
+                  'Forms': 1,
+                  'Weapons': 2,
+                  'One-Step Sparring': 3,
+                  'Combat Sparring': 4,
+                  'Traditional Sparring': 5,
+                  'Creative Forms': 6,
+                  'Creative Weapons': 7,
+                  'XMA Forms': 8,
+                  'XMA Weapons': 9,
+                  'Team Sparring - Combat': 10,
+                  'Team Sparring - Traditional': 11
+                }
+                const orderA = a.is_open ? 999 : (eventOrder[a.current_event] || 998)
+                const orderB = b.is_open ? 999 : (eventOrder[b.current_event] || 998)
+                if (orderA !== orderB) return orderA - orderB
+                return a.ring_number - b.ring_number
+              }
+              return a.ring_number - b.ring_number
+            }).flatMap(ring => {
               const stackedRings = stackedRingsMap[ring.id] || []
               
               // If there are stacked rings, show main ring as Stack 1

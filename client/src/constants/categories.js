@@ -1,6 +1,7 @@
 export const EVENTS = [
   'Forms',
   'Weapons',
+  'One-Step Sparring',
   'Combat Sparring',
   'Traditional Sparring',
   'Creative Forms',
