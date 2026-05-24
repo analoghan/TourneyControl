@@ -509,6 +509,7 @@ const StaffInterface = () => {
       case 'Judges Needed!': return 'event-judges-needed'
       case 'Forms': return 'event-forms'
       case 'Weapons': return 'event-weapons'
+      case 'One-Step Sparring': return 'event-one-step-sparring'
       case 'Combat Sparring': return 'event-combat-sparring'
       case 'Traditional Sparring': return 'event-traditional-sparring'
       case 'Creative Forms': return 'event-creative-forms'
