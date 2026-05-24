@@ -105,8 +105,7 @@ const LoginPage = () => {
             className="role-button"
             onClick={() => handleRoleSelect('judge')}
           >
-            <div className="role-icon">⚖️</div>
-            <div className="role-title">Judge Login</div>
+            <img src="/JudgeLoginImage.png" alt="Judge Login" style={{ maxWidth: '100%', width: '200px', marginBottom: '0.5rem' }} />
             <div className="role-description">Access ring controls and event selection</div>
           </button>
           
@@ -114,8 +113,7 @@ const LoginPage = () => {
             className="role-button"
             onClick={() => handleRoleSelect('staff')}
           >
-            <div className="role-icon">🥋</div>
-            <div className="role-title">Tournament Staff Login</div>
+            <img src="/StaffLoginImage.png" alt="Tournament Staff Login" style={{ maxWidth: '100%', width: '200px', marginBottom: '0.5rem' }} />
             <div className="role-description">Manage tournaments and monitor rings</div>
           </button>
         </div>
