@@ -79,19 +79,19 @@ app.get('/api/tournaments', (req, res) => {
   });
 });
 
+app.get('/api/tournaments/active', (req, res) => {
+  db.all('SELECT * FROM tournaments WHERE status = ? ORDER BY created_at DESC', ['active'], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 app.get('/api/tournaments/:id', (req, res) => {
   const { id } = req.params;
   db.get('SELECT * FROM tournaments WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ error: 'Tournament not found' });
     res.json(row);
-  });
-});
-
-app.get('/api/tournaments/active', (req, res) => {
-  db.all('SELECT * FROM tournaments WHERE status = ? ORDER BY created_at DESC', ['active'], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
   });
 });
 

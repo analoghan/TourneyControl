@@ -97,7 +97,7 @@ const LoginPage = () => {
   return (
     <div className="container">
       <div className="landing-page">
-        <img src="/TourneyControlLogo.png" alt="ATA Tourney Control" style={{ maxWidth: '400px', width: '100%', marginBottom: '1rem' }} />
+        <img src="/TourneyControlLogo.png" alt="ATA Tourney Control" style={{ maxWidth: '600px', width: '100%', marginBottom: '1rem' }} />
         <p className="landing-subtitle">Select your role to continue</p>
         
         <div className="role-selection">
