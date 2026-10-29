@@ -7,6 +7,7 @@ import StaffRingConfig from './components/StaffRingConfig'
 import JudgeManagement from './components/JudgeManagement'
 import JudgeTracker from './components/JudgeTracker'
 import LoginPage from './components/LoginPage'
+import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
 function NavBar() {
@@ -201,6 +202,8 @@ function AppContent() {
   return (
     <div className={`app ${isLoginPage ? 'login-page-container' : ''}`}>
       <NavBar />
+      {/* Keyed by path so navigating to another screen clears a crash */}
+      <ErrorBoundary key={location.pathname}>
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/judges" element={<JudgesInterface />} />
@@ -209,6 +212,7 @@ function AppContent() {
         <Route path="/staff/judge-management" element={<JudgeManagement />} />
         <Route path="/staff/judge-tracker/:tournamentId" element={<JudgeTracker />} />
       </Routes>
+      </ErrorBoundary>
     </div>
   )
 }

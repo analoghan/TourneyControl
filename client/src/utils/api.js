@@ -41,3 +41,13 @@ export const apiFetch = async (url, options = {}) => {
   }
   return response
 }
+
+// GET JSON data, throwing with the server's message on failure so callers never store an error body as data
+export const apiGetJson = async (url) => {
+  const response = await apiFetch(url)
+  const data = await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new Error(data?.error || `Request failed (${response.status})`)
+  }
+  return data
+}
