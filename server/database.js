@@ -434,6 +434,38 @@ function initDatabase() {
       }
     });
 
+    // Migration: Add division detail columns to ring_sessions so each packet records what ran
+    const sessionDetailColumns = [
+      ['event', 'TEXT'],
+      ['gender', 'TEXT'],
+      ['age_brackets', 'TEXT'],
+      ['rank', 'TEXT'],
+      ['color_belts', 'TEXT'],
+      ['black_belts', 'TEXT'],
+      ['division', 'TEXT'],
+      ['division_type', 'TEXT'],
+      ['competitor_count', 'INTEGER'],
+      ['special_abilities', 'TEXT']
+    ];
+    db.all(`PRAGMA table_info(ring_sessions)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking ring_sessions table schema:', err);
+        return;
+      }
+
+      sessionDetailColumns
+        .filter(([name]) => !columns.some(col => col.name === name))
+        .forEach(([name, type]) => {
+          db.run(`ALTER TABLE ring_sessions ADD COLUMN ${name} ${type}`, (err) => {
+            if (err) {
+              console.error(`Error adding ${name} column to ring_sessions:`, err);
+            } else {
+              console.log(`Successfully added ${name} column to ring_sessions table`);
+            }
+          });
+        });
+    });
+
     // Cleanup: remove rows left behind by deletes made before foreign keys were enforced.
     // Orphaned rings go first so their children cascade with them.
     const orphanCleanups = [

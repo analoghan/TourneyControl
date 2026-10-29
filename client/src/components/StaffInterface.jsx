@@ -343,8 +343,15 @@ const StaffInterface = () => {
         }).replace(',', '')
       }
       
+      // Quote a CSV cell if it contains a comma, quote or newline
+      const csvCell = (value) => {
+        if (value === null || value === undefined) return ''
+        const text = String(value)
+        return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+      }
+
       let csv = 'Tournament Summary Report\n\n'
-      csv += `Tournament Name:,${data.tournament.name}\n`
+      csv += `Tournament Name:,${csvCell(data.tournament.name)}\n`
       csv += `Status:,${data.tournament.status}\n`
       csv += `Total Ring Numbers:,${data.tournament.total_rings}\n`
       csv += `Total Completed Rings:,${data.tournament.completed_sessions}\n`
@@ -392,7 +399,69 @@ const StaffInterface = () => {
         
         csv += row + '\n'
       })
-      
+
+      // Packet details: one row per packet with the division that ran
+      const allSessions = data.rings.flatMap(ring =>
+        ring.sessions.map(session => ({ ...session, ring_number: ring.ring_number }))
+      )
+      const minutesPerCompetitor = (session) =>
+        session.run_time_minutes !== null && session.competitor_count > 0
+          ? (session.run_time_minutes / session.competitor_count).toFixed(1)
+          : ''
+
+      csv += '\nPacket Details\n'
+      csv += 'Ring Number,Packet,Event,Division,Gender,Ages,Rank,Belts,Special Abilities,Competitors,Start Time,End Time,Run Time (minutes),Minutes per Competitor\n'
+      allSessions.forEach(session => {
+        const isTeam = session.event?.startsWith('Team Sparring')
+        csv += [
+          session.ring_number,
+          session.session_number,
+          session.event,
+          // Team sparring uses team divisions (Bantam, Rookie, ...); other events use Champion/Recreational
+          isTeam ? session.division : session.division_type,
+          isTeam ? '' : session.gender,
+          isTeam ? '' : session.age_brackets.join(', '),
+          isTeam ? '' : session.rank,
+          isTeam ? '' : session.belts.join(', '),
+          session.special_abilities,
+          session.competitor_count,
+          formatTimestamp(session.start_time),
+          formatTimestamp(session.end_time),
+          session.run_time_minutes ?? 'N/A',
+          minutesPerCompetitor(session)
+        ].map(csvCell).join(',') + '\n'
+      })
+
+      // Averages by event, from completed packets with division details
+      const byEvent = {}
+      allSessions
+        .filter(s => s.event && s.run_time_minutes !== null)
+        .forEach(s => {
+          const stats = byEvent[s.event] ||= { packets: 0, minutes: 0, competitors: 0 }
+          stats.packets += 1
+          stats.minutes += s.run_time_minutes
+          stats.competitors += s.competitor_count || 0
+        })
+
+      csv += '\nAverages by Event\n'
+      csv += 'Event,Packets,Competitors,Average Run Time (minutes),Average Minutes per Competitor\n'
+      const eventNames = Object.keys(byEvent).sort((a, b) =>
+        getEventSortRank({ current_event: a }) - getEventSortRank({ current_event: b })
+      )
+      eventNames.forEach(event => {
+        const { packets, minutes, competitors } = byEvent[event]
+        csv += [
+          event,
+          packets,
+          competitors,
+          (minutes / packets).toFixed(1),
+          competitors > 0 ? (minutes / competitors).toFixed(1) : ''
+        ].map(csvCell).join(',') + '\n'
+      })
+      if (eventNames.length === 0) {
+        csv += 'No completed packets with division details yet\n'
+      }
+
       // Create download
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
