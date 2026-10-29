@@ -485,6 +485,26 @@ function initDatabase() {
         });
     });
 
+    // Judges are returned to the pool when a tournament is closed out; clear any left in tournaments ended before that,
+    // then enforce one ring per judge (keeping each judge's newest assignment if older data has more than one)
+    db.run(`DELETE FROM ring_assignments WHERE tournament_id IN (SELECT id FROM tournaments WHERE status = 'ended')`, function(err) {
+      if (err) {
+        console.error('Error clearing ring assignments for ended tournaments:', err);
+      } else if (this.changes > 0) {
+        console.log(`Returned ${this.changes} judges from ended tournaments to the pool`);
+      }
+    });
+    db.run(`DELETE FROM ring_assignments WHERE id NOT IN (SELECT MAX(id) FROM ring_assignments GROUP BY judge_id)`, function(err) {
+      if (err) {
+        console.error('Error removing duplicate judge ring assignments:', err);
+      } else if (this.changes > 0) {
+        console.log(`Removed ${this.changes} duplicate judge ring assignments`);
+      }
+    });
+    db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_ring_assignments_judge ON ring_assignments(judge_id)', (err) => {
+      if (err) console.error('Error creating one-ring-per-judge index:', err);
+    });
+
     // Cleanup: remove rows left behind by deletes made before foreign keys were enforced.
     // Orphaned rings go first so their children cascade with them.
     const orphanCleanups = [

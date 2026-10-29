@@ -105,6 +105,10 @@ const StaffRingConfig = () => {
       setStackedRings(prev => prev.map(sr => 
         sr.id === data.data.id ? data.data : sr
       ))
+    } else if (data.type === 'ring_assignment_update') {
+      // Judges moved somewhere (here, another ring, or back to the pool); refresh who's available
+      fetchRingJudges()
+      fetchJudges()
     } else if (data.type === 'tournament_ended') {
       if (ring && data.data.tournament_id === ring.tournament_id) {
         setTournamentEnded(true)
@@ -116,6 +120,7 @@ const StaffRingConfig = () => {
     onReconnect: () => {
       fetchRing()
       fetchStackedRings()
+      fetchJudges()
       fetchRingJudges()
     }
   })
@@ -175,39 +180,42 @@ const StaffRingConfig = () => {
     if (!ring) return
     
     try {
-      // Remove existing assignment for this position
-      if (ringJudges[position]) {
-        await apiFetch(`/api/rings/${ringId}/judges/${position}`, {
-          method: 'DELETE'
-        })
-      }
-      
-      // Assign new judge if one was selected
-      if (judgeId) {
-        const res = await apiFetch(`/api/rings/${ringId}/judges`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            judge_id: parseInt(judgeId),
-            tournament_id: ring.tournament_id,
-            position
+      // The server replaces whoever holds the position, so only clearing needs a separate call
+      const res = judgeId
+        ? await apiFetch(`/api/rings/${ringId}/judges`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ judge_id: parseInt(judgeId), position })
           })
-        })
-        
-        if (!res.ok) {
-          const error = await res.json()
-          alert(`Failed to assign judge: ${error.error}`)
-          return
-        }
-      }
+        : await apiFetch(`/api/rings/${ringId}/judges/${position}`, { method: 'DELETE' })
       
-      // Refresh assignments
-      fetchRingJudges()
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}))
+        alert(`Failed to assign judge: ${error.error || res.statusText}`)
+      }
     } catch (error) {
       console.error('Failed to assign judge:', error)
       alert('Failed to assign judge')
     }
+    
+    // Refresh either way so the dropdowns match the server
+    fetchRingJudges()
+    fetchJudges()
   }
+
+  // Judges in another ring can't be picked; judges elsewhere in this ring can (they move positions)
+  const renderJudgeOptions = () => judges.map(judge => {
+    const name = `${judge.first_name} ${judge.last_name}`
+    if (!judge.assigned_ring_id) {
+      return <option key={judge.id} value={judge.id}>{name}</option>
+    }
+    const inThisRing = judge.assigned_ring_id === parseInt(ringId)
+    return (
+      <option key={judge.id} value={judge.id} disabled={!inThisRing}>
+        {name} — {inThisRing ? judge.assigned_position : `Ring ${judge.assigned_ring_number}`}
+      </option>
+    )
+  })
 
   const loadBeltSelections = (ringData) => {
     // Load color belts
@@ -851,11 +859,7 @@ const StaffRingConfig = () => {
                     disabled={tournamentEnded}
                   >
                     <option value="">-- Select Judge --</option>
-                    {judges.map(judge => (
-                      <option key={judge.id} value={judge.id}>
-                        {judge.first_name} {judge.last_name}
-                      </option>
-                    ))}
+                    {renderJudgeOptions()}
                   </select>
                 </div>
 
@@ -868,11 +872,7 @@ const StaffRingConfig = () => {
                     disabled={tournamentEnded}
                   >
                     <option value="">-- Select Judge --</option>
-                    {judges.map(judge => (
-                      <option key={judge.id} value={judge.id}>
-                        {judge.first_name} {judge.last_name}
-                      </option>
-                    ))}
+                    {renderJudgeOptions()}
                   </select>
                 </div>
 
@@ -885,11 +885,7 @@ const StaffRingConfig = () => {
                     disabled={tournamentEnded}
                   >
                     <option value="">-- Select Judge --</option>
-                    {judges.map(judge => (
-                      <option key={judge.id} value={judge.id}>
-                        {judge.first_name} {judge.last_name}
-                      </option>
-                    ))}
+                    {renderJudgeOptions()}
                   </select>
                 </div>
               </div>

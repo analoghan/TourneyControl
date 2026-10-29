@@ -642,9 +642,9 @@
                 <li>Special indicators (Special Abilities)</li>
                 <li><strong>Stacked Rings</strong> - Additional divisions queued for this ring
                     <ul>
-                        <li>Each stacked ring shows as a separate card</li>
-                        <li>Labeled as "Ring X - Stack 2", "Ring X - Stack 3", etc.</li>
-                        <li>Blue "Stacked Ring" badge on all stacked divisions</li>
+                        <li>How they appear is set per tournament with the <strong>Stacked Rings</strong> option (when creating a tournament, or on its card in Tournament Setup); it can be changed at any time</li>
+                        <li><strong>Multiple Ring Cards for Stacked Rings</strong> (default): each stack shows as a separate blue card labeled "Ring X - Stack 2", "Ring X - Stack 3", etc., with a "Stacked Ring" badge</li>
+                        <li><strong>Single Ring Card for Stacked Rings</strong>: one compact card per ring with an "N Stacked Rings" badge, listing each stack's settings in its own section; the ring's status and alerts appear once</li>
                         <li>Shows individual settings for each stack</li>
                         <li>All stacks share the parent ring's Current Event</li>
                     </ul>
@@ -665,7 +665,7 @@
                 <li><strong>Orange Background:</strong> Team Sparring event</li>
                 <li><strong>Dark Red Flashing:</strong> RTTL Needed! (highest priority)</li>
                 <li><strong>Red Flashing:</strong> Judges Needed! (urgent)</li>
-                <li><strong>Blue Background:</strong> Stacked Ring</li>
+                <li><strong>Blue Background:</strong> Stacked Ring (Multiple Ring Cards format)</li>
                 <li><strong>White Background:</strong> Standard event</li>
             </ul>
 
@@ -691,6 +691,16 @@
                 <li>Changes sync in real-time to judge interfaces</li>
             </ul>
 
+            <p><strong>Judge Assignments (Staff View):</strong></p>
+            <ul>
+                <li>When the ring isn't Open, pick a Center Judge, Corner Judge A and Corner Judge B</li>
+                <li>A judge can be in only one ring at a time, across all tournaments. Judges already in another ring are greyed out in the list with their ring number</li>
+                <li>Picking a judge who is already in this ring moves them to the new position</li>
+                <li>When a ring is completed (End Ring), its judges go back to the pool of available judges, just as the event settings reset</li>
+                <li>When a tournament is ended, all of its judges go back to the pool</li>
+                <li>The <strong>Status</strong> column in the Judge Database shows each judge as <strong>Available</strong> or their current ring and position (hover to see the tournament), and updates live</li>
+            </ul>
+
             <p>This is useful for:</p>
             <ul>
                 <li>Pre-configuring rings before judges arrive</li>
@@ -714,7 +724,11 @@
                 <li>Columns for each packet: Start Time, End Time, Run Time (minutes)</li>
                 <li>All times in tournament timezone</li>
                 <li>Total packets completed per ring</li>
+                <li><strong>Packet Details</strong>: one row per packet showing what ran — event, division, gender, ages, rank, belts, special abilities and competitor count — plus run time and minutes per competitor</li>
+                <li><strong>Averages by Event</strong>: packets, competitors, average run time and average minutes per competitor for each event</li>
             </ul>
+
+            <p>Division details are recorded when the ring ends, so corrections made during the packet (such as an updated competitor count) are included. Keep competitor counts accurate for the most useful averages. Packets recorded before this was added show blank details.</p>
 
             <p><strong>Using the Report:</strong></p>
             <ul>
