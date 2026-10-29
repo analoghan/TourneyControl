@@ -1,20 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { apiFetch, apiGetJson } from '../utils/api'
-
-const RANK_OPTIONS = [
-  '1st Degree',
-  '2nd Degree',
-  '3rd Degree',
-  '4th Degree',
-  '5th Degree',
-  '6th Degree',
-  '7th Degree',
-  '8th Degree',
-  '9th Degree'
-]
-
-const JUDGING_LEVEL_OPTIONS = ['N/A', 'Level 1', 'Level 2', 'Level 3']
+import { JUDGE_RANKS, JUDGING_LEVELS } from '../constants/categories'
 
 const JudgeManagement = () => {
   useAuth('staff') // Check authentication for staff only
@@ -244,7 +231,7 @@ const JudgeManagement = () => {
               <div className="form-field">
                 <label>Rank:</label>
                 <select value={rank} onChange={(e) => setRank(e.target.value)}>
-                  {RANK_OPTIONS.map(r => (
+                  {JUDGE_RANKS.map(r => (
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
@@ -270,7 +257,7 @@ const JudgeManagement = () => {
               <div className="form-field">
                 <label>Judging Level:</label>
                 <select value={judgingLevel} onChange={(e) => setJudgingLevel(e.target.value)}>
-                  {JUDGING_LEVEL_OPTIONS.map(l => (
+                  {JUDGING_LEVELS.map(l => (
                     <option key={l} value={l}>{l}</option>
                   ))}
                 </select>

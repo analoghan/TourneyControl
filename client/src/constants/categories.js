@@ -51,3 +51,18 @@ export const DIVISIONS = [
   'Legends',
   'Executive'
 ]
+
+// Judge ranks and judging levels, lowest first (order is used for "and above" filters)
+export const JUDGE_RANKS = [
+  '1st Degree',
+  '2nd Degree',
+  '3rd Degree',
+  '4th Degree',
+  '5th Degree',
+  '6th Degree',
+  '7th Degree',
+  '8th Degree',
+  '9th Degree'
+]
+
+export const JUDGING_LEVELS = ['N/A', 'Level 1', 'Level 2', 'Level 3']

@@ -315,6 +315,7 @@ When you click a ring card, you can configure it just like judges do:
 **Judge Tracker:**
 - Open it from the staff dashboard for the selected tournament
 - **Judges Checked In to Tournament** (top): everyone present, with check-in time and ring assignment (**Available** or ring and position), plus totals for checked in, assigned and available
+- **Filter the checked-in judges** to find the right person quickly: search by name or ATA number, show **All**, **Available** or **Assigned** judges, and set a minimum **Rank** (e.g. "4th Degree+"), a minimum **Judging Level** (e.g. "Level 2+"; N/A counts as below Level 1) and an **Age** range. Filters combine, so "Available" + "4th Degree+" lists free judges of rank 4 and up. **Clear filters** resets them
 - **Judge Database** (bottom): every judge in the database. Search by name or ATA number, then click **Check In** when a judge arrives
 - **Check Out** removes a judge from the tournament and from any ring they're assigned to there
 - Both tables update live as judges are checked in, assigned, or returned to the pool
