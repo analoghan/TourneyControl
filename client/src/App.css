@@ -2976,3 +2976,25 @@ body.login-body {
   padding: 0.25rem 0.5rem;
   font-size: 0.7rem;
 }
+
+/* Judge Database: available or assigned ring */
+.judge-status {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.judge-status-available {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #16a34a;
+}
+
+.judge-status-assigned {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #3b82f6;
+}

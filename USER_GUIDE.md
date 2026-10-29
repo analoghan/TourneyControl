@@ -303,6 +303,14 @@ When you click a ring card, you can configure it just like judges do:
 - Delete individual stacks as needed
 - Changes sync in real-time to judge interfaces
 
+**Judge Assignments (Staff View):**
+- When the ring isn't Open, pick a Center Judge, Corner Judge A and Corner Judge B
+- A judge can be in only one ring at a time, across all tournaments. Judges already in another ring are greyed out in the list with their ring number
+- Picking a judge who is already in this ring moves them to the new position
+- When a ring is completed (End Ring), its judges go back to the pool of available judges, just as the event settings reset
+- When a tournament is ended, all of its judges go back to the pool
+- The **Status** column in the Judge Database shows each judge as **Available** or their current ring and position (hover to see the tournament), and updates live
+
 This is useful for:
 - Pre-configuring rings before judges arrive
 - Planning multiple divisions in sequence
