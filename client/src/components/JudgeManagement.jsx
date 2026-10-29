@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { useWebSocket } from '../hooks/useWebSocket'
 import { apiFetch, apiGetJson } from '../utils/api'
 
 const RANK_OPTIONS = [
@@ -44,15 +43,6 @@ const JudgeManagement = () => {
   useEffect(() => {
     fetchJudges()
   }, [])
-
-  // Keep each judge's ring status current as rings complete and tournaments close
-  useWebSocket((data) => {
-    if (data.type === 'ring_assignment_update') {
-      fetchJudges()
-    }
-  }, {
-    onReconnect: () => fetchJudges()
-  })
 
   const fetchJudges = async () => {
     let data
@@ -356,9 +346,6 @@ const JudgeManagement = () => {
               <th onClick={() => handleSort('judging_level')} style={{ cursor: 'pointer' }}>
                 Judging Level {sortField === 'judging_level' && (sortDirection === 'asc' ? '▲' : '▼')}
               </th>
-              <th onClick={() => handleSort('assigned_ring_number')} style={{ cursor: 'pointer' }}>
-                Status {sortField === 'assigned_ring_number' && (sortDirection === 'asc' ? '▲' : '▼')}
-              </th>
               <th>Competing</th>
               <th>Creative/XMA</th>
               <th>Teams</th>
@@ -375,15 +362,6 @@ const JudgeManagement = () => {
                 <td>{judge.rank}</td>
                 <td>{judge.age}</td>
                 <td>{judge.judging_level}</td>
-                <td>
-                  {judge.assigned_ring_id ? (
-                    <span className="judge-status judge-status-assigned" title={judge.assigned_tournament_name}>
-                      Ring {judge.assigned_ring_number} – {judge.assigned_position}
-                    </span>
-                  ) : (
-                    <span className="judge-status judge-status-available">Available</span>
-                  )}
-                </td>
                 <td>{judge.competing ? 'Yes' : 'No'}</td>
                 <td>{judge.competing_creative_xma ? 'Yes' : 'No'}</td>
                 <td>{judge.competing_teams ? 'Yes' : 'No'}</td>
