@@ -12,6 +12,11 @@ const db = new sqlite3.Database(path.join(__dirname, 'tournament.db'), (err) => 
 
 function initDatabase() {
   db.serialize(() => {
+    // SQLite ignores FOREIGN KEY / ON DELETE CASCADE unless this is enabled on each connection
+    db.run('PRAGMA foreign_keys = ON', (err) => {
+      if (err) console.error('Error enabling foreign keys:', err);
+    });
+
     db.run(`CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -427,6 +432,26 @@ function initDatabase() {
           }
         });
       }
+    });
+
+    // Cleanup: remove rows left behind by deletes made before foreign keys were enforced.
+    // Orphaned rings go first so their children cascade with them.
+    const orphanCleanups = [
+      ['rings', 'tournament_id NOT IN (SELECT id FROM tournaments)'],
+      ['ring_sessions', 'ring_id NOT IN (SELECT id FROM rings)'],
+      ['stacked_rings', 'ring_id NOT IN (SELECT id FROM rings)'],
+      ['chat_messages', 'tournament_id NOT IN (SELECT id FROM tournaments)'],
+      ['tournament_judges', 'tournament_id NOT IN (SELECT id FROM tournaments) OR judge_id NOT IN (SELECT id FROM judges)'],
+      ['ring_assignments', 'ring_id NOT IN (SELECT id FROM rings) OR judge_id NOT IN (SELECT id FROM judges) OR tournament_id NOT IN (SELECT id FROM tournaments)']
+    ];
+    orphanCleanups.forEach(([table, condition]) => {
+      db.run(`DELETE FROM ${table} WHERE ${condition}`, function(err) {
+        if (err) {
+          console.error(`Error removing orphaned ${table} rows:`, err);
+        } else if (this.changes > 0) {
+          console.log(`Removed ${this.changes} orphaned ${table} rows`);
+        }
+      });
     });
   });
 }
