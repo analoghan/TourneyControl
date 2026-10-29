@@ -13,12 +13,8 @@ export const COLOR_BELT_RANKS = [
   'Red/Black'
 ]
 
-export const BLACK_BELT_RANKS = [
-  '1st Degree',
-  '2nd-3rd Degree',
-  '4th-5th Degree',
-  'Masters'
-]
+// Defined with the other categories; re-exported here for convenience
+export { BLACK_BELT_RANKS } from '../constants/categories'
 
 export const sortAgeBrackets = (brackets) => {
   const order = {
