@@ -126,6 +126,13 @@ const StaffInterface = () => {
   const isConnected = useWebSocket((data) => {
     if (data.type === 'ring_update') {
       setRings(prev => prev.map(r => r.id === data.data.id ? data.data : r))
+    } else if (data.type === 'stacked_rings_changed') {
+      // A stack was added or removed (possibly by a judge); replace that ring's stacks
+      const { ring_id, stacked_rings } = data.data
+      setStackedRingsMap(prev => {
+        const { [ring_id]: _, ...rest } = prev
+        return stacked_rings.length > 0 ? { ...rest, [ring_id]: stacked_rings } : rest
+      })
     } else if (data.type === 'stacked_ring_update') {
       // Update the stacked ring in the stackedRingsMap
       setStackedRingsMap(prev => {
@@ -232,25 +239,9 @@ const StaffInterface = () => {
       return
     }
     setRings(data)
-
-    // Fetch stacked rings for each ring
-    const stackedMap = {}
-    await Promise.all(
-      data.map(async (ring) => {
-        try {
-          const stackedRes = await apiFetch(`/api/rings/${ring.id}/stacked`)
-          if (stackedRes.ok) {
-            const stackedData = await stackedRes.json()
-            if (stackedData.length > 0) {
-              stackedMap[ring.id] = stackedData
-            }
-          }
-        } catch (error) {
-          console.error(`Failed to fetch stacked rings for ring ${ring.id}:`, error)
-        }
-      })
-    )
-    setStackedRingsMap(stackedMap)
+    setStackedRingsMap(Object.fromEntries(
+      data.filter(ring => ring.stacked_rings?.length > 0).map(ring => [ring.id, ring.stacked_rings])
+    ))
   }
 
   const createTournament = async (e) => {

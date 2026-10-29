@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { apiFetch } from '../utils/api'
+import { useWebSocket } from '../hooks/useWebSocket'
+
+// New messages arrive over the live connection; this full reload is only a safety net
+const SAFETY_REFRESH_MS = 30000
 
 const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) => {
   const [messages, setMessages] = useState([])
@@ -13,14 +17,25 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
   const wasAtBottomRef = useRef(true) // Track if user was at bottom before update
   const isFirstLoadRef = useRef(true) // Track if this is the first load
 
-  // Poll for new messages every 500ms for faster updates
+  // Load the history when the tournament changes, then refresh occasionally in case a push was missed
   useEffect(() => {
+    setMessages([])
+    isFirstLoadRef.current = true
     if (tournamentId) {
       fetchMessages()
-      const interval = setInterval(fetchMessages, 500)
+      const interval = setInterval(fetchMessages, SAFETY_REFRESH_MS)
       return () => clearInterval(interval)
     }
   }, [tournamentId])
+
+  useWebSocket((data) => {
+    if (data.type === 'chat_message' && data.data.tournament_id === Number(tournamentId)) {
+      showMessages([data.data])
+    }
+  }, {
+    // Catch up on anything sent while disconnected
+    onReconnect: () => fetchMessages()
+  })
 
   // Check if user is at the bottom of the chat
   const isAtBottom = () => {
@@ -47,29 +62,30 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
     }
   }
 
+  // Merge messages in by id (a sent message arrives both from the send and the push), keeping them in order,
+  // and follow them down if the reader was already at the bottom
+  const showMessages = (incoming, { forceScroll = false } = {}) => {
+    const shouldAutoScroll = forceScroll || isFirstLoadRef.current || wasAtBottomRef.current
+    isFirstLoadRef.current = false
+
+    setMessages(prev => {
+      const byId = new Map(prev.map(m => [m.id, m]))
+      incoming.forEach(m => byId.set(m.id, m))
+      return [...byId.values()].sort((a, b) => a.id - b.id)
+    })
+
+    if (shouldAutoScroll) {
+      setTimeout(scrollToBottom, 50)
+    }
+  }
+
   const fetchMessages = async () => {
     try {
-      // Check position BEFORE fetching
-      const shouldAutoScroll = isFirstLoadRef.current || wasAtBottomRef.current
-      
       const res = await apiFetch(`/api/tournaments/${tournamentId}/chat`)
       if (res.ok) {
         const data = await res.json()
-        
-        // Only update if messages actually changed
-        if (JSON.stringify(data) !== JSON.stringify(messages)) {
-          setMessages(data)
-          
-          // Mark that we've loaded at least once
-          if (isFirstLoadRef.current) {
-            isFirstLoadRef.current = false
-          }
-          
-          // Only scroll if we should
-          if (shouldAutoScroll) {
-            setTimeout(scrollToBottom, 50)
-          }
-        }
+        if (data.length > 0 && data[0].tournament_id !== Number(tournamentId)) return // tournament switched mid-request
+        showMessages(data)
       }
     } catch (error) {
       console.error('Failed to fetch chat messages:', error)
@@ -93,12 +109,7 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
       
       if (res.ok) {
         setNewMessage('')
-        // Immediately fetch messages after sending to show it faster
-        // Force scroll to bottom after sending
-        setTimeout(() => {
-          fetchMessages()
-          setTimeout(scrollToBottom, 100)
-        }, 50)
+        showMessages([await res.json()], { forceScroll: true })
       }
     } catch (error) {
       console.error('Failed to send message:', error)
