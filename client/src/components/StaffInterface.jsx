@@ -1139,16 +1139,7 @@ const StaffInterface = () => {
                         ) : (
                           <>
                             {stack.competitor_count && (
-                              <div className="competitor-count-display" style={{ 
-                                background: '#e0e7ff', 
-                                color: '#1e40af', 
-                                padding: '0.5rem', 
-                                borderRadius: '4px', 
-                                border: '2px solid #1e40af',
-                                fontWeight: 'bold',
-                                textAlign: 'center',
-                                marginBottom: '0.5rem'
-                              }}>
+                              <div className="competitor-count-display">
                                 Competitors: {stack.competitor_count}
                               </div>
                             )}
