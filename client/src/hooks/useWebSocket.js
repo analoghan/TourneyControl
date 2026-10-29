@@ -49,7 +49,6 @@ export const useWebSocket = (onMessage, { onReconnect } = {}) => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          console.log('📨 WebSocket message received:', data)
           onMessageRef.current(data)
         } catch (error) {
           console.error('Error handling WebSocket message:', error)

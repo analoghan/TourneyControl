@@ -505,6 +505,18 @@ function initDatabase() {
       if (err) console.error('Error creating one-ring-per-judge index:', err);
     });
 
+    // Indexes for the common lookups by parent (tables with UNIQUE constraints are already indexed)
+    [
+      'CREATE INDEX IF NOT EXISTS idx_rings_tournament ON rings(tournament_id)',
+      'CREATE INDEX IF NOT EXISTS idx_stacked_rings_ring ON stacked_rings(ring_id, stack_order)',
+      'CREATE INDEX IF NOT EXISTS idx_ring_sessions_ring ON ring_sessions(ring_id)',
+      'CREATE INDEX IF NOT EXISTS idx_chat_messages_tournament ON chat_messages(tournament_id)'
+    ].forEach(sql => {
+      db.run(sql, (err) => {
+        if (err) console.error('Error creating index:', err);
+      });
+    });
+
     // Cleanup: remove rows left behind by deletes made before foreign keys were enforced.
     // Orphaned rings go first so their children cascade with them.
     const orphanCleanups = [

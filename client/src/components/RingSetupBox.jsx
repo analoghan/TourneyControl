@@ -1,53 +1,5 @@
-import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
-
-const COLOR_BELT_RANKS = [
-  'White',
-  'Orange',
-  'Yellow',
-  'Camo',
-  'Green',
-  'Purple',
-  'Blue',
-  'Brown',
-  'Red',
-  'Red/Black'
-]
-
-// Helper function to sort color belt ranks
-const sortColorBelts = (belts) => {
-  const order = {
-    'White': 0,
-    'Orange': 1,
-    'Yellow': 2,
-    'Camo': 3,
-    'Green': 4,
-    'Purple': 5,
-    'Blue': 6,
-    'Brown': 7,
-    'Red': 8,
-    'Red/Black': 9
-  }
-  return [...belts].sort((a, b) => {
-    const aOrder = order[a] !== undefined ? order[a] : 999
-    const bOrder = order[b] !== undefined ? order[b] : 999
-    return aOrder - bOrder
-  })
-}
-
-// Helper function to sort black belt ranks
-const sortBlackBelts = (belts) => {
-  const order = {
-    '1st Degree': 0,
-    '2nd-3rd Degree': 1,
-    '4th-5th Degree': 2,
-    'Masters': 3
-  }
-  return [...belts].sort((a, b) => {
-    const aOrder = order[a] !== undefined ? order[a] : 999
-    const bOrder = order[b] !== undefined ? order[b] : 999
-    return aOrder - bOrder
-  })
-}
+import { GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
+import { COLOR_BELT_RANKS } from '../utils/sortingHelpers'
 
 const RingSetupBox = ({
   data,
