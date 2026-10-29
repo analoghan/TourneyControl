@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { apiFetch } from '../utils/api'
 
 const RANK_OPTIONS = [
   '1st Degree',
@@ -43,7 +44,7 @@ const JudgeManagement = () => {
   }, [])
 
   const fetchJudges = async () => {
-    const res = await fetch('/api/judges')
+    const res = await apiFetch('/api/judges')
     const data = await res.json()
     setJudges(data)
   }
@@ -114,7 +115,7 @@ const JudgeManagement = () => {
 
     try {
       if (editingJudge) {
-        const res = await fetch(`/api/judges/${editingJudge.id}`, {
+        const res = await apiFetch(`/api/judges/${editingJudge.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(judgeData)
@@ -127,7 +128,7 @@ const JudgeManagement = () => {
           setErrorMessage(error.error || 'Failed to update judge')
         }
       } else {
-        const res = await fetch('/api/judges', {
+        const res = await apiFetch('/api/judges', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(judgeData)
@@ -166,7 +167,7 @@ const JudgeManagement = () => {
       return
     }
     
-    const res = await fetch(`/api/judges/${id}`, {
+    const res = await apiFetch(`/api/judges/${id}`, {
       method: 'DELETE'
     })
     

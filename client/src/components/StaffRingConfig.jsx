@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 import RingSetupBox from './RingSetupBox'
 import ConnectionBanner from './ConnectionBanner'
+import { apiFetch } from '../utils/api'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -128,7 +129,7 @@ const StaffRingConfig = () => {
 
   const fetchStackedRings = async () => {
     try {
-      const res = await fetch(`/api/rings/${ringId}/stacked`)
+      const res = await apiFetch(`/api/rings/${ringId}/stacked`)
       if (res.ok) {
         const data = await res.json()
         setStackedRings(data)
@@ -140,7 +141,7 @@ const StaffRingConfig = () => {
 
   const fetchJudges = async () => {
     try {
-      const res = await fetch('/api/judges')
+      const res = await apiFetch('/api/judges')
       if (res.ok) {
         const data = await res.json()
         setJudges(data)
@@ -152,7 +153,7 @@ const StaffRingConfig = () => {
 
   const fetchRingJudges = async () => {
     try {
-      const res = await fetch(`/api/rings/${ringId}/judges`)
+      const res = await apiFetch(`/api/rings/${ringId}/judges`)
       if (res.ok) {
         const data = await res.json()
         const judgeMap = {
@@ -176,14 +177,14 @@ const StaffRingConfig = () => {
     try {
       // Remove existing assignment for this position
       if (ringJudges[position]) {
-        await fetch(`/api/rings/${ringId}/judges/${position}`, {
+        await apiFetch(`/api/rings/${ringId}/judges/${position}`, {
           method: 'DELETE'
         })
       }
       
       // Assign new judge if one was selected
       if (judgeId) {
-        const res = await fetch(`/api/rings/${ringId}/judges`, {
+        const res = await apiFetch(`/api/rings/${ringId}/judges`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -248,7 +249,7 @@ const StaffRingConfig = () => {
 
   const fetchRing = async () => {
     try {
-      const res = await fetch(`/api/rings/${ringId}`)
+      const res = await apiFetch(`/api/rings/${ringId}`)
       if (res.ok) {
         const data = await res.json()
         setRing(data)
@@ -268,7 +269,7 @@ const StaffRingConfig = () => {
     setRing(prev => ({ ...prev, [field]: value }))
     
     try {
-      const response = await fetch(`/api/rings/${ring.id}`, {
+      const response = await apiFetch(`/api/rings/${ring.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
@@ -298,7 +299,7 @@ const StaffRingConfig = () => {
     setRing(prev => ({ ...prev, ...updates }))
     
     try {
-      const response = await fetch(`/api/rings/${ring.id}`, {
+      const response = await apiFetch(`/api/rings/${ring.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -338,7 +339,7 @@ const StaffRingConfig = () => {
   const addStackedRing = async () => {
     console.log('addStackedRing called, ringId:', ringId)
     try {
-      const res = await fetch(`/api/rings/${ringId}/stacked`, {
+      const res = await apiFetch(`/api/rings/${ringId}/stacked`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -377,7 +378,7 @@ const StaffRingConfig = () => {
   
   const updateStackedRing = async (stackedRingId, updates) => {
     try {
-      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+      const res = await apiFetch(`/api/stacked-rings/${stackedRingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -397,7 +398,7 @@ const StaffRingConfig = () => {
     }
     
     try {
-      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+      const res = await apiFetch(`/api/stacked-rings/${stackedRingId}`, {
         method: 'DELETE'
       })
       

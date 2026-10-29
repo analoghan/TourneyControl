@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getAuthToken } from '../utils/api'
 
 const MIN_RECONNECT_DELAY = 1000
 const MAX_RECONNECT_DELAY = 10000
@@ -32,7 +33,8 @@ export const useWebSocket = (onMessage, { onReconnect } = {}) => {
 
     const connect = () => {
       console.log('Connecting to WebSocket:', wsUrl)
-      ws = new WebSocket(wsUrl)
+      // The server rejects connections without a valid session token; read it fresh on each attempt
+      ws = new WebSocket(`${wsUrl}?token=${encodeURIComponent(getAuthToken() || '')}`)
 
       ws.onopen = () => {
         console.log('✅ WebSocket connected to:', wsUrl)

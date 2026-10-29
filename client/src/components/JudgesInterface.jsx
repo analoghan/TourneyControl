@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 import RingSetupBox from './RingSetupBox'
 import ConnectionBanner from './ConnectionBanner'
+import { apiFetch } from '../utils/api'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -121,7 +122,7 @@ const JudgesInterface = () => {
       if (selectedRing) {
         fetchStackedRings()
         try {
-          const res = await fetch(`/api/rings/${selectedRing.id}`)
+          const res = await apiFetch(`/api/rings/${selectedRing.id}`)
           if (res.ok) setSelectedRing(await res.json())
         } catch (error) {
           console.error('Failed to refresh selected ring:', error)
@@ -193,7 +194,7 @@ const JudgesInterface = () => {
   const fetchStackedRings = async () => {
     if (!selectedRing) return
     try {
-      const res = await fetch(`/api/rings/${selectedRing.id}/stacked`)
+      const res = await apiFetch(`/api/rings/${selectedRing.id}/stacked`)
       if (res.ok) {
         const data = await res.json()
         setStackedRings(data)
@@ -204,7 +205,7 @@ const JudgesInterface = () => {
   }
 
   const fetchTournaments = async () => {
-    const res = await fetch('/api/tournaments/active')
+    const res = await apiFetch('/api/tournaments/active')
     const data = await res.json()
     setTournaments(data)
     if (data.length > 0) {
@@ -229,7 +230,7 @@ const JudgesInterface = () => {
   }
 
   const fetchRings = async () => {
-    const res = await fetch(`/api/tournaments/${selectedTournament}/rings`)
+    const res = await apiFetch(`/api/tournaments/${selectedTournament}/rings`)
     const data = await res.json()
     setRings(data)
   }
@@ -241,7 +242,7 @@ const JudgesInterface = () => {
     setSelectedRing(prev => ({ ...prev, [field]: value }))
     
     try {
-      const response = await fetch(`/api/rings/${selectedRing.id}`, {
+      const response = await apiFetch(`/api/rings/${selectedRing.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
@@ -274,7 +275,7 @@ const JudgesInterface = () => {
     setSelectedRing(prev => ({ ...prev, ...updates }))
     
     try {
-      const response = await fetch(`/api/rings/${selectedRing.id}`, {
+      const response = await apiFetch(`/api/rings/${selectedRing.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -316,7 +317,7 @@ const JudgesInterface = () => {
     if (!selectedRing) return
     console.log('addStackedRing called, selectedRing.id:', selectedRing.id)
     try {
-      const res = await fetch(`/api/rings/${selectedRing.id}/stacked`, {
+      const res = await apiFetch(`/api/rings/${selectedRing.id}/stacked`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -355,7 +356,7 @@ const JudgesInterface = () => {
   
   const updateStackedRing = async (stackedRingId, updates) => {
     try {
-      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+      const res = await apiFetch(`/api/stacked-rings/${stackedRingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
@@ -375,7 +376,7 @@ const JudgesInterface = () => {
     }
     
     try {
-      const res = await fetch(`/api/stacked-rings/${stackedRingId}`, {
+      const res = await apiFetch(`/api/stacked-rings/${stackedRingId}`, {
         method: 'DELETE'
       })
       

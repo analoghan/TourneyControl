@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useWebSocket } from '../hooks/useWebSocket'
 import ConnectionBanner from './ConnectionBanner'
+import { apiFetch } from '../utils/api'
 
 const JudgeTracker = () => {
   useAuth('staff')
@@ -29,7 +30,7 @@ const JudgeTracker = () => {
 
   const fetchTournament = async () => {
     try {
-      const res = await fetch(`/api/tournaments/${tournamentId}`)
+      const res = await apiFetch(`/api/tournaments/${tournamentId}`)
       if (res.ok) {
         const data = await res.json()
         setTournament(data)
@@ -41,7 +42,7 @@ const JudgeTracker = () => {
 
   const fetchJudges = async () => {
     try {
-      const res = await fetch(`/api/tournaments/${tournamentId}/judges`)
+      const res = await apiFetch(`/api/tournaments/${tournamentId}/judges`)
       if (res.ok) {
         const data = await res.json()
         // Only show checked-in judges
