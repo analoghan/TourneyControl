@@ -705,7 +705,7 @@
             <p><strong>Judge Tracker:</strong></p>
             <ul>
                 <li>Open it from the staff dashboard for the selected tournament</li>
-                <li><strong>Judges Checked In to Tournament</strong> (top): everyone present, with check-in time and ring assignment (<strong>Available</strong> or ring and position), plus totals for checked in, assigned and available</li>
+                <li><strong>Judges Checked In to Tournament</strong> (top): everyone present, with check-in time, <strong>Packets Judged</strong> (completed packets in this tournament), and ring assignment (<strong>Available</strong>, or ring and position with how long they've been in that ring), plus totals for checked in, assigned, competing and available</li>
                 <li><strong>Filter the checked-in judges</strong> to find the right person quickly: search by name or ATA number, show <strong>All</strong>, <strong>Available</strong>, <strong>Assigned</strong> or <strong>Competing</strong> judges, and set a minimum <strong>Rank</strong> (e.g. "4th Degree+"), a minimum <strong>Judging Level</strong> (e.g. "Level 2+"; N/A counts as below Level 1) and an <strong>Age</strong> range. Filters combine, so "Available" + "4th Degree+" lists free judges of rank 4 and up. <strong>Clear filters</strong> resets them</li>
                 <li><strong>Judge Database</strong> (bottom): every judge in the database. Search by name or ATA number, then click <strong>Check In</strong> when a judge arrives</li>
                 <li><strong>Check Out</strong> removes a judge from the tournament and from any ring they're assigned to there</li>
@@ -755,7 +755,11 @@
                 <li>Total packets completed per ring</li>
                 <li><strong>Packet Details</strong>: one row per packet showing what ran — event, division, gender, ages, rank, belts, special abilities and competitor count — plus run time and minutes per competitor</li>
                 <li><strong>Averages by Event</strong>: packets, competitors, average run time and average minutes per competitor for each event</li>
+                <li><strong>Judge Summary</strong>: for each judge, packets judged, competitors judged, minutes judging, packets as Center / Corner A / Corner B, and the rings they judged</li>
+                <li><strong>Judge Assignments</strong>: every time a judge sat in a ring: ring, position, when they were assigned and unassigned, and which packets ran while they were seated</li>
             </ul>
+
+            <p>A judge is credited with a packet if they were seated in that ring while it ran, so a judge swapped in partway through counts too (with only their share of the minutes). Judge history is recorded from when this feature was added; earlier tournaments show no judging data.</p>
 
             <p>Division details are recorded when the ring ends, so corrections made during the packet (such as an updated competitor count) are included. Keep competitor counts accurate for the most useful averages. Packets recorded before this was added show blank details.</p>
 

@@ -314,7 +314,7 @@ When you click a ring card, you can configure it just like judges do:
 
 **Judge Tracker:**
 - Open it from the staff dashboard for the selected tournament
-- **Judges Checked In to Tournament** (top): everyone present, with check-in time and ring assignment (**Available** or ring and position), plus totals for checked in, assigned and available
+- **Judges Checked In to Tournament** (top): everyone present, with check-in time, **Packets Judged** (completed packets in this tournament), and ring assignment (**Available**, or ring and position with how long they've been in that ring), plus totals for checked in, assigned, competing and available
 - **Filter the checked-in judges** to find the right person quickly: search by name or ATA number, show **All**, **Available**, **Assigned** or **Competing** judges, and set a minimum **Rank** (e.g. "4th Degree+"), a minimum **Judging Level** (e.g. "Level 2+"; N/A counts as below Level 1) and an **Age** range. Filters combine, so "Available" + "4th Degree+" lists free judges of rank 4 and up. **Clear filters** resets them
 - **Judge Database** (bottom): every judge in the database. Search by name or ATA number, then click **Check In** when a judge arrives
 - **Check Out** removes a judge from the tournament and from any ring they're assigned to there
@@ -356,6 +356,10 @@ Click **Admin** at the top of the staff dashboard.
 - Total packets completed per ring
 - **Packet Details**: one row per packet showing what ran — event, division, gender, ages, rank, belts, special abilities and competitor count — plus run time and minutes per competitor
 - **Averages by Event**: packets, competitors, average run time and average minutes per competitor for each event
+- **Judge Summary**: for each judge, packets judged, competitors judged, minutes judging, packets as Center / Corner A / Corner B, and the rings they judged
+- **Judge Assignments**: every time a judge sat in a ring: ring, position, when they were assigned and unassigned, and which packets ran while they were seated
+
+A judge is credited with a packet if they were seated in that ring while it ran, so a judge swapped in partway through counts too (with only their share of the minutes). Judge history is recorded from when this feature was added; earlier tournaments show no judging data.
 
 Division details are recorded when the ring ends, so corrections made during the packet (such as an updated competitor count) are included. Keep competitor counts accurate for the most useful averages. Packets recorded before this was added show blank details.
 

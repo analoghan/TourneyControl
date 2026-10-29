@@ -398,6 +398,43 @@ const StaffInterface = () => {
         csv += 'No completed packets with division details yet\n'
       }
 
+      // Judging: from each judge's ring seats, matched to the completed packets that ran while they were seated
+      const judging = data.judges || { summary: [], assignments: [] }
+      csv += '\nJudge Summary\n'
+      csv += 'Judge,ATA Number,Packets Judged,Competitors Judged,Minutes Judging,Center,Corner A,Corner B,Rings\n'
+      judging.summary.forEach(judge => {
+        csv += [
+          judge.judge_name,
+          judge.ata_number,
+          judge.packets,
+          judge.competitors,
+          judge.minutes,
+          judge.by_position['Center'],
+          judge.by_position['Corner A'],
+          judge.by_position['Corner B'],
+          judge.rings.join(', ')
+        ].map(csvCell).join(',') + '\n'
+      })
+      if (judging.summary.length === 0) {
+        csv += 'No judge assignments recorded yet\n'
+      }
+
+      csv += '\nJudge Assignments\n'
+      csv += 'Judge,ATA Number,Ring Number,Position,Assigned,Unassigned,Packets Judged,Competitors,Minutes\n'
+      judging.assignments.forEach(seat => {
+        csv += [
+          seat.judge_name,
+          seat.ata_number,
+          seat.ring_number,
+          seat.position,
+          formatTimestamp(seat.assigned_at),
+          seat.unassigned_at ? formatTimestamp(seat.unassigned_at) : 'Still assigned',
+          seat.packets.join(', '),
+          seat.competitors,
+          seat.minutes
+        ].map(csvCell).join(',') + '\n'
+      })
+
       // Create download
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
