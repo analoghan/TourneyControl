@@ -3,6 +3,16 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import TournamentChat from './TournamentChat'
+import ConnectionBanner from './ConnectionBanner'
+import { EVENTS } from '../constants/categories'
+import { getEventColorClass } from '../utils/styleHelpers'
+
+// Sort rank for "Current Event" ordering: events in EVENTS order, then unknown events, then open rings
+const getEventSortRank = (ring) => {
+  if (ring.is_open === 1) return EVENTS.length + 1
+  const index = EVENTS.indexOf(ring.current_event)
+  return index === -1 ? EVENTS.length : index
+}
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -102,7 +112,7 @@ const StaffInterface = () => {
   const [currentTime, setCurrentTime] = useState(new Date())
 
 
-  useWebSocket((data) => {
+  const isConnected = useWebSocket((data) => {
     if (data.type === 'ring_update') {
       setRings(prev => prev.map(r => r.id === data.data.id ? data.data : r))
     } else if (data.type === 'stacked_ring_update') {
@@ -128,9 +138,15 @@ const StaffInterface = () => {
         fetchRings()
       }
     } else if (data.type === 'tournament_timezone_updated') {
-      setTournaments(prev => prev.map(t => 
+      setTournaments(prev => prev.map(t =>
         t.id === data.data.id ? data.data : t
       ))
+    }
+  }, {
+    // Refetch everything we may have missed while disconnected
+    onReconnect: () => {
+      fetchTournaments()
+      fetchRings()
     }
   })
 
@@ -503,25 +519,6 @@ const StaffInterface = () => {
     }
   }
 
-  const getEventColorClass = (event) => {
-    switch (event) {
-      case 'Open': return 'event-open'
-      case 'Judges Needed!': return 'event-judges-needed'
-      case 'Forms': return 'event-forms'
-      case 'Weapons': return 'event-weapons'
-      case 'One-Step Sparring': return 'event-one-step-sparring'
-      case 'Combat Sparring': return 'event-combat-sparring'
-      case 'Traditional Sparring': return 'event-traditional-sparring'
-      case 'Creative Forms': return 'event-creative-forms'
-      case 'Creative Weapons': return 'event-creative-weapons'
-      case 'XMA Forms': return 'event-xma-forms'
-      case 'XMA Weapons': return 'event-xma-weapons'
-      case 'Team Sparring - Combat': return 'event-team-combat'
-      case 'Team Sparring - Traditional': return 'event-team-traditional'
-      default: return ''
-    }
-  }
-
   const getRankColorClass = (rank) => {
     if (rank === 'Color Belts') {
       return 'rank-color-belts'
@@ -538,6 +535,7 @@ const StaffInterface = () => {
 
   return (
     <div className="container">
+      <ConnectionBanner isConnected={isConnected} />
       <div className="tournament-setup-section">
         <div className="setup-header" onClick={() => setSetupExpanded(!setupExpanded)}>
           <div className="setup-header-content">
@@ -921,23 +919,8 @@ const StaffInterface = () => {
           <div className="rings-grid">
             {[...rings].sort((a, b) => {
               if (ringSortOrder === 'event') {
-                const eventOrder = {
-                  'Forms': 1,
-                  'Weapons': 2,
-                  'One-Step Sparring': 3,
-                  'Combat Sparring': 4,
-                  'Traditional Sparring': 5,
-                  'Creative Forms': 6,
-                  'Creative Weapons': 7,
-                  'XMA Forms': 8,
-                  'XMA Weapons': 9,
-                  'Team Sparring - Combat': 10,
-                  'Team Sparring - Traditional': 11
-                }
-                const orderA = a.is_open ? 999 : (eventOrder[a.current_event] || 998)
-                const orderB = b.is_open ? 999 : (eventOrder[b.current_event] || 998)
-                if (orderA !== orderB) return orderA - orderB
-                return a.ring_number - b.ring_number
+                const rankDiff = getEventSortRank(a) - getEventSortRank(b)
+                if (rankDiff !== 0) return rankDiff
               }
               return a.ring_number - b.ring_number
             }).flatMap(ring => {

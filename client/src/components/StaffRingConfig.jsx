@@ -4,6 +4,7 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 import RingSetupBox from './RingSetupBox'
+import ConnectionBanner from './ConnectionBanner'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -93,7 +94,7 @@ const StaffRingConfig = () => {
     'Corner B': null
   })
 
-  useWebSocket((data) => {
+  const isConnected = useWebSocket((data) => {
     if (data.type === 'ring_update' && data.data.id === parseInt(ringId)) {
       setRing(data.data)
       loadBeltSelections(data.data)
@@ -108,6 +109,13 @@ const StaffRingConfig = () => {
         setTournamentEnded(true)
         alert('This tournament has ended. Ring events can no longer be modified.')
       }
+    }
+  }, {
+    // Refetch everything we may have missed while disconnected
+    onReconnect: () => {
+      fetchRing()
+      fetchStackedRings()
+      fetchRingJudges()
     }
   })
 
@@ -458,6 +466,7 @@ const StaffRingConfig = () => {
 
   return (
     <div className="container">
+      <ConnectionBanner isConnected={isConnected} />
       <div className="judge-controls">
         {errorMessage && (
           <div className="error-message">
