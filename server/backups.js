@@ -6,7 +6,7 @@ const sqlite3 = require('sqlite3');
 const DB_FILE = path.join(__dirname, 'tournament.db');
 const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, 'backups');
 const INTERVAL_MINUTES = Number(process.env.BACKUP_INTERVAL_MINUTES) || 15;
-const KEEP = Number(process.env.BACKUP_KEEP) || 96; // a day of backups at the default interval
+const KEEP = Number(process.env.BACKUP_KEEP) || 5;
 
 // Backups are named by UTC time, so sorting by name sorts by age; "-manual" marks Back Up Now
 const NAME_PATTERN = /^tournament-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z(-manual)?\.db$/;

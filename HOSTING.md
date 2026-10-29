@@ -153,7 +153,7 @@ Edit as needed:
 - `PORT`: Server port (default: 8080)
 - `NODE_ENV`: Set to `production` for production
 - `BACKUP_INTERVAL_MINUTES`: How often to back up the database when it has changed (default: 15)
-- `BACKUP_KEEP`: How many backups to keep (default: 96)
+- `BACKUP_KEEP`: How many backups to keep (default: 5)
 - `BACKUP_DIR`: Where to store backups (default: `server/backups`). Pointing this at a separate disk or synced folder keeps backups safe if the server's disk fails
 
 ## Important Notes

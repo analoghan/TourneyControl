@@ -74,7 +74,8 @@ const AdminPage = () => {
         {backupInfo && (
           <p>
             The server saves a backup every {backupInfo.interval_minutes} minutes when anything has changed,
-            and keeps the newest {backupInfo.keep}. Backups are stored on the server; download one to keep a copy elsewhere.
+            and keeps only the newest {backupInfo.keep}; older ones are deleted automatically. Backups are stored on
+            the server; download one to keep a copy elsewhere.
           </p>
         )}
         <button className="btn-add-judge" disabled={!!busy} onClick={backUpNow}>
