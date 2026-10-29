@@ -423,6 +423,39 @@ app.get('/api/rings/:id/sessions', (req, res) => {
   );
 });
 
+// Division details copied onto each ring session, so reports show what each packet was
+const SESSION_DETAIL_FIELDS = [
+  'event', 'gender', 'age_brackets', 'rank', 'color_belts', 'black_belts',
+  'division', 'division_type', 'competitor_count', 'special_abilities'
+];
+
+// Ring row with any fields from an update request applied on top
+const withDefinedFields = (ring, body) => {
+  const merged = { ...ring };
+  Object.keys(ring).forEach(key => {
+    if (body[key] !== undefined) merged[key] = body[key];
+  });
+  return merged;
+};
+
+const sessionDetails = (ring) => ({
+  event: ring.current_event,
+  gender: ring.gender,
+  // Older rings only have the single age_bracket column
+  age_brackets: ring.age_brackets || JSON.stringify(ring.age_bracket ? [ring.age_bracket] : []),
+  rank: ring.rank,
+  color_belts: ring.color_belts,
+  black_belts: ring.black_belts,
+  division: ring.division,
+  division_type: ring.division_type,
+  competitor_count: ring.competitor_count,
+  special_abilities: [
+    ring.special_abilities_physical && 'Physical',
+    ring.special_abilities_cognitive && 'Cognitive',
+    ring.special_abilities_autistic && 'Autistic'
+  ].filter(Boolean).join(', ')
+});
+
 app.put('/api/rings/:id', (req, res) => {
   const { current_event, gender, age_bracket, age_brackets, rank, division, division_type, color_belts, black_belts, stacked_ring, is_open, judges_needed, rttl_needed, special_abilities_physical, special_abilities_cognitive, special_abilities_autistic, start_time, end_time, competitor_count } = req.body;
   
@@ -521,12 +554,15 @@ app.put('/api/rings/:id', (req, res) => {
         
         // If starting a new session (start_time is being set and ring doesn't currently have one)
         if (start_time && !ring.start_time) {
+          // Record the division as configured at start, including any settings sent with this request
+          const detail = sessionDetails(withDefinedFields(ring, req.body));
           db.get('SELECT COUNT(*) as count FROM ring_sessions WHERE ring_id = ?', [req.params.id], (err, result) => {
             if (!err) {
               const sessionNumber = (result.count || 0) + 1;
               db.run(
-                'INSERT INTO ring_sessions (ring_id, session_number, start_time) VALUES (?, ?, ?)',
-                [req.params.id, sessionNumber, start_time],
+                `INSERT INTO ring_sessions (ring_id, session_number, start_time, ${SESSION_DETAIL_FIELDS.join(', ')})
+                 VALUES (?, ?, ?, ${SESSION_DETAIL_FIELDS.map(() => '?').join(', ')})`,
+                [req.params.id, sessionNumber, start_time, ...SESSION_DETAIL_FIELDS.map(f => detail[f])],
                 (err) => {
                   if (err) {
                     console.error('Error creating ring session:', err);
@@ -543,12 +579,15 @@ app.put('/api/rings/:id', (req, res) => {
         
         // If ending a session (end_time is being set and ring currently has a start_time)
         if (end_time && ring.start_time) {
+          // End Ring resets the ring's settings in this same request, so the stored row (before this update)
+          // is the final configuration of the division that just ran, e.g. a corrected competitor count
+          const detail = sessionDetails(ring);
           db.run(
             // SQLite (as bundled with node-sqlite3) doesn't support ORDER BY/LIMIT on UPDATE, so pick the row in a subquery
-            `UPDATE ring_sessions SET end_time = ? WHERE id = (
+            `UPDATE ring_sessions SET end_time = ?, ${SESSION_DETAIL_FIELDS.map(f => `${f} = ?`).join(', ')} WHERE id = (
               SELECT id FROM ring_sessions WHERE ring_id = ? AND end_time IS NULL ORDER BY session_number DESC LIMIT 1
             )`,
-            [end_time, req.params.id],
+            [end_time, ...SESSION_DETAIL_FIELDS.map(f => detail[f]), req.params.id],
             (err) => {
               if (err) {
                 console.error('Error updating ring session:', err);
@@ -937,6 +976,16 @@ app.get('/api/tournaments/:tournamentId/ring-assignments', (req, res) => {
   );
 });
 
+// Parses a JSON array column (age brackets, belts), tolerating empty or malformed values
+const parseList = (json) => {
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 // Tournament Report Endpoint
 app.get('/api/tournaments/:id/report', (req, res) => {
   const { id } = req.params;
@@ -980,8 +1029,8 @@ app.get('/api/tournaments/:id/report', (req, res) => {
         }
         
         db.all(
-          `SELECT ring_id, session_number, start_time, end_time 
-           FROM ring_sessions 
+          `SELECT ring_id, session_number, start_time, end_time, ${SESSION_DETAIL_FIELDS.join(', ')}
+           FROM ring_sessions
            WHERE ring_id IN (${ringIds.join(',')})
            ORDER BY ring_id, session_number`,
           [],
@@ -1009,6 +1058,16 @@ app.get('/api/tournaments/:id/report', (req, res) => {
                 start_time: session.start_time,
                 end_time: session.end_time,
                 run_time_minutes: runTime,
+                // Division details; null for packets recorded before these were tracked
+                event: session.event,
+                gender: session.gender,
+                age_brackets: parseList(session.age_brackets),
+                rank: session.rank,
+                belts: parseList(session.rank === 'Black Belts' ? session.black_belts : session.color_belts),
+                division: session.division,
+                division_type: session.division_type,
+                competitor_count: session.competitor_count,
+                special_abilities: session.special_abilities,
                 status: session.start_time && session.end_time ? 'Completed' : 
                         session.start_time ? 'In Progress' : 'Not Started'
               });

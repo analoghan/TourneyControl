@@ -322,6 +322,10 @@ This is useful for:
 - Columns for each packet: Start Time, End Time, Run Time (minutes)
 - All times in tournament timezone
 - Total packets completed per ring
+- **Packet Details**: one row per packet showing what ran — event, division, gender, ages, rank, belts, special abilities and competitor count — plus run time and minutes per competitor
+- **Averages by Event**: packets, competitors, average run time and average minutes per competitor for each event
+
+Division details are recorded when the ring ends, so corrections made during the packet (such as an updated competitor count) are included. Keep competitor counts accurate for the most useful averages. Packets recorded before this was added show blank details.
 
 **Using the Report:**
 - Open in Excel, Google Sheets, or any spreadsheet program
