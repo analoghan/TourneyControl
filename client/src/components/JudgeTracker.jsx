@@ -17,10 +17,12 @@ const matchesSearch = (judge, text) =>
 // "And above" filters compare positions in the rank/level lists; a judge with an unlisted value doesn't match
 const atLeast = (list, value, min) => !min || list.indexOf(value) >= list.indexOf(min)
 
+// Competing takes priority: a competing judge can't judge even if still listed in a ring elsewhere
+const judgeStatus = (judge) => judge.currently_competing ? 'competing' : judge.ring_id ? 'assigned' : 'available'
+
 const matchesFilters = (judge, filters) => {
-  const isAvailable = !judge.ring_id
   return matchesSearch(judge, filters.search.trim().toLowerCase()) &&
-    (filters.status === 'all' || (filters.status === 'available') === isAvailable) &&
+    (filters.status === 'all' || judgeStatus(judge) === filters.status) &&
     atLeast(JUDGE_RANKS, judge.rank, filters.minRank) &&
     atLeast(JUDGING_LEVELS, judge.judging_level, filters.minLevel) &&
     (filters.minAge === '' || judge.age >= Number(filters.minAge)) &&
@@ -39,7 +41,7 @@ const JudgeTracker = () => {
   const [loadError, setLoadError] = useState('')
 
   const isConnected = useWebSocket((data) => {
-    if (data.type === 'judge_check_in' || data.type === 'judge_check_out' || data.type === 'ring_assignment_update') {
+    if (['judge_check_in', 'judge_check_out', 'judge_status_update', 'ring_assignment_update'].includes(data.type)) {
       fetchCheckedInJudges()
     } else if (data.type === 'tournament_status_change' && data.data.id === parseInt(tournamentId)) {
       setTournament(data.data)
@@ -102,6 +104,26 @@ const JudgeTracker = () => {
     fetchCheckedInJudges()
   }
 
+  const toggleCompeting = async (judge) => {
+    const competing = !judge.currently_competing
+    const inThisTournament = judge.ring_id && judge.assigned_tournament_id === parseInt(tournamentId)
+    if (competing && inThisTournament &&
+        !confirm(`Mark ${judge.first_name} ${judge.last_name} as currently competing? They will be removed from Ring ${judge.ring_number} (${judge.position}).`)) {
+      return
+    }
+
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/judges/${judge.judge_id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currently_competing: competing })
+    })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}))
+      alert(error.error || 'Failed to update judge')
+    }
+    fetchCheckedInJudges()
+  }
+
   const formatCheckInTime = (isoString) => {
     if (!isoString) return ''
     return new Date(isoString).toLocaleTimeString('en-US', {
@@ -112,6 +134,9 @@ const JudgeTracker = () => {
   }
 
   const renderStatus = (judge) => {
+    if (judge.currently_competing) {
+      return <span className="judge-status judge-status-competing">Competing</span>
+    }
     if (!judge.ring_id) {
       return <span className="judge-status judge-status-available">Available</span>
     }
@@ -141,7 +166,7 @@ const JudgeTracker = () => {
   const filteredCheckedIn = checkedInJudges.filter(judge => matchesFilters(judge, filters))
   const hasFilters = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS)
   const setFilter = (field) => (e) => setFilters(prev => ({ ...prev, [field]: e.target.value }))
-  const assignedCount = checkedInJudges.filter(j => j.ring_id).length
+  const countWithStatus = (status) => checkedInJudges.filter(j => judgeStatus(j) === status).length
 
   return (
     <div className="container">
@@ -160,7 +185,7 @@ const JudgeTracker = () => {
           marginBottom: '1.5rem'
         }}>
           <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>
-            Total Checked In: {checkedInJudges.length} · Assigned to Rings: {assignedCount} · Available: {checkedInJudges.length - assignedCount}
+            Total Checked In: {checkedInJudges.length} · Assigned to Rings: {countWithStatus('assigned')} · Competing: {countWithStatus('competing')} · Available: {countWithStatus('available')}
           </p>
         </div>
 
@@ -175,7 +200,7 @@ const JudgeTracker = () => {
               style={{ ...filterInputStyle, width: '100%', maxWidth: '280px' }}
             />
             <span style={{ display: 'inline-flex', gap: '0.4rem' }}>
-              {[['all', 'All'], ['available', 'Available'], ['assigned', 'Assigned']].map(([value, label]) => (
+              {[['all', 'All'], ['available', 'Available'], ['assigned', 'Assigned'], ['competing', 'Competing']].map(([value, label]) => (
                 <button
                   key={value}
                   className={`status-toggle-btn ${filters.status === value ? 'status-toggle-active' : ''}`}
@@ -252,7 +277,16 @@ const JudgeTracker = () => {
                     <td>{renderStatus(judge)}</td>
                     {!isEnded && (
                       <td>
-                        <button className="btn-delete-judge" onClick={() => checkOut(judge)}>Check Out</button>
+                        <div className="judge-tracker-actions">
+                          <button
+                            className={`btn-competing ${judge.currently_competing ? 'btn-competing-active' : ''}`}
+                            onClick={() => toggleCompeting(judge)}
+                            aria-pressed={judge.currently_competing === 1}
+                          >
+                            Currently Competing
+                          </button>
+                          <button className="btn-delete-judge" onClick={() => checkOut(judge)}>Check Out</button>
+                        </div>
                       </td>
                     )}
                   </tr>

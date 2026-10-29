@@ -42,7 +42,7 @@ const StaffRingConfig = () => {
       // Judges moved somewhere (here, another ring, or back to the pool); refresh who's available
       fetchRingJudges()
       fetchJudges()
-    } else if ((data.type === 'judge_check_in' || data.type === 'judge_check_out') && data.data.tournament_id === ring?.tournament_id) {
+    } else if (['judge_check_in', 'judge_check_out', 'judge_status_update'].includes(data.type) && data.data.tournament_id === ring?.tournament_id) {
       fetchJudges()
     } else if (data.type === 'tournament_ended') {
       if (ring && data.data.tournament_id === ring.tournament_id) {
@@ -143,11 +143,14 @@ const StaffRingConfig = () => {
     fetchJudges()
   }
 
-  // Only judges checked in to this tournament can be picked. Judges in another ring are shown but disabled;
+  // Only judges checked in to this tournament can be picked. Judges competing or in another ring are shown but disabled;
   // judges elsewhere in this ring can be picked (they move positions).
   const renderJudgeOptions = () => {
     const options = judges.map(judge => {
       const name = `${judge.first_name} ${judge.last_name}`
+      if (judge.currently_competing) {
+        return <option key={judge.judge_id} value={judge.judge_id} disabled>{name} — Competing</option>
+      }
       if (!judge.ring_id) {
         return <option key={judge.judge_id} value={judge.judge_id}>{name}</option>
       }

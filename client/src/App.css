@@ -2998,3 +2998,47 @@ body.login-body {
   color: #1e40af;
   border: 1px solid #3b82f6;
 }
+
+.judge-status-competing {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+/* Judge Tracker row actions */
+.judge-tracker-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.judge-tracker-actions .btn-delete-judge {
+  margin: 0;
+}
+
+/* "Currently Competing" toggle: gray when off, blue when on */
+.btn-competing {
+  padding: 0.4rem 0.6rem;
+  background: #e5e7eb;
+  color: #4b5563;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-competing:hover {
+  background: #d1d5db;
+}
+
+.btn-competing.btn-competing-active {
+  background: #2563eb;
+  color: white;
+  border-color: #1e40af;
+}
+
+.btn-competing.btn-competing-active:hover {
+  background: #1d4ed8;
+}
