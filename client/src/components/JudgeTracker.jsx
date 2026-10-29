@@ -140,12 +140,15 @@ const JudgeTracker = () => {
     if (!judge.ring_id) {
       return <span className="judge-status judge-status-available">Available</span>
     }
-    // A judge can be in only one ring anywhere, so note when it's in another tournament
+    // A judge can be in only one ring anywhere, so note (on its own line, to keep the column narrow) when it's in another tournament
     const otherTournament = judge.assigned_tournament_id !== parseInt(tournamentId)
     return (
-      <span className="judge-status judge-status-assigned" title={judge.assigned_tournament_name}>
-        Ring {judge.ring_number} – {judge.position}{otherTournament ? ` (${judge.assigned_tournament_name})` : ''}
-      </span>
+      <>
+        <span className="judge-status judge-status-assigned" title={judge.assigned_tournament_name}>
+          Ring {judge.ring_number} – {judge.position}
+        </span>
+        {otherTournament && <div className="judge-status-note">{judge.assigned_tournament_name}</div>}
+      </>
     )
   }
 
