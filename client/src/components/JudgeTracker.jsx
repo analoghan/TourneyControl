@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useWebSocket } from '../hooks/useWebSocket'
+import ConnectionBanner from './ConnectionBanner'
 
 const JudgeTracker = () => {
   useAuth('staff')
@@ -10,12 +11,15 @@ const JudgeTracker = () => {
   const [tournament, setTournament] = useState(null)
   const [judges, setJudges] = useState([])
 
-  useWebSocket((data) => {
+  const isConnected = useWebSocket((data) => {
     if (data.type === 'judge_check_in' || data.type === 'judge_check_out') {
       fetchJudges()
     } else if (data.type === 'ring_assignment_update') {
       fetchJudges()
     }
+  }, {
+    // Refetch anything we may have missed while disconnected
+    onReconnect: () => fetchJudges()
   })
 
   useEffect(() => {
@@ -66,6 +70,7 @@ const JudgeTracker = () => {
 
   return (
     <div className="container">
+      <ConnectionBanner isConnected={isConnected} />
       <div className="judge-controls">
         <div className="judge-management-header">
           <h2>Judge Tracker - {tournament.name}</h2>

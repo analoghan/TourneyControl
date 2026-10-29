@@ -549,7 +549,10 @@ app.put('/api/rings/:id', (req, res) => {
         // If ending a session (end_time is being set and ring currently has a start_time)
         if (end_time && ring.start_time) {
           db.run(
-            'UPDATE ring_sessions SET end_time = ? WHERE ring_id = ? AND end_time IS NULL ORDER BY session_number DESC LIMIT 1',
+            // SQLite (as bundled with node-sqlite3) doesn't support ORDER BY/LIMIT on UPDATE, so pick the row in a subquery
+            `UPDATE ring_sessions SET end_time = ? WHERE id = (
+              SELECT id FROM ring_sessions WHERE ring_id = ? AND end_time IS NULL ORDER BY session_number DESC LIMIT 1
+            )`,
             [end_time, req.params.id],
             (err) => {
               if (err) {

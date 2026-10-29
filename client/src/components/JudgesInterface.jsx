@@ -3,6 +3,7 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 import RingSetupBox from './RingSetupBox'
+import ConnectionBanner from './ConnectionBanner'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -90,7 +91,7 @@ const JudgesInterface = () => {
   const [showEndModal, setShowEndModal] = useState(false)
 
 
-  useWebSocket((data) => {
+  const isConnected = useWebSocket((data) => {
     if (data.type === 'ring_update') {
       setRings(prev => prev.map(r => r.id === data.data.id ? data.data : r))
       // Also update selectedRing if it's the one that changed
@@ -111,6 +112,21 @@ const JudgesInterface = () => {
     } else if (data.type === 'tournament_status_change') {
       // Refresh tournaments list when status changes
       fetchTournaments()
+    }
+  }, {
+    // Refetch everything we may have missed while disconnected
+    onReconnect: async () => {
+      fetchTournaments()
+      if (selectedTournament) fetchRings()
+      if (selectedRing) {
+        fetchStackedRings()
+        try {
+          const res = await fetch(`/api/rings/${selectedRing.id}`)
+          if (res.ok) setSelectedRing(await res.json())
+        } catch (error) {
+          console.error('Failed to refresh selected ring:', error)
+        }
+      }
     }
   })
 
@@ -417,6 +433,7 @@ const JudgesInterface = () => {
 
   return (
     <div className="container">
+      <ConnectionBanner isConnected={isConnected} />
       {tournaments.length === 0 ? (
         <div className="no-tournaments-message">
           <p>No active tournaments available. Please contact staff to start a tournament.</p>

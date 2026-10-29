@@ -2900,3 +2900,16 @@ body.login-body {
     flex: 1;
   }
 }
+
+.connection-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #b91c1c;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
