@@ -355,7 +355,9 @@ const StaffInterface = () => {
       csv += `Status:,${data.tournament.status}\n`
       csv += `Total Ring Numbers:,${data.tournament.total_rings}\n`
       csv += `Total Completed Rings:,${data.tournament.completed_sessions}\n`
-      csv += `Created:,${formatTimestamp(data.tournament.created_at)}\n\n`
+      // SQLite's CURRENT_TIMESTAMP is UTC with no zone ("YYYY-MM-DD HH:MM:SS"); mark it as UTC before formatting
+      const createdAtUtc = data.tournament.created_at && `${data.tournament.created_at.replace(' ', 'T')}Z`
+      csv += `Created:,${formatTimestamp(createdAtUtc)}\n\n`
       
       // Find the maximum number of sessions any ring has
       const maxSessions = Math.max(...data.rings.map(r => r.sessions.length), 1)
