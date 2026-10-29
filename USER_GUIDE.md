@@ -337,7 +337,7 @@ Click **Admin** at the top of the staff dashboard.
 - **Download Current Database** saves a complete copy of the database as it is right now (tournaments, rings, packets, judges and chat)
 
 **Automatic Backups:**
-- The server saves a backup every 15 minutes whenever anything has changed, and keeps the newest 96 (about a day)
+- The server saves a backup every 15 minutes whenever anything has changed, and keeps the newest 5; older ones are deleted automatically
 - **Back Up Now** saves one immediately, for example right before ending a tournament
 - The list shows each backup's time, whether it was automatic or manual, and its size, with a **Download** button
 - Backups are stored on the server itself. Download one now and then to keep a copy somewhere else
