@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { apiFetch } from '../utils/api'
 
 const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) => {
   const [messages, setMessages] = useState([])
@@ -51,7 +52,7 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
       // Check position BEFORE fetching
       const shouldAutoScroll = isFirstLoadRef.current || wasAtBottomRef.current
       
-      const res = await fetch(`/api/tournaments/${tournamentId}/chat`)
+      const res = await apiFetch(`/api/tournaments/${tournamentId}/chat`)
       if (res.ok) {
         const data = await res.json()
         
@@ -81,7 +82,7 @@ const TournamentChat = ({ tournamentId, tournamentName, tournamentTimezone }) =>
     if (!newMessage.trim()) return
     
     try {
-      const res = await fetch(`/api/tournaments/${tournamentId}/chat`, {
+      const res = await apiFetch(`/api/tournaments/${tournamentId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

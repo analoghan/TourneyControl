@@ -6,6 +6,7 @@ import TournamentChat from './TournamentChat'
 import ConnectionBanner from './ConnectionBanner'
 import { EVENTS } from '../constants/categories'
 import { getEventColorClass } from '../utils/styleHelpers'
+import { apiFetch } from '../utils/api'
 
 // Sort rank for "Current Event" ordering: events in EVENTS order, then unknown events, then open rings
 const getEventSortRank = (ring) => {
@@ -170,7 +171,7 @@ const StaffInterface = () => {
   }, [])
 
   const fetchTournaments = async () => {
-    const res = await fetch('/api/tournaments')
+    const res = await apiFetch('/api/tournaments')
     const data = await res.json()
     setTournaments(data)
     
@@ -204,7 +205,7 @@ const StaffInterface = () => {
       setStackedRingsMap({})
       return
     }
-    const res = await fetch(`/api/tournaments/${selectedTournament}/rings`)
+    const res = await apiFetch(`/api/tournaments/${selectedTournament}/rings`)
     const data = await res.json()
     setRings(data)
     
@@ -213,7 +214,7 @@ const StaffInterface = () => {
     await Promise.all(
       data.map(async (ring) => {
         try {
-          const stackedRes = await fetch(`/api/rings/${ring.id}/stacked`)
+          const stackedRes = await apiFetch(`/api/rings/${ring.id}/stacked`)
           if (stackedRes.ok) {
             const stackedData = await stackedRes.json()
             if (stackedData.length > 0) {
@@ -230,7 +231,7 @@ const StaffInterface = () => {
 
   const createTournament = async (e) => {
     e.preventDefault()
-    const res = await fetch('/api/tournaments', {
+    const res = await apiFetch('/api/tournaments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, num_rings: numRings, timezone })
@@ -259,7 +260,7 @@ const StaffInterface = () => {
       }
     }
     
-    const res = await fetch(`/api/tournaments/${tournamentId}/status`, {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
@@ -267,7 +268,7 @@ const StaffInterface = () => {
     if (res.ok) {
       // If we just ended the currently selected tournament, switch to another active one
       if (status === 'ended' && selectedTournament === tournamentId) {
-        const updatedRes = await fetch('/api/tournaments')
+        const updatedRes = await apiFetch('/api/tournaments')
         const updatedTournaments = await updatedRes.json()
         
         // Try to find another active tournament
@@ -298,7 +299,7 @@ const StaffInterface = () => {
       return
     }
     
-    const res = await fetch(`/api/tournaments/${tournamentId}`, {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}`, {
       method: 'DELETE'
     })
     
@@ -313,7 +314,7 @@ const StaffInterface = () => {
 
   const generateTournamentReport = async (tournamentId) => {
     try {
-      const res = await fetch(`/api/tournaments/${tournamentId}/report`)
+      const res = await apiFetch(`/api/tournaments/${tournamentId}/report`)
       const data = await res.json()
       
       if (!res.ok) {
@@ -423,7 +424,7 @@ const StaffInterface = () => {
       return
     }
 
-    const res = await fetch(`/api/tournaments/${tournamentId}/rings`, {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/rings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ num_rings: newRingCount })
@@ -453,7 +454,7 @@ const StaffInterface = () => {
   }
 
   const updateTimezone = async (tournamentId) => {
-    const res = await fetch(`/api/tournaments/${tournamentId}/timezone`, {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/timezone`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ timezone: newTimezone })
@@ -485,7 +486,7 @@ const StaffInterface = () => {
       return
     }
 
-    const res = await fetch(`/api/tournaments/${tournamentId}/name`, {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/name`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName.trim() })
@@ -1093,7 +1094,7 @@ const StaffInterface = () => {
                             e.stopPropagation()
                             if (confirm(`Clear timing data for Ring ${ring.ring_number}? This will reset it to "Ready to Start" status.`)) {
                               try {
-                                await fetch(`/api/rings/${ring.id}`, {
+                                await apiFetch(`/api/rings/${ring.id}`, {
                                   method: 'PUT',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ start_time: null, end_time: null })

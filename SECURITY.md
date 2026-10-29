@@ -8,16 +8,22 @@ Your tournament control system now uses server-side authentication for improved 
 
 ### Password Storage
 - Passwords are stored on the **server only** (not in client code)
-- Default passwords are defined in `server/index.js`
+- Default passwords are defined in `server/auth.js`
 - Can be overridden with environment variables
 
 ### Authentication Flow
 1. User enters password on login page
 2. Password is sent to server via POST `/api/auth/login`
 3. Server validates password
-4. Server returns a session token if valid
-5. Client stores token in localStorage
-6. Token is validated on each page load
+4. Server returns a signed session token if valid (expires after 48 hours)
+5. Client stores token in localStorage and sends it with every API request and live-update connection
+6. Server rejects any API request or live-update connection without a valid token
+7. Judge tokens can only use the ring screens' routes; everything else requires a staff token (see `JUDGE_ROUTES` in `server/auth.js`)
+
+### Session Signing Secret
+- Tokens are signed with a secret saved to `server/.auth-secret` (created automatically, not committed), so logins survive a server restart
+- Set `AUTH_SECRET` to supply your own; changing it logs everyone out
+- Changing a role's password logs out everyone using that role
 
 ### Session Management
 - Sessions last 48 hours
@@ -49,11 +55,13 @@ STAFF_PASSWORD=your_secure_staff_password
 
 ### Method 2: Direct Code Change (Development Only)
 
-Edit `server/index.js` and change the default values:
+Edit `server/auth.js` and change the default values:
 
 ```javascript
-const JUDGES_PASSWORD = process.env.JUDGES_PASSWORD || 'your_new_password';
-const STAFF_PASSWORD = process.env.STAFF_PASSWORD || 'your_new_password';
+const PASSWORDS = {
+  judge: process.env.JUDGES_PASSWORD || 'your_new_password',
+  staff: process.env.STAFF_PASSWORD || 'your_new_password'
+};
 ```
 
 ## Security Best Practices
@@ -95,13 +103,13 @@ const STAFF_PASSWORD = process.env.STAFF_PASSWORD || 'your_new_password';
 **Current Implementation:**
 - ✅ Passwords not in client code
 - ✅ Server-side validation
-- ✅ Session tokens
+- ✅ Signed session tokens checked by the server on every request
+- ✅ Judge/staff role checks on API routes
 - ✅ Session expiration
 - ✅ Environment variable support
 
 **Not Implemented (Advanced):**
 - ❌ Password hashing (bcrypt)
-- ❌ JWT tokens
 - ❌ Rate limiting
 - ❌ Multi-factor authentication
 - ❌ User management database
@@ -137,15 +145,14 @@ For higher security needs, consider:
 
 ### Session Expires Too Quickly
 
-Edit `client/src/hooks/useAuth.js`:
-```javascript
-const SESSION_DURATION = 72 * 60 * 60 * 1000 // Change to 72 hours
-```
+Change the duration everywhere it appears so they agree:
+- `SESSION_DURATION_MS` in `server/auth.js`
+- `SESSION_DURATION` in `client/src/utils/api.js`, `client/src/hooks/useAuth.js`, `client/src/App.jsx` and `client/src/components/LoginPage.jsx`
 
 ### Forgot Password
 
 1. Check `.env` file for current passwords
-2. Or check `server/index.js` for default values
+2. Or check `server/auth.js` for default values
 3. Restart server after any changes
 
 ## Support
