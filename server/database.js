@@ -97,6 +97,7 @@ function initDatabase() {
       judge_id INTEGER NOT NULL,
       checked_in INTEGER DEFAULT 0,
       check_in_time DATETIME,
+      currently_competing INTEGER DEFAULT 0,
       notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
@@ -390,6 +391,24 @@ function initDatabase() {
             console.error('Error adding timezone column:', err);
           } else {
             console.log('Successfully added timezone column to tournaments table');
+          }
+        });
+      }
+    });
+
+    // Migration: Add currently_competing to tournament check-ins (a judge who is competing can't judge for now)
+    db.all(`PRAGMA table_info(tournament_judges)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking tournament_judges table schema:', err);
+        return;
+      }
+
+      if (!columns.some(col => col.name === 'currently_competing')) {
+        db.run(`ALTER TABLE tournament_judges ADD COLUMN currently_competing INTEGER DEFAULT 0`, (err) => {
+          if (err) {
+            console.error('Error adding currently_competing column:', err);
+          } else {
+            console.log('Successfully added currently_competing column to tournament_judges table');
           }
         });
       }

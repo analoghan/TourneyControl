@@ -894,10 +894,11 @@ app.post('/api/tournaments/:tournamentId/judges', (req, res) => {
   });
 });
 
-// Update tournament judge (check-in status, notes)
+// Update tournament judge (check-in status, currently competing, notes)
 app.put('/api/tournaments/:tournamentId/judges/:judgeId', (req, res) => {
-  const { tournamentId, judgeId } = req.params;
-  const { checked_in, notes } = req.body;
+  const tournamentId = Number(req.params.tournamentId);
+  const judgeId = Number(req.params.judgeId);
+  const { checked_in, currently_competing, notes } = req.body;
   
   const updates = [];
   const values = [];
@@ -910,6 +911,11 @@ app.put('/api/tournaments/:tournamentId/judges/:judgeId', (req, res) => {
       updates.push('check_in_time = ?');
       values.push(new Date().toISOString());
     }
+  }
+  
+  if (currently_competing !== undefined) {
+    updates.push('currently_competing = ?');
+    values.push(currently_competing ? 1 : 0);
   }
   
   if (notes !== undefined) {
@@ -930,6 +936,13 @@ app.put('/api/tournaments/:tournamentId/judges/:judgeId', (req, res) => {
       if (err) return res.status(500).json({ error: err.message });
       if (this.changes === 0) {
         return res.status(404).json({ error: 'Judge assignment not found' });
+      }
+      if (currently_competing !== undefined) {
+        // A competing judge can't judge, so they leave any ring they're in here
+        if (currently_competing) {
+          clearRingAssignments('tournament_id = ? AND judge_id = ?', [tournamentId, judgeId], { tournament_id: tournamentId });
+        }
+        broadcast({ type: 'judge_status_update', data: { tournament_id: tournamentId, judge_id: judgeId } });
       }
       res.json({ message: 'Judge updated successfully' });
     }
@@ -1026,12 +1039,15 @@ app.post('/api/rings/:ringId/judges', (req, res) => {
           }
           
           db.get(
-            'SELECT 1 FROM tournament_judges WHERE tournament_id = ? AND judge_id = ? AND checked_in = 1',
+            'SELECT currently_competing FROM tournament_judges WHERE tournament_id = ? AND judge_id = ? AND checked_in = 1',
             [ring.tournament_id, judge_id],
             (err, checkedIn) => {
               if (err) return res.status(500).json({ error: err.message });
               if (!checkedIn) {
                 return res.status(400).json({ error: 'This judge is not checked in to this tournament. Check them in on the Judge Tracker first.' });
+              }
+              if (checkedIn.currently_competing) {
+                return res.status(400).json({ error: 'This judge is currently competing. Clear "Currently Competing" on the Judge Tracker first.' });
               }
               
               // Free the position, and the judge's old position if they're moving within this ring

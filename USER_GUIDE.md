@@ -315,9 +315,10 @@ When you click a ring card, you can configure it just like judges do:
 **Judge Tracker:**
 - Open it from the staff dashboard for the selected tournament
 - **Judges Checked In to Tournament** (top): everyone present, with check-in time and ring assignment (**Available** or ring and position), plus totals for checked in, assigned and available
-- **Filter the checked-in judges** to find the right person quickly: search by name or ATA number, show **All**, **Available** or **Assigned** judges, and set a minimum **Rank** (e.g. "4th Degree+"), a minimum **Judging Level** (e.g. "Level 2+"; N/A counts as below Level 1) and an **Age** range. Filters combine, so "Available" + "4th Degree+" lists free judges of rank 4 and up. **Clear filters** resets them
+- **Filter the checked-in judges** to find the right person quickly: search by name or ATA number, show **All**, **Available**, **Assigned** or **Competing** judges, and set a minimum **Rank** (e.g. "4th Degree+"), a minimum **Judging Level** (e.g. "Level 2+"; N/A counts as below Level 1) and an **Age** range. Filters combine, so "Available" + "4th Degree+" lists free judges of rank 4 and up. **Clear filters** resets them
 - **Judge Database** (bottom): every judge in the database. Search by name or ATA number, then click **Check In** when a judge arrives
 - **Check Out** removes a judge from the tournament and from any ring they're assigned to there
+- **Currently Competing** (gray when off, blue when on) marks a judge who is competing right now and can't judge. They stay checked in, show a **Competing** status, aren't counted as available, and appear greyed out in the ring judge lists. Turning it on also removes them from their ring in this tournament. Click it again when they're done competing to make them available
 - Both tables update live as judges are checked in, assigned, or returned to the pool
 - The Judge Database page itself stays the master list for adding and editing judges across all tournaments
 
