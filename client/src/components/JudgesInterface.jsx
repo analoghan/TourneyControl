@@ -74,6 +74,25 @@ const sortBlackBelts = (belts) => {
   })
 }
 
+// Selected ring is saved per tournament; storage can be unavailable (e.g. private browsing), so never let it throw
+const savedRingKey = (tournamentId) => `judgeSelectedRing:${tournamentId}`
+
+const readStorage = (key) => {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+const writeStorage = (key, value) => {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // Not saved; the judge will just need to pick their ring again after a refresh
+  }
+}
+
 const JudgesInterface = () => {
   useAuth('judge') // Check authentication
   
@@ -142,6 +161,13 @@ const JudgesInterface = () => {
       sessionStorage.setItem('selectedTournamentId', selectedTournament.toString())
     }
   }, [selectedTournament])
+
+  // Remember the selected ring per tournament so a refresh or a discarded phone tab comes back to it
+  useEffect(() => {
+    if (selectedTournament && selectedRing?.id) {
+      writeStorage(savedRingKey(selectedTournament), selectedRing.id.toString())
+    }
+  }, [selectedTournament, selectedRing?.id])
 
   useEffect(() => {
     if (selectedRing) {
@@ -233,6 +259,13 @@ const JudgesInterface = () => {
     const res = await apiFetch(`/api/tournaments/${selectedTournament}/rings`)
     const data = await res.json()
     setRings(data)
+
+    // Restore this device's ring after a refresh, unless one is already selected
+    const savedRingId = parseInt(readStorage(savedRingKey(selectedTournament)))
+    const savedRing = data.find(r => r.id === savedRingId)
+    if (savedRing) {
+      setSelectedRing(prev => prev ?? savedRing)
+    }
   }
 
   const updateRingField = async (field, value) => {
