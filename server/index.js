@@ -2,9 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const http = require('http');
+const fs = require('fs');
 const path = require('path');
 const db = require('./database');
 const { checkPassword, createToken, requireAuth, verifyWebSocketClient } = require('./auth');
+const backups = require('./backups');
 
 const app = express();
 const server = http.createServer(app);
@@ -1556,6 +1558,40 @@ app.post('/api/tournaments/:tournamentId/chat', (req, res) => {
   );
 });
 
+// Admin: database backups (staff only, like every route not listed for judges in auth.js)
+
+app.get('/api/admin/backups', (req, res) => {
+  try {
+    res.json({ interval_minutes: backups.INTERVAL_MINUTES, keep: backups.KEEP, backups: backups.listBackups() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/backups', async (req, res) => {
+  try {
+    res.json(await backups.createBackup({ manual: true }));
+  } catch (err) {
+    res.status(500).json({ error: `Backup failed: ${err.message}` });
+  }
+});
+
+app.get('/api/admin/backups/:name', (req, res) => {
+  const file = backups.backupPath(req.params.name);
+  if (!file) return res.status(404).json({ error: 'Backup not found' });
+  res.download(file, req.params.name);
+});
+
+// Download a fresh copy of the live database
+app.get('/api/admin/database', async (req, res) => {
+  try {
+    const { name, file } = await backups.snapshotForDownload();
+    res.download(file, name, () => fs.rm(path.dirname(file), { recursive: true, force: true }, () => {}));
+  } catch (err) {
+    res.status(500).json({ error: `Couldn't copy the database: ${err.message}` });
+  }
+});
+
 // Serve React app for all other routes in production (MUST BE LAST!)
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
@@ -1567,4 +1603,5 @@ const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  backups.startAutomaticBackups();
 });

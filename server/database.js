@@ -6,6 +6,8 @@ const db = new sqlite3.Database(path.join(__dirname, 'tournament.db'), (err) => 
     console.error('Error opening database:', err);
   } else {
     console.log('Connected to SQLite database');
+    // Wait briefly instead of failing if a backup snapshot is reading the file at the same moment
+    db.configure('busyTimeout', 5000);
     initDatabase();
   }
 });

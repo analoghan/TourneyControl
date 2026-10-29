@@ -51,3 +51,22 @@ export const apiGetJson = async (url) => {
   }
   return data
 }
+
+// Download a file from an /api route; a plain link can't send the login token, so fetch it and save the result
+export const apiDownload = async (url, fallbackName) => {
+  const response = await apiFetch(url)
+  if (!response.ok) {
+    const data = await response.json().catch(() => null)
+    throw new Error(data?.error || `Download failed (${response.status})`)
+  }
+  const disposition = response.headers.get('Content-Disposition') || ''
+  const name = disposition.match(/filename="?([^";]+)"?/)?.[1] || fallbackName
+  const objectUrl = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = name
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(objectUrl)
+}

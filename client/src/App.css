@@ -3051,3 +3051,21 @@ body.login-body {
 .btn-competing.btn-competing-active:hover {
   background: #1d4ed8;
 }
+
+/* Admin page sections */
+.admin-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+.admin-section h3 {
+  margin-top: 0;
+}
+
+.admin-section button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

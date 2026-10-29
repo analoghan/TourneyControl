@@ -329,6 +329,19 @@ This is useful for:
 - Managing rings without assigned judges
 - Coordinating complex tournament schedules
 
+### Admin (Staff)
+
+Click **Admin** at the top of the staff dashboard.
+
+**Database:**
+- **Download Current Database** saves a complete copy of the database as it is right now (tournaments, rings, packets, judges and chat)
+
+**Automatic Backups:**
+- The server saves a backup every 15 minutes whenever anything has changed, and keeps the newest 96 (about a day)
+- **Back Up Now** saves one immediately, for example right before ending a tournament
+- The list shows each backup's time, whether it was automatic or manual, and its size, with a **Download** button
+- Backups are stored on the server itself. Download one now and then to keep a copy somewhere else
+
 ### Generating Tournament Reports
 
 1. Find your tournament in the list (active or ended)
