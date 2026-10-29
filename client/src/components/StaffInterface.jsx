@@ -735,15 +735,25 @@ const StaffInterface = () => {
                     )}
                   </div>
                 )}
-                <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem' }}>
+                <div className="tournament-meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem' }}>
                   <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Stacked Rings:</span>
-                  <select
-                    value={t.stacked_ring_display || 'multiple'}
-                    onChange={(e) => updateStackedRingDisplay(t.id, e.target.value)}
-                    style={{ padding: '0.25rem', fontSize: '0.9rem' }}
-                  >
-                    {STACKED_RING_DISPLAY_OPTIONS}
-                  </select>
+                  {/* Kept together so the pair wraps below the label as one unit on narrow screens */}
+                  <span style={{ display: 'inline-flex', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+                    {[['multiple', 'Multiple Cards'], ['single', 'Single Card']].map(([value, label]) => {
+                      const isSelected = (t.stacked_ring_display || 'multiple') === value
+                      return (
+                        <button
+                          key={value}
+                          className={`status-toggle-btn ${isSelected ? 'status-toggle-active' : ''}`}
+                          onClick={() => !isSelected && updateStackedRingDisplay(t.id, value)}
+                          aria-pressed={isSelected}
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', borderRadius: '4px' }}
+                        >
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </span>
                 </div>
               </div>
               <div className="tournament-actions">
