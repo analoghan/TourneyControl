@@ -6,6 +6,7 @@ import StaffInterface from './components/StaffInterface'
 import StaffRingConfig from './components/StaffRingConfig'
 import JudgeManagement from './components/JudgeManagement'
 import JudgeTracker from './components/JudgeTracker'
+import AdminPage from './components/AdminPage'
 import LoginPage from './components/LoginPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
@@ -30,6 +31,8 @@ function NavBar() {
       return 'ATA Tourney Control - Staff Dashboard'
     } else if (location.pathname === '/staff/judge-management') {
       return 'ATA Tourney Control - Judge Database'
+    } else if (location.pathname === '/staff/admin') {
+      return 'ATA Tourney Control - Admin'
     } else if (location.pathname.startsWith('/staff/judge-tracker/')) {
       return 'ATA Tourney Control - Judge Tracker'
     } else if (location.pathname.startsWith('/staff/ring/')) {
@@ -141,9 +144,12 @@ function NavBar() {
               <Link to="/staff/judge-management" className="nav-button">
                 Judge Database
               </Link>
+              <Link to="/staff/admin" className="nav-button">
+                Admin
+              </Link>
             </>
           )}
-          {(location.pathname === '/staff/judge-management' || location.pathname.startsWith('/staff/judge-tracker/')) && (
+          {(location.pathname === '/staff/judge-management' || location.pathname === '/staff/admin' || location.pathname.startsWith('/staff/judge-tracker/')) && (
             <Link to="/staff" className="nav-button">
               Return to Tournament Overview
             </Link>
@@ -211,6 +217,7 @@ function AppContent() {
         <Route path="/staff/ring/:ringId" element={<StaffRingConfig />} />
         <Route path="/staff/judge-management" element={<JudgeManagement />} />
         <Route path="/staff/judge-tracker/:tournamentId" element={<JudgeTracker />} />
+        <Route path="/staff/admin" element={<AdminPage />} />
       </Routes>
       </ErrorBoundary>
     </div>
