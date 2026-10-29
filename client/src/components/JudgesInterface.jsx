@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
 import RingSetupBox from './RingSetupBox'
 import ConnectionBanner from './ConnectionBanner'
-import { apiFetch } from '../utils/api'
+import { apiFetch, apiGetJson } from '../utils/api'
 
 const COLOR_BELT_RANKS = [
   'White',
@@ -103,6 +103,7 @@ const JudgesInterface = () => {
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [tournamentEnded, setTournamentEnded] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [loadError, setLoadError] = useState('')
   const [selectedColorBelts, setSelectedColorBelts] = useState([])
   const [selectedBlackBelts, setSelectedBlackBelts] = useState([])
   const [selectedAgeBrackets, setSelectedAgeBrackets] = useState([])
@@ -231,8 +232,15 @@ const JudgesInterface = () => {
   }
 
   const fetchTournaments = async () => {
-    const res = await apiFetch('/api/tournaments/active')
-    const data = await res.json()
+    let data
+    try {
+      data = await apiGetJson('/api/tournaments/active')
+      setLoadError('')
+    } catch (error) {
+      console.error('Failed to load tournaments:', error)
+      setLoadError(`Couldn't load tournaments: ${error.message}`)
+      return
+    }
     setTournaments(data)
     if (data.length > 0) {
       // Check if there's a saved tournament from sessionStorage (shared key for both roles)
@@ -256,8 +264,15 @@ const JudgesInterface = () => {
   }
 
   const fetchRings = async () => {
-    const res = await apiFetch(`/api/tournaments/${selectedTournament}/rings`)
-    const data = await res.json()
+    let data
+    try {
+      data = await apiGetJson(`/api/tournaments/${selectedTournament}/rings`)
+      setLoadError('')
+    } catch (error) {
+      console.error('Failed to load rings:', error)
+      setLoadError(`Couldn't load rings: ${error.message}`)
+      return
+    }
     setRings(data)
 
     // Restore this device's ring after a refresh, unless one is already selected
@@ -468,6 +483,7 @@ const JudgesInterface = () => {
   return (
     <div className="container">
       <ConnectionBanner isConnected={isConnected} />
+      {loadError && <div className="connection-banner" role="alert">{loadError}</div>}
       {tournaments.length === 0 ? (
         <div className="no-tournaments-message">
           <p>No active tournaments available. Please contact staff to start a tournament.</p>

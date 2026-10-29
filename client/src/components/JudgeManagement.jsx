@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { apiFetch } from '../utils/api'
+import { apiFetch, apiGetJson } from '../utils/api'
 
 const RANK_OPTIONS = [
   '1st Degree',
@@ -25,6 +25,7 @@ const JudgeManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingJudge, setEditingJudge] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [loadError, setLoadError] = useState('')
   
   // Form fields
   const [firstName, setFirstName] = useState('')
@@ -44,8 +45,15 @@ const JudgeManagement = () => {
   }, [])
 
   const fetchJudges = async () => {
-    const res = await apiFetch('/api/judges')
-    const data = await res.json()
+    let data
+    try {
+      data = await apiGetJson('/api/judges')
+    } catch (error) {
+      console.error('Failed to load judges:', error)
+      setLoadError(`Couldn't load judges: ${error.message}`)
+      return
+    }
+    setLoadError('')
     setJudges(data)
   }
 
@@ -181,6 +189,7 @@ const JudgeManagement = () => {
       <div className="judge-management-header">
         <h2>Judge Database</h2>
       </div>
+      {loadError && <div className="connection-banner" role="alert">{loadError}</div>}
 
       <div className="judge-management-actions">
         <button 

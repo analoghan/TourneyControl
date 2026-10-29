@@ -6,7 +6,7 @@ import TournamentChat from './TournamentChat'
 import ConnectionBanner from './ConnectionBanner'
 import { EVENTS } from '../constants/categories'
 import { getEventColorClass } from '../utils/styleHelpers'
-import { apiFetch } from '../utils/api'
+import { apiFetch, apiGetJson } from '../utils/api'
 
 // Sort rank for "Current Event" ordering: events in EVENTS order, then unknown events, then open rings
 const getEventSortRank = (ring) => {
@@ -111,6 +111,7 @@ const StaffInterface = () => {
   const [editingName, setEditingName] = useState(null)
   const [newName, setNewName] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [loadError, setLoadError] = useState('')
 
 
   const isConnected = useWebSocket((data) => {
@@ -171,8 +172,15 @@ const StaffInterface = () => {
   }, [])
 
   const fetchTournaments = async () => {
-    const res = await apiFetch('/api/tournaments')
-    const data = await res.json()
+    let data
+    try {
+      data = await apiGetJson('/api/tournaments')
+      setLoadError('')
+    } catch (error) {
+      console.error('Failed to load tournaments:', error)
+      setLoadError(`Couldn't load tournaments: ${error.message}`)
+      return
+    }
     setTournaments(data)
     
     // If no tournament is selected, or selected tournament no longer exists, select one
@@ -205,10 +213,17 @@ const StaffInterface = () => {
       setStackedRingsMap({})
       return
     }
-    const res = await apiFetch(`/api/tournaments/${selectedTournament}/rings`)
-    const data = await res.json()
+    let data
+    try {
+      data = await apiGetJson(`/api/tournaments/${selectedTournament}/rings`)
+      setLoadError('')
+    } catch (error) {
+      console.error('Failed to load rings:', error)
+      setLoadError(`Couldn't load rings: ${error.message}`)
+      return
+    }
     setRings(data)
-    
+
     // Fetch stacked rings for each ring
     const stackedMap = {}
     await Promise.all(
@@ -269,7 +284,7 @@ const StaffInterface = () => {
       // If we just ended the currently selected tournament, switch to another active one
       if (status === 'ended' && selectedTournament === tournamentId) {
         const updatedRes = await apiFetch('/api/tournaments')
-        const updatedTournaments = await updatedRes.json()
+        const updatedTournaments = updatedRes.ok ? await updatedRes.json() : []
         
         // Try to find another active tournament
         const activeTournament = updatedTournaments.find(t => t.status === 'active' && t.id !== tournamentId)
@@ -608,6 +623,7 @@ const StaffInterface = () => {
   return (
     <div className="container">
       <ConnectionBanner isConnected={isConnected} />
+      {loadError && <div className="connection-banner" role="alert">{loadError}</div>}
       <div className="tournament-setup-section">
         <div className="setup-header" onClick={() => setSetupExpanded(!setupExpanded)}>
           <div className="setup-header-content">
