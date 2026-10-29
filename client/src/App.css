@@ -2913,3 +2913,19 @@ body.login-body {
   margin-bottom: 1rem;
   border-radius: 6px;
 }
+
+/* Single-card stacked rings: one section per stack inside the ring card */
+.ring-stack-section {
+  border-top: 2px solid #93c5fd;
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.ring-stack-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #1e40af;
+  margin-bottom: 0.5rem;
+}

@@ -264,9 +264,9 @@ Your dashboard shows all rings in a grid layout with color-coded information:
 - **Competitor Count** - Number of competitors in the division
 - Special indicators (Stacked Ring badge, Special Abilities)
 - **Stacked Rings** - Additional divisions queued for this ring
-  - Each stacked ring shows as a separate card
-  - Labeled as "Ring X - Stack 2", "Ring X - Stack 3", etc.
-  - Blue "Stacked Ring" badge on all stacked divisions
+  - How they appear is set per tournament with the **Stacked Rings** option (when creating a tournament, or on its card in Tournament Setup)
+  - **Multiple Ring Cards for Stacked Rings** (default): each stack shows as a separate blue card labeled "Ring X - Stack 2", "Ring X - Stack 3", etc., with a "Stacked Ring" badge
+  - **Single Ring Card for Stacked Rings**: one card per ring with an "N Stacked Rings" badge, listing each stack's settings in its own section; the ring's status and alerts appear once
   - Shows individual settings for each stack
   - All stacks share the parent ring's Current Event
 - **Ring Status Footer**: Shows timing status

@@ -23,6 +23,7 @@ function initDatabase() {
       num_rings INTEGER NOT NULL,
       status TEXT DEFAULT 'not_started',
       timezone TEXT DEFAULT 'America/New_York',
+      stacked_ring_display TEXT DEFAULT 'multiple',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -389,6 +390,24 @@ function initDatabase() {
             console.error('Error adding timezone column:', err);
           } else {
             console.log('Successfully added timezone column to tournaments table');
+          }
+        });
+      }
+    });
+
+    // Migration: Add stacked_ring_display column to tournaments ('multiple' = one card per stack, 'single' = one card per ring)
+    db.all(`PRAGMA table_info(tournaments)`, (err, columns) => {
+      if (err) {
+        console.error('Error checking tournaments table schema:', err);
+        return;
+      }
+
+      if (!columns.some(col => col.name === 'stacked_ring_display')) {
+        db.run(`ALTER TABLE tournaments ADD COLUMN stacked_ring_display TEXT DEFAULT 'multiple'`, (err) => {
+          if (err) {
+            console.error('Error adding stacked_ring_display column:', err);
+          } else {
+            console.log('Successfully added stacked_ring_display column to tournaments table');
           }
         });
       }

@@ -90,10 +90,14 @@ app.get('/api/tournaments/:id', (req, res) => {
   });
 });
 
+// How the staff dashboard shows stacked rings: 'multiple' = one card per stack, 'single' = one card per ring
+const STACKED_RING_DISPLAYS = ['multiple', 'single'];
+
 app.post('/api/tournaments', (req, res) => {
-  const { name, num_rings, timezone } = req.body;
+  const { name, num_rings, timezone, stacked_ring_display } = req.body;
   const tz = timezone || 'America/New_York';
-  db.run('INSERT INTO tournaments (name, num_rings, timezone) VALUES (?, ?, ?)', [name, num_rings, tz], function(err) {
+  const stackedDisplay = STACKED_RING_DISPLAYS.includes(stacked_ring_display) ? stacked_ring_display : 'multiple';
+  db.run('INSERT INTO tournaments (name, num_rings, timezone, stacked_ring_display) VALUES (?, ?, ?, ?)', [name, num_rings, tz, stackedDisplay], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     
     const tournamentId = this.lastID;
@@ -264,6 +268,31 @@ app.put('/api/tournaments/:id/timezone', (req, res) => {
         data: updatedTournament 
       });
       
+      res.json(updatedTournament);
+    });
+  });
+});
+
+app.put('/api/tournaments/:id/stacked-ring-display', (req, res) => {
+  const { stacked_ring_display } = req.body;
+  const tournamentId = req.params.id;
+
+  if (!STACKED_RING_DISPLAYS.includes(stacked_ring_display)) {
+    return res.status(400).json({ error: 'Invalid stacked ring display' });
+  }
+
+  db.run('UPDATE tournaments SET stacked_ring_display = ? WHERE id = ?', [stacked_ring_display, tournamentId], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'Tournament not found' });
+
+    db.get('SELECT * FROM tournaments WHERE id = ?', [tournamentId], (err, updatedTournament) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      broadcast({
+        type: 'tournament_settings_updated',
+        data: updatedTournament
+      });
+
       res.json(updatedTournament);
     });
   });

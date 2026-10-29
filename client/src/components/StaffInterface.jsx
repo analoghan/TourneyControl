@@ -8,6 +8,14 @@ import { EVENTS } from '../constants/categories'
 import { getEventColorClass } from '../utils/styleHelpers'
 import { apiFetch, apiGetJson } from '../utils/api'
 
+// How stacked rings appear on the dashboard; stored per tournament
+const STACKED_RING_DISPLAY_OPTIONS = (
+  <>
+    <option value="multiple">Multiple Ring Cards for Stacked Rings</option>
+    <option value="single">Single Ring Card for Stacked Rings</option>
+  </>
+)
+
 // Sort rank for "Current Event" ordering: events in EVENTS order, then unknown events, then open rings
 const getEventSortRank = (ring) => {
   if (ring.is_open === 1) return EVENTS.length + 1
@@ -103,6 +111,7 @@ const StaffInterface = () => {
   const [name, setName] = useState('')
   const [numRings, setNumRings] = useState(24)
   const [timezone, setTimezone] = useState('America/New_York')
+  const [newStackedRingDisplay, setNewStackedRingDisplay] = useState('multiple')
   const [setupExpanded, setSetupExpanded] = useState(false)
   const [editingRingCount, setEditingRingCount] = useState(null)
   const [newRingCount, setNewRingCount] = useState(0)
@@ -139,7 +148,7 @@ const StaffInterface = () => {
       if (selectedTournament === data.data.id) {
         fetchRings()
       }
-    } else if (data.type === 'tournament_timezone_updated') {
+    } else if (data.type === 'tournament_timezone_updated' || data.type === 'tournament_settings_updated') {
       setTournaments(prev => prev.map(t =>
         t.id === data.data.id ? data.data : t
       ))
@@ -249,12 +258,13 @@ const StaffInterface = () => {
     const res = await apiFetch('/api/tournaments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, num_rings: numRings, timezone })
+      body: JSON.stringify({ name, num_rings: numRings, timezone, stacked_ring_display: newStackedRingDisplay })
     })
     if (res.ok) {
       setName('')
       setNumRings(4)
       setTimezone('America/New_York')
+      setNewStackedRingDisplay('multiple')
       fetchTournaments()
     }
   }
@@ -556,6 +566,21 @@ const StaffInterface = () => {
     }
   }
 
+  const updateStackedRingDisplay = async (tournamentId, value) => {
+    const res = await apiFetch(`/api/tournaments/${tournamentId}/stacked-ring-display`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stacked_ring_display: value })
+    })
+
+    if (res.ok) {
+      fetchTournaments()
+    } else {
+      const error = await res.json()
+      alert(error.error || 'Failed to update stacked ring display')
+    }
+  }
+
   const startEditingName = (tournamentId, currentName) => {
     setEditingName(tournamentId)
     setNewName(currentName)
@@ -620,6 +645,10 @@ const StaffInterface = () => {
     return 'category-female'
   }
 
+  const currentTournament = tournaments.find(t => t.id === selectedTournament)
+  const tz = currentTournament?.timezone || 'America/New_York'
+  const stackedRingDisplay = currentTournament?.stacked_ring_display || 'multiple'
+
   return (
     <div className="container">
       <ConnectionBanner isConnected={isConnected} />
@@ -674,6 +703,16 @@ const StaffInterface = () => {
                     <option value="America/Chicago">US Central</option>
                     <option value="America/Denver">US Mountain</option>
                     <option value="America/Los_Angeles">US Pacific</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.95rem' }}>Stacked Rings:</label>
+                  <select
+                    value={newStackedRingDisplay}
+                    onChange={(e) => setNewStackedRingDisplay(e.target.value)}
+                    style={{ padding: '0.6rem', fontSize: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    {STACKED_RING_DISPLAY_OPTIONS}
                   </select>
                 </div>
                 <button type="submit" style={{ padding: '0.6rem', fontSize: '1rem', marginTop: '0.5rem' }}>Create Tournament</button>
@@ -819,6 +858,16 @@ const StaffInterface = () => {
                     )}
                   </div>
                 )}
+                <div className="tournament-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem' }}>
+                  <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>Stacked Rings:</span>
+                  <select
+                    value={t.stacked_ring_display || 'multiple'}
+                    onChange={(e) => updateStackedRingDisplay(t.id, e.target.value)}
+                    style={{ padding: '0.25rem', fontSize: '0.9rem' }}
+                  >
+                    {STACKED_RING_DISPLAY_OPTIONS}
+                  </select>
+                </div>
               </div>
               <div className="tournament-actions">
                 {t.status === 'not_started' && (
@@ -1013,41 +1062,25 @@ const StaffInterface = () => {
               return a.ring_number - b.ring_number
             }).flatMap(ring => {
               const stackedRings = stackedRingsMap[ring.id] || []
-              
-              // If there are stacked rings, show main ring as Stack 1
-              if (stackedRings.length > 0) {
-                const mainRingCard = { ...ring, isStackedRing: true, stackedIndex: 1, parentRingId: ring.id, parentRingNumber: ring.ring_number }
-                const stackedCards = stackedRings.map((stackedRing, index) => ({
-                  ...ring,
-                  ...stackedRing,
-                  isStackedRing: true,
-                  stackedIndex: index + 2,
-                  parentRingId: ring.id,
-                  parentRingNumber: ring.ring_number
-                }))
-                return [mainRingCard, ...stackedCards]
-              } else {
-                // No stacked rings, show as normal
-                return [{ ...ring, isStackedRing: false, stackedIndex: null }]
+              if (stackedRings.length === 0) {
+                return [{ card: ring, stacks: [ring] }]
               }
-            }).map(ring => {
-              const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
+
+              // The main ring is Stack 1. Stacked rings only hold division details, so timing, flags and
+              // the id (used for navigation and clearing timing) always come from the main ring.
+              const stacks = [ring, ...stackedRings.map(stackedRing => ({ ...ring, ...stackedRing, id: ring.id }))]
+              if (stackedRingDisplay === 'single') {
+                return [{ card: ring, stacks }]
+              }
+              return stacks.map((stack, index) => ({ card: stack, stacks: [stack], stackIndex: index + 1 }))
+            }).map(({ card: ring, stacks, stackIndex }) => {
               const isOpen = ring.is_open === 1
+              const isTeamSparring = ring.current_event?.startsWith('Team Sparring')
               const isJudgesNeeded = ring.judges_needed === 1
               const isRttlNeeded = ring.rttl_needed === 1
-              const isColorBelts = ring.rank === 'Color Belts'
-              const isBlackBelts = ring.rank === 'Black Belts'
               const isStackedRing = ring.stacked_ring === 1
-              const hasSpecialAbilitiesPhysical = ring.special_abilities_physical === 1
-              const hasSpecialAbilitiesCognitive = ring.special_abilities_cognitive === 1
-              const hasSpecialAbilitiesAutistic = ring.special_abilities_autistic === 1
-              const colorBelts = isColorBelts && ring.color_belts ? JSON.parse(ring.color_belts) : []
-              const blackBelts = isBlackBelts && ring.black_belts ? JSON.parse(ring.black_belts) : []
-              
-              // Get tournament timezone
-              const tournament = tournaments.find(t => t.id === selectedTournament)
-              const tz = tournament?.timezone || 'America/New_York'
-              
+              const hasMultipleStacks = stacks.length > 1
+
               // Format time in tournament timezone
               const formatTime = (dateString) => {
                 if (!dateString) return ''
@@ -1057,66 +1090,55 @@ const StaffInterface = () => {
                   timeZone: tz
                 })
               }
-              
-              return (
-                <div 
-                  key={ring.isStackedRing ? `stacked-${ring.id}` : `ring-${ring.id}`}
-                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isRttlNeeded ? 'ring-card-rttl-needed' : isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${(isStackedRing || ring.isStackedRing) && !isOpen ? 'ring-card-stacked' : ''}`}
-                  onClick={() => navigate(`/staff/ring/${ring.parentRingId || ring.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <h3>
-                    {ring.isStackedRing 
-                      ? `Ring ${ring.parentRingNumber} - Stack ${ring.stackedIndex}`
-                      : `Ring ${ring.ring_number}`
-                    }
-                  </h3>
-                  <div className="ring-badges">
-                    {!isOpen && !isTeamSparring && (() => {
-                      try {
-                        const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : []
-                        return !ageBrackets.includes('Tigers')
-                      } catch (e) {
-                        return true
-                      }
-                    })() && (
-                      <div className={`division-type-badge ${(ring.division_type || 'Champion') === 'Recreational' ? 'division-type-recreational' : ''}`}>{ring.division_type || 'Champion'}</div>
-                    )}
-                    {isOpen && (
-                      <div className="open-badge">Open</div>
-                    )}
-                    {ring.isStackedRing && (
-                      <div className="stacked-ring-badge">Stacked Ring</div>
-                    )}
-                    {isRttlNeeded && (
-                      <div className="rttl-needed-badge">RTTL Needed</div>
-                    )}
-                    {isJudgesNeeded && (
-                      <div className="judges-needed-badge">Judges Needed</div>
-                    )}
-                    {hasSpecialAbilitiesPhysical && !isOpen && (
-                      <div className="special-abilities-badge special-abilities-physical">SA - Physical</div>
-                    )}
-                    {hasSpecialAbilitiesCognitive && !isOpen && (
-                      <div className="special-abilities-badge special-abilities-cognitive">SA - Cognitive</div>
-                    )}
-                    {hasSpecialAbilitiesAutistic && !isOpen && (
-                      <div className="special-abilities-badge special-abilities-autistic">SA - Autistic</div>
-                    )}
-                  </div>
+
+              const renderDivisionTypeBadge = (stack) => {
+                if (isOpen || stack.current_event?.startsWith('Team Sparring')) return null
+                try {
+                  const ageBrackets = stack.age_brackets ? JSON.parse(stack.age_brackets) : []
+                  if (ageBrackets.includes('Tigers')) return null
+                } catch (e) {
+                  // Unreadable age brackets; show the badge
+                }
+                return (
+                  <div className={`division-type-badge ${(stack.division_type || 'Champion') === 'Recreational' ? 'division-type-recreational' : ''}`}>{stack.division_type || 'Champion'}</div>
+                )
+              }
+
+              const renderSpecialAbilitiesBadges = (stack) => !isOpen && (
+                <>
+                  {stack.special_abilities_physical === 1 && (
+                    <div className="special-abilities-badge special-abilities-physical">SA - Physical</div>
+                  )}
+                  {stack.special_abilities_cognitive === 1 && (
+                    <div className="special-abilities-badge special-abilities-cognitive">SA - Cognitive</div>
+                  )}
+                  {stack.special_abilities_autistic === 1 && (
+                    <div className="special-abilities-badge special-abilities-autistic">SA - Autistic</div>
+                  )}
+                </>
+              )
+
+              const renderDivisionInfo = (stack) => {
+                const isStackTeamSparring = stack.current_event?.startsWith('Team Sparring')
+                const isColorBelts = stack.rank === 'Color Belts'
+                const isBlackBelts = stack.rank === 'Black Belts'
+                const colorBelts = isColorBelts && stack.color_belts ? JSON.parse(stack.color_belts) : []
+                const blackBelts = isBlackBelts && stack.black_belts ? JSON.parse(stack.black_belts) : []
+
+                return (
                   <div className="ring-info">
                     {!isOpen && (
                       <>
-                        {isTeamSparring && (
-                          <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
-                            {ring.current_event}
+                        {isStackTeamSparring && (
+                          <div className={`event-display ${getEventColorClass(stack.current_event)}`}>
+                            {stack.current_event}
                           </div>
                         )}
-                        {isTeamSparring ? (
-                          <div className="division-info">{ring.division || 'Bantam'}</div>
+                        {isStackTeamSparring ? (
+                          <div className="division-info">{stack.division || 'Bantam'}</div>
                         ) : (
                           <>
-                            {ring.competitor_count && (
+                            {stack.competitor_count && (
                               <div className="competitor-count-display" style={{ 
                                 background: '#e0e7ff', 
                                 color: '#1e40af', 
@@ -1127,23 +1149,23 @@ const StaffInterface = () => {
                                 textAlign: 'center',
                                 marginBottom: '0.5rem'
                               }}>
-                                Competitors: {ring.competitor_count}
+                                Competitors: {stack.competitor_count}
                               </div>
                             )}
-                            <div className={`category-info ${getGenderColorClass(ring.gender || 'Male')}`}>
-                              <span className="category-item">{ring.gender || 'Male'}</span>
+                            <div className={`category-info ${getGenderColorClass(stack.gender || 'Male')}`}>
+                              <span className="category-item">{stack.gender || 'Male'}</span>
                               <span className="category-divider">|</span>
                               <span className="category-item">{(() => {
                                 try {
-                                  const ageBrackets = ring.age_brackets ? JSON.parse(ring.age_brackets) : [ring.age_bracket || '8 and Under']
+                                  const ageBrackets = stack.age_brackets ? JSON.parse(stack.age_brackets) : [stack.age_bracket || '8 and Under']
                                   return sortAgeBrackets([...ageBrackets]).join(', ')
                                 } catch (e) {
-                                  return ring.age_bracket || '8 and Under'
+                                  return stack.age_bracket || '8 and Under'
                                 }
                               })()}</span>
                             </div>
-                            <div className={`rank-info ${getRankColorClass(ring.rank || 'Color Belts')}`}>
-                              {ring.rank || 'Color Belts'}
+                            <div className={`rank-info ${getRankColorClass(stack.rank || 'Color Belts')}`}>
+                              {stack.rank || 'Color Belts'}
                             </div>
                             {isColorBelts && colorBelts.length > 0 && (
                               <div className="color-belts-display">
@@ -1157,14 +1179,63 @@ const StaffInterface = () => {
                             )}
                           </>
                         )}
-                        {!isTeamSparring && (
-                          <div className={`event-display ${getEventColorClass(ring.current_event)}`}>
-                            {ring.current_event}
+                        {!isStackTeamSparring && (
+                          <div className={`event-display ${getEventColorClass(stack.current_event)}`}>
+                            {stack.current_event}
                           </div>
                         )}
                       </>
                     )}
                   </div>
+                )
+              }
+
+              return (
+                <div 
+                  key={stackIndex ? `ring-${ring.id}-stack-${stackIndex}` : `ring-${ring.id}`}
+                  className={`ring-card ${isOpen ? 'ring-card-open' : ''} ${isTeamSparring && !isOpen ? 'ring-card-team' : ''} ${isRttlNeeded ? 'ring-card-rttl-needed' : isJudgesNeeded ? 'ring-card-judges-needed' : ''} ${(isStackedRing || stackIndex) && !isOpen ? 'ring-card-stacked' : ''}`}
+                  onClick={() => navigate(`/staff/ring/${ring.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <h3>
+                    {stackIndex
+                      ? `Ring ${ring.ring_number} - Stack ${stackIndex}`
+                      : `Ring ${ring.ring_number}`
+                    }
+                  </h3>
+                  <div className="ring-badges">
+                    {!hasMultipleStacks && renderDivisionTypeBadge(ring)}
+                    {isOpen && (
+                      <div className="open-badge">Open</div>
+                    )}
+                    {stackIndex && (
+                      <div className="stacked-ring-badge">Stacked Ring</div>
+                    )}
+                    {hasMultipleStacks && (
+                      <div className="stacked-ring-badge">{stacks.length} Stacked Rings</div>
+                    )}
+                    {isRttlNeeded && (
+                      <div className="rttl-needed-badge">RTTL Needed</div>
+                    )}
+                    {isJudgesNeeded && (
+                      <div className="judges-needed-badge">Judges Needed</div>
+                    )}
+                    {!hasMultipleStacks && renderSpecialAbilitiesBadges(ring)}
+                  </div>
+                  {hasMultipleStacks ? (
+                    stacks.map((stack, index) => (
+                      <div key={index} className="ring-stack-section">
+                        <div className="ring-stack-label">Stack {index + 1}</div>
+                        <div className="ring-badges">
+                          {renderDivisionTypeBadge(stack)}
+                          {renderSpecialAbilitiesBadges(stack)}
+                        </div>
+                        {renderDivisionInfo(stack)}
+                      </div>
+                    ))
+                  ) : (
+                    renderDivisionInfo(ring)
+                  )}
                   <div className="ring-status-footer">
                     {ring.start_time && !ring.end_time ? (
                       <div className="ring-status-badge ring-status-in-progress">
