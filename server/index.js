@@ -66,6 +66,14 @@ function broadcast(data) {
   });
 }
 
+// Tell open screens a ring's stacks were added or removed, with the ring's current stacks
+function broadcastStackedRings(ringId) {
+  db.all('SELECT * FROM stacked_rings WHERE ring_id = ? ORDER BY stack_order', [ringId], (err, rows) => {
+    if (err) return console.error('Error loading stacked rings for broadcast:', err);
+    broadcast({ type: 'stacked_rings_changed', data: { ring_id: Number(ringId), stacked_rings: rows } });
+  });
+}
+
 // Send judges back to the pool: drop the matching ring assignments and tell open screens to refresh
 function clearRingAssignments(where, params, data) {
   db.run(`DELETE FROM ring_assignments WHERE ${where}`, params, function(err) {
@@ -430,10 +438,25 @@ app.delete('/api/tournaments/:id', (req, res) => {
   });
 });
 
+// Each ring includes its stacked rings, so the dashboard loads in one request instead of one per ring
 app.get('/api/tournaments/:id/rings', (req, res) => {
   db.all('SELECT * FROM rings WHERE tournament_id = ? ORDER BY ring_number', [req.params.id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    
+    db.all(
+      `SELECT s.* FROM stacked_rings s
+       JOIN rings r ON r.id = s.ring_id
+       WHERE r.tournament_id = ?
+       ORDER BY s.ring_id, s.stack_order`,
+      [req.params.id],
+      (err, stackedRows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        rows.forEach(ring => {
+          ring.stacked_rings = stackedRows.filter(s => s.ring_id === ring.id);
+        });
+        res.json(rows);
+      }
+    );
   });
 });
 
@@ -1333,6 +1356,7 @@ app.post('/api/rings/:ringId/stacked', (req, res) => {
                 broadcast({ type: 'ring_update', data: ring });
               }
             });
+            broadcastStackedRings(ringId);
             
             res.json(row);
           });
@@ -1466,6 +1490,8 @@ app.delete('/api/stacked-rings/:id', (req, res) => {
               broadcast({ type: 'ring_update', data: ring });
             }
           });
+          // Queued after the renumbering above, so the list reflects the new stack order
+          broadcastStackedRings(stackedRing.ring_id);
           
           res.json({ message: 'Stacked ring deleted successfully' });
         }

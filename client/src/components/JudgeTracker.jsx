@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useWebSocket } from '../hooks/useWebSocket'
 import ConnectionBanner from './ConnectionBanner'
@@ -128,9 +128,6 @@ const JudgeTracker = () => {
       <div className="judge-controls">
         <div className="judge-management-header">
           <h2>Judge Tracker - {tournament.name}</h2>
-          <Link to="/staff" className="back-button">
-            ← Back to Dashboard
-          </Link>
         </div>
 
         <div style={{

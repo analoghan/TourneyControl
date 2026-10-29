@@ -143,7 +143,7 @@ function NavBar() {
               </Link>
             </>
           )}
-          {location.pathname === '/staff/judge-management' && (
+          {(location.pathname === '/staff/judge-management' || location.pathname.startsWith('/staff/judge-tracker/')) && (
             <Link to="/staff" className="nav-button">
               Return to Tournament Overview
             </Link>
