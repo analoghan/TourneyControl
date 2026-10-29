@@ -696,23 +696,12 @@ const sanitizeAtaNumber = (input) => {
 
 // Get all judges
 app.get('/api/judges', (req, res) => {
-  // Include each judge's ring assignment, if any (a judge can be in only one ring at a time)
-  db.all(
-    `SELECT j.*, ra.ring_id AS assigned_ring_id, ra.position AS assigned_position,
-            r.ring_number AS assigned_ring_number, t.name AS assigned_tournament_name
-     FROM judges j
-     LEFT JOIN ring_assignments ra ON ra.judge_id = j.id
-     LEFT JOIN rings r ON r.id = ra.ring_id
-     LEFT JOIN tournaments t ON t.id = ra.tournament_id
-     ORDER BY j.last_name, j.first_name`,
-    [],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json(rows);
+  db.all('SELECT * FROM judges ORDER BY last_name, first_name', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
     }
-  );
+    res.json(rows);
+  });
 });
 
 // Add a new judge
@@ -823,19 +812,22 @@ app.delete('/api/judges/:id', (req, res) => {
 
 // Tournament Judge Assignment Endpoints
 
-// Get all judges assigned to a tournament
+// Get all judges checked in to a tournament, with their ring assignment (which may be in another tournament,
+// since a judge can be in only one ring anywhere)
 app.get('/api/tournaments/:tournamentId/judges', (req, res) => {
   const { tournamentId } = req.params;
   
   db.all(
     `SELECT tj.*, j.first_name, j.last_name, j.ata_number, j.rank, j.age, j.gender, j.judging_level,
             j.competing, j.competing_creative_xma, j.competing_teams, j.teams_coach,
-            ra.ring_id, ra.position, r.ring_number
+            ra.ring_id, ra.position, r.ring_number,
+            ra.tournament_id AS assigned_tournament_id, t.name AS assigned_tournament_name
      FROM tournament_judges tj
      JOIN judges j ON tj.judge_id = j.id
-     LEFT JOIN ring_assignments ra ON ra.judge_id = j.id AND ra.tournament_id = tj.tournament_id
+     LEFT JOIN ring_assignments ra ON ra.judge_id = j.id
      LEFT JOIN rings r ON ra.ring_id = r.id
-     WHERE tj.tournament_id = ?
+     LEFT JOIN tournaments t ON ra.tournament_id = t.id
+     WHERE tj.tournament_id = ? AND tj.checked_in = 1
      ORDER BY j.last_name, j.first_name`,
     [tournamentId],
     (err, rows) => {
@@ -845,28 +837,38 @@ app.get('/api/tournaments/:tournamentId/judges', (req, res) => {
   );
 });
 
-// Assign a judge to a tournament
+// Check a judge in to a tournament, which makes them available for ring assignments there
 app.post('/api/tournaments/:tournamentId/judges', (req, res) => {
-  const { tournamentId } = req.params;
+  const tournamentId = Number(req.params.tournamentId);
   const { judge_id, notes } = req.body;
   
   if (!judge_id) {
     return res.status(400).json({ error: 'Judge ID is required' });
   }
   
-  db.run(
-    'INSERT INTO tournament_judges (tournament_id, judge_id, notes) VALUES (?, ?, ?)',
-    [tournamentId, judge_id, notes || null],
-    function(err) {
-      if (err) {
-        if (err.message.includes('UNIQUE constraint')) {
-          return res.status(400).json({ error: 'Judge already assigned to this tournament' });
-        }
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ id: this.lastID, message: 'Judge assigned to tournament successfully' });
+  db.get('SELECT status FROM tournaments WHERE id = ?', [tournamentId], (err, tournament) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!tournament) return res.status(404).json({ error: 'Tournament not found' });
+    if (tournament.status === 'ended') {
+      return res.status(403).json({ error: 'Tournament has ended. Judges cannot be checked in.' });
     }
-  );
+    
+    db.run(
+      `INSERT INTO tournament_judges (tournament_id, judge_id, notes, checked_in, check_in_time) VALUES (?, ?, ?, 1, ?)
+       ON CONFLICT(tournament_id, judge_id) DO UPDATE SET checked_in = 1, check_in_time = excluded.check_in_time`,
+      [tournamentId, judge_id, notes || null, new Date().toISOString()],
+      (err) => {
+        if (err) {
+          if (err.message.includes('FOREIGN KEY constraint')) {
+            return res.status(404).json({ error: 'Judge not found' });
+          }
+          return res.status(500).json({ error: err.message });
+        }
+        broadcast({ type: 'judge_check_in', data: { tournament_id: tournamentId, judge_id: Number(judge_id) } });
+        res.json({ message: 'Judge checked in successfully' });
+      }
+    );
+  });
 });
 
 // Update tournament judge (check-in status, notes)
@@ -911,16 +913,21 @@ app.put('/api/tournaments/:tournamentId/judges/:judgeId', (req, res) => {
   );
 });
 
-// Remove a judge from a tournament
+// Check a judge out of a tournament; they also leave any ring they're assigned to there
 app.delete('/api/tournaments/:tournamentId/judges/:judgeId', (req, res) => {
-  const { tournamentId, judgeId } = req.params;
+  const tournamentId = Number(req.params.tournamentId);
+  const judgeId = Number(req.params.judgeId);
   
   db.run(
     'DELETE FROM tournament_judges WHERE tournament_id = ? AND judge_id = ?',
     [tournamentId, judgeId],
     function(err) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Judge removed from tournament successfully' });
+      clearRingAssignments('tournament_id = ? AND judge_id = ?', [tournamentId, judgeId], { tournament_id: tournamentId });
+      if (this.changes > 0) {
+        broadcast({ type: 'judge_check_out', data: { tournament_id: tournamentId, judge_id: judgeId } });
+      }
+      res.json({ message: 'Judge checked out successfully' });
     }
   );
 });
@@ -995,25 +1002,36 @@ app.post('/api/rings/:ringId/judges', (req, res) => {
             });
           }
           
-          // Free the position, and the judge's old position if they're moving within this ring
-          db.run(
-            'DELETE FROM ring_assignments WHERE ring_id = ? AND (position = ? OR judge_id = ?)',
-            [ringId, position, judge_id],
-            (err) => {
+          db.get(
+            'SELECT 1 FROM tournament_judges WHERE tournament_id = ? AND judge_id = ? AND checked_in = 1',
+            [ring.tournament_id, judge_id],
+            (err, checkedIn) => {
               if (err) return res.status(500).json({ error: err.message });
+              if (!checkedIn) {
+                return res.status(400).json({ error: 'This judge is not checked in to this tournament. Check them in on the Judge Tracker first.' });
+              }
               
+              // Free the position, and the judge's old position if they're moving within this ring
               db.run(
-                'INSERT INTO ring_assignments (ring_id, judge_id, tournament_id, position) VALUES (?, ?, ?, ?)',
-                [ringId, judge_id, ring.tournament_id, position],
-                function(err) {
-                  if (err) {
-                    if (err.message.includes('UNIQUE constraint')) {
-                      return res.status(400).json({ error: 'That judge or position was just assigned by someone else. Please try again.' });
+                'DELETE FROM ring_assignments WHERE ring_id = ? AND (position = ? OR judge_id = ?)',
+                [ringId, position, judge_id],
+                (err) => {
+                  if (err) return res.status(500).json({ error: err.message });
+                  
+                  db.run(
+                    'INSERT INTO ring_assignments (ring_id, judge_id, tournament_id, position) VALUES (?, ?, ?, ?)',
+                    [ringId, judge_id, ring.tournament_id, position],
+                    function(err) {
+                      if (err) {
+                        if (err.message.includes('UNIQUE constraint')) {
+                          return res.status(400).json({ error: 'That judge or position was just assigned by someone else. Please try again.' });
+                        }
+                        return res.status(500).json({ error: err.message });
+                      }
+                      broadcast({ type: 'ring_assignment_update', data: { ring_id: ringId, tournament_id: ring.tournament_id } });
+                      res.json({ id: this.lastID, message: 'Judge assigned to ring successfully' });
                     }
-                    return res.status(500).json({ error: err.message });
-                  }
-                  broadcast({ type: 'ring_assignment_update', data: { ring_id: ringId, tournament_id: ring.tournament_id } });
-                  res.json({ id: this.lastID, message: 'Judge assigned to ring successfully' });
+                  );
                 }
               );
             }

@@ -305,11 +305,20 @@ When you click a ring card, you can configure it just like judges do:
 
 **Judge Assignments (Staff View):**
 - When the ring isn't Open, pick a Center Judge, Corner Judge A and Corner Judge B
+- Only judges checked in to the tournament on the Judge Tracker appear in the lists
 - A judge can be in only one ring at a time, across all tournaments. Judges already in another ring are greyed out in the list with their ring number
 - Picking a judge who is already in this ring moves them to the new position
 - When a ring is completed (End Ring), its judges go back to the pool of available judges, just as the event settings reset
 - When a tournament is ended, all of its judges go back to the pool
-- The **Status** column in the Judge Database shows each judge as **Available** or their current ring and position (hover to see the tournament), and updates live
+- The Judge Tracker shows each checked-in judge as **Available** or their current ring and position
+
+**Judge Tracker:**
+- Open it from the staff dashboard for the selected tournament
+- **Judges Checked In to Tournament** (top): everyone present, with check-in time and ring assignment (**Available** or ring and position), plus totals for checked in, assigned and available
+- **Judge Database** (bottom): every judge in the database. Search by name or ATA number, then click **Check In** when a judge arrives
+- **Check Out** removes a judge from the tournament and from any ring they're assigned to there
+- Both tables update live as judges are checked in, assigned, or returned to the pool
+- The Judge Database page itself stays the master list for adding and editing judges across all tournaments
 
 This is useful for:
 - Pre-configuring rings before judges arrive

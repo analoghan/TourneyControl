@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAuth } from '../hooks/useAuth'
 import { EVENTS, GENDERS, AGE_BRACKETS, RANKS, DIVISIONS, BLACK_BELT_RANKS } from '../constants/categories'
@@ -109,6 +109,8 @@ const StaffRingConfig = () => {
       // Judges moved somewhere (here, another ring, or back to the pool); refresh who's available
       fetchRingJudges()
       fetchJudges()
+    } else if ((data.type === 'judge_check_in' || data.type === 'judge_check_out') && data.data.tournament_id === ring?.tournament_id) {
+      fetchJudges()
     } else if (data.type === 'tournament_ended') {
       if (ring && data.data.tournament_id === ring.tournament_id) {
         setTournamentEnded(true)
@@ -128,9 +130,13 @@ const StaffRingConfig = () => {
   useEffect(() => {
     fetchRing()
     fetchStackedRings()
-    fetchJudges()
     fetchRingJudges()
   }, [ringId])
+
+  // The judge list is the ring's tournament's checked-in judges, so it waits for the ring to load
+  useEffect(() => {
+    fetchJudges()
+  }, [ring?.tournament_id])
 
   const fetchStackedRings = async () => {
     try {
@@ -145,8 +151,9 @@ const StaffRingConfig = () => {
   }
 
   const fetchJudges = async () => {
+    if (!ring) return
     try {
-      const res = await apiFetch('/api/judges')
+      const res = await apiFetch(`/api/tournaments/${ring.tournament_id}/judges`)
       if (res.ok) {
         const data = await res.json()
         setJudges(data)
@@ -203,19 +210,35 @@ const StaffRingConfig = () => {
     fetchJudges()
   }
 
-  // Judges in another ring can't be picked; judges elsewhere in this ring can (they move positions)
-  const renderJudgeOptions = () => judges.map(judge => {
-    const name = `${judge.first_name} ${judge.last_name}`
-    if (!judge.assigned_ring_id) {
-      return <option key={judge.id} value={judge.id}>{name}</option>
-    }
-    const inThisRing = judge.assigned_ring_id === parseInt(ringId)
-    return (
-      <option key={judge.id} value={judge.id} disabled={!inThisRing}>
-        {name} — {inThisRing ? judge.assigned_position : `Ring ${judge.assigned_ring_number}`}
-      </option>
-    )
-  })
+  // Only judges checked in to this tournament can be picked. Judges in another ring are shown but disabled;
+  // judges elsewhere in this ring can be picked (they move positions).
+  const renderJudgeOptions = () => {
+    const options = judges.map(judge => {
+      const name = `${judge.first_name} ${judge.last_name}`
+      if (!judge.ring_id) {
+        return <option key={judge.judge_id} value={judge.judge_id}>{name}</option>
+      }
+      const inThisRing = judge.ring_id === parseInt(ringId)
+      return (
+        <option key={judge.judge_id} value={judge.judge_id} disabled={!inThisRing}>
+          {name} — {inThisRing ? judge.position : `Ring ${judge.ring_number}`}
+        </option>
+      )
+    })
+
+    // Keep showing anyone already in this ring who isn't checked in (assigned before check-in was required)
+    Object.values(ringJudges)
+      .filter(assignment => assignment && !judges.some(j => j.judge_id === assignment.judge_id))
+      .forEach(assignment => {
+        options.push(
+          <option key={assignment.judge_id} value={assignment.judge_id}>
+            {assignment.first_name} {assignment.last_name} — {assignment.position} (not checked in)
+          </option>
+        )
+      })
+
+    return options
+  }
 
   const loadBeltSelections = (ringData) => {
     // Load color belts
@@ -848,6 +871,11 @@ const StaffRingConfig = () => {
                 fontSize: '1.1rem',
                 fontWeight: '700'
               }}>Judge Assignments</h3>
+              <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
+                Only judges checked in on the{' '}
+                <Link to={`/staff/judge-tracker/${ring.tournament_id}`}>Judge Tracker</Link>
+                {' '}can be assigned{judges.length === 0 ? ' — no judges are checked in yet' : ''}.
+              </p>
               
               <div style={{ display: 'grid', gap: '1rem' }}>
                 <div className="category-selector">
