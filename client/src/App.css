@@ -3069,3 +3069,10 @@ body.login-body {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* Wide tables (Judge Tracker check-ins): slightly tighter cells so every column fits the page */
+.judges-table-compact th,
+.judges-table-compact td {
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}

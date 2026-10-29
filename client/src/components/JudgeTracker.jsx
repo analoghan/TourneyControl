@@ -11,6 +11,9 @@ const NO_FILTERS = { search: '', status: 'all', minRank: '', minLevel: '', minAg
 const filterInputStyle = { padding: '0.4rem', fontSize: '0.9rem', border: '1px solid #ddd', borderRadius: '4px' }
 const filterLabelStyle = { display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: '600', fontSize: '0.9rem', color: '#2c3e50' }
 
+const formatDuration = (minutes) =>
+  minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} hr ${minutes % 60} min`
+
 const matchesSearch = (judge, text) =>
   !text || `${judge.first_name} ${judge.last_name} ${judge.ata_number}`.toLowerCase().includes(text)
 
@@ -38,6 +41,7 @@ const JudgeTracker = () => {
   const [allJudges, setAllJudges] = useState([])
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState(NO_FILTERS)
+  const [now, setNow] = useState(Date.now())
   const [loadError, setLoadError] = useState('')
 
   const isConnected = useWebSocket((data) => {
@@ -60,6 +64,12 @@ const JudgeTracker = () => {
     fetchCheckedInJudges()
     fetchAllJudges()
   }, [tournamentId])
+
+  // Keeps "In ring N min" current
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(timer)
+  }, [])
 
   const load = async (url, label, setter) => {
     try {
@@ -142,12 +152,14 @@ const JudgeTracker = () => {
     }
     // A judge can be in only one ring anywhere, so note (on its own line, to keep the column narrow) when it's in another tournament
     const otherTournament = judge.assigned_tournament_id !== parseInt(tournamentId)
+    const minutesInRing = judge.in_ring_since ? Math.max(0, Math.floor((now - Date.parse(judge.in_ring_since)) / 60000)) : null
     return (
       <>
         <span className="judge-status judge-status-assigned" title={judge.assigned_tournament_name}>
           Ring {judge.ring_number} – {judge.position}
         </span>
         {otherTournament && <div className="judge-status-note">{judge.assigned_tournament_name}</div>}
+        {minutesInRing !== null && <div className="judge-status-note">In ring {formatDuration(minutesInRing)}</div>}
       </>
     )
   }
@@ -253,7 +265,7 @@ const JudgeTracker = () => {
           </div>
         ) : (
           <div className="judges-table-container">
-            <table className="judges-table">
+            <table className="judges-table judges-table-compact">
               <thead>
                 <tr>
                   <th>Name</th>
@@ -263,6 +275,7 @@ const JudgeTracker = () => {
                   <th>Rank</th>
                   <th>Judging Level</th>
                   <th>Checked In</th>
+                  <th title="Completed packets judged in this tournament">Packets Judged</th>
                   <th>Ring Assignment</th>
                   {!isEnded && <th>Actions</th>}
                 </tr>
@@ -277,6 +290,7 @@ const JudgeTracker = () => {
                     <td>{judge.rank}</td>
                     <td>{judge.judging_level}</td>
                     <td>{formatCheckInTime(judge.check_in_time)}</td>
+                    <td>{judge.packets_judged}</td>
                     <td>{renderStatus(judge)}</td>
                     {!isEnded && (
                       <td>

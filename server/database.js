@@ -485,7 +485,11 @@ function initDatabase() {
       ['division', 'TEXT'],
       ['division_type', 'TEXT'],
       ['competitor_count', 'INTEGER'],
-      ['special_abilities', 'TEXT']
+      ['special_abilities', 'TEXT'],
+      // The server's own start/end times; start_time/end_time come from the tablet's clock, which may be off.
+      // Judge assignment history is matched against these so both sides use the same clock.
+      ['server_start_time', 'TEXT'],
+      ['server_end_time', 'TEXT']
     ];
     db.all(`PRAGMA table_info(ring_sessions)`, (err, columns) => {
       if (err) {
@@ -526,12 +530,59 @@ function initDatabase() {
       if (err) console.error('Error creating one-ring-per-judge index:', err);
     });
 
+    // Judge assignment history: ring_assignments holds only current seats (rows are deleted when a ring completes,
+    // a judge moves, competes or checks out, or the tournament ends), so triggers keep a permanent record of who sat
+    // where and when. Times use the same ISO format as packet start/end times.
+    db.run(`CREATE TABLE IF NOT EXISTS judge_assignment_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tournament_id INTEGER NOT NULL,
+      ring_id INTEGER NOT NULL,
+      judge_id INTEGER NOT NULL,
+      position TEXT NOT NULL,
+      assigned_at TEXT NOT NULL,
+      unassigned_at TEXT,
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+      FOREIGN KEY (ring_id) REFERENCES rings(id) ON DELETE CASCADE,
+      FOREIGN KEY (judge_id) REFERENCES judges(id) ON DELETE CASCADE
+    )`);
+    db.run(`CREATE TRIGGER IF NOT EXISTS trg_ring_assignment_history_open
+      AFTER INSERT ON ring_assignments
+      BEGIN
+        INSERT INTO judge_assignment_history (tournament_id, ring_id, judge_id, position, assigned_at)
+        VALUES (NEW.tournament_id, NEW.ring_id, NEW.judge_id, NEW.position, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+      END`);
+    db.run(`CREATE TRIGGER IF NOT EXISTS trg_ring_assignment_history_close
+      AFTER DELETE ON ring_assignments
+      BEGIN
+        UPDATE judge_assignment_history SET unassigned_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE ring_id = OLD.ring_id AND judge_id = OLD.judge_id AND position = OLD.position AND unassigned_at IS NULL;
+      END`);
+    // Judges already seated when history was added get an open record from their original assignment time
+    db.run(`INSERT INTO judge_assignment_history (tournament_id, ring_id, judge_id, position, assigned_at)
+      SELECT ra.tournament_id, ra.ring_id, ra.judge_id, ra.position, replace(ra.assigned_at, ' ', 'T') || '.000Z'
+      FROM ring_assignments ra
+      JOIN rings r ON r.id = ra.ring_id
+      JOIN judges j ON j.id = ra.judge_id
+      JOIN tournaments t ON t.id = ra.tournament_id
+      WHERE NOT EXISTS (
+        SELECT 1 FROM judge_assignment_history h
+        WHERE h.ring_id = ra.ring_id AND h.judge_id = ra.judge_id AND h.position = ra.position AND h.unassigned_at IS NULL
+      )`, function(err) {
+      if (err) {
+        console.error('Error recording current judge assignments in history:', err);
+      } else if (this.changes > 0) {
+        console.log(`Recorded ${this.changes} current judge assignments in history`);
+      }
+    });
+
     // Indexes for the common lookups by parent (tables with UNIQUE constraints are already indexed)
     [
       'CREATE INDEX IF NOT EXISTS idx_rings_tournament ON rings(tournament_id)',
       'CREATE INDEX IF NOT EXISTS idx_stacked_rings_ring ON stacked_rings(ring_id, stack_order)',
       'CREATE INDEX IF NOT EXISTS idx_ring_sessions_ring ON ring_sessions(ring_id)',
-      'CREATE INDEX IF NOT EXISTS idx_chat_messages_tournament ON chat_messages(tournament_id)'
+      'CREATE INDEX IF NOT EXISTS idx_chat_messages_tournament ON chat_messages(tournament_id)',
+      'CREATE INDEX IF NOT EXISTS idx_assignment_history_tournament ON judge_assignment_history(tournament_id)',
+      'CREATE INDEX IF NOT EXISTS idx_assignment_history_ring ON judge_assignment_history(ring_id, judge_id)'
     ].forEach(sql => {
       db.run(sql, (err) => {
         if (err) console.error('Error creating index:', err);

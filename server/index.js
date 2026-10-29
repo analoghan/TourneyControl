@@ -8,6 +8,9 @@ const db = require('./database');
 const { checkPassword, createToken, requireAuth, verifyWebSocketClient } = require('./auth');
 const backups = require('./backups');
 
+// SQL for the server's current time, in the same ISO format the tablets send for packet times
+const SERVER_NOW = "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, verifyClient: verifyWebSocketClient });
@@ -188,7 +191,7 @@ app.put('/api/tournaments/:id/status', (req, res) => {
                 
                 // Update ring sessions to set end_time for incomplete sessions
                 db.run(
-                  `UPDATE ring_sessions SET end_time = ? WHERE ring_id IN (${ringIds.join(',')}) AND end_time IS NULL`,
+                  `UPDATE ring_sessions SET end_time = ?, server_end_time = ${SERVER_NOW} WHERE ring_id IN (${ringIds.join(',')}) AND end_time IS NULL`,
                   [currentTime],
                   (err) => {
                     if (err) {
@@ -627,8 +630,8 @@ app.put('/api/rings/:id', (req, res) => {
             if (!err) {
               const sessionNumber = (result.count || 0) + 1;
               db.run(
-                `INSERT INTO ring_sessions (ring_id, session_number, start_time, ${SESSION_DETAIL_FIELDS.join(', ')})
-                 VALUES (?, ?, ?, ${SESSION_DETAIL_FIELDS.map(() => '?').join(', ')})`,
+                `INSERT INTO ring_sessions (ring_id, session_number, start_time, server_start_time, ${SESSION_DETAIL_FIELDS.join(', ')})
+                 VALUES (?, ?, ?, ${SERVER_NOW}, ${SESSION_DETAIL_FIELDS.map(() => '?').join(', ')})`,
                 [req.params.id, sessionNumber, start_time, ...SESSION_DETAIL_FIELDS.map(f => detail[f])],
                 (err) => {
                   if (err) {
@@ -651,7 +654,7 @@ app.put('/api/rings/:id', (req, res) => {
           const detail = sessionDetails(ring);
           db.run(
             // SQLite (as bundled with node-sqlite3) doesn't support ORDER BY/LIMIT on UPDATE, so pick the row in a subquery
-            `UPDATE ring_sessions SET end_time = ?, ${SESSION_DETAIL_FIELDS.map(f => `${f} = ?`).join(', ')} WHERE id = (
+            `UPDATE ring_sessions SET end_time = ?, server_end_time = ${SERVER_NOW}, ${SESSION_DETAIL_FIELDS.map(f => `${f} = ?`).join(', ')} WHERE id = (
               SELECT id FROM ring_sessions WHERE ring_id = ? AND end_time IS NULL ORDER BY session_number DESC LIMIT 1
             )`,
             [end_time, ...SESSION_DETAIL_FIELDS.map(f => detail[f]), req.params.id],
@@ -846,7 +849,16 @@ app.get('/api/tournaments/:tournamentId/judges', (req, res) => {
     `SELECT tj.*, j.first_name, j.last_name, j.ata_number, j.rank, j.age, j.gender, j.judging_level,
             j.competing, j.competing_creative_xma, j.competing_teams, j.teams_coach,
             ra.ring_id, ra.position, r.ring_number,
-            ra.tournament_id AS assigned_tournament_id, t.name AS assigned_tournament_name
+            ra.tournament_id AS assigned_tournament_id, t.name AS assigned_tournament_name,
+            (SELECT h.assigned_at FROM judge_assignment_history h
+             WHERE h.ring_id = ra.ring_id AND h.judge_id = ra.judge_id AND h.unassigned_at IS NULL
+             ORDER BY h.id DESC LIMIT 1) AS in_ring_since,
+            -- Completed packets in this tournament that ran while the judge was seated in that ring
+            (SELECT COUNT(DISTINCT s.id) FROM judge_assignment_history h
+             JOIN ring_sessions s ON s.ring_id = h.ring_id
+             WHERE h.tournament_id = tj.tournament_id AND h.judge_id = j.id AND s.end_time IS NOT NULL
+               AND COALESCE(s.server_start_time, s.start_time) < COALESCE(h.unassigned_at, ${SERVER_NOW})
+               AND COALESCE(s.server_end_time, s.end_time) > h.assigned_at) AS packets_judged
      FROM tournament_judges tj
      JOIN judges j ON tj.judge_id = j.id
      LEFT JOIN ring_assignments ra ON ra.judge_id = j.id
@@ -1130,6 +1142,57 @@ const parseList = (json) => {
   }
 };
 
+// Matches each judge seat (from assignment history) to the completed packets that ran in that ring while the judge
+// was seated, using the server's clock on both sides. Returns per-seat rows and a per-judge summary.
+const summarizeJudging = (history, sessions) => {
+  const now = Date.now();
+  const packetTimes = sessions
+    .filter(s => s.start_time && s.end_time)
+    .map(s => ({
+      ...s,
+      startMs: Date.parse(s.server_start_time || s.start_time),
+      endMs: Date.parse(s.server_end_time || s.end_time)
+    }));
+
+  const assignments = history.map(h => {
+    const fromMs = Date.parse(h.assigned_at);
+    const toMs = h.unassigned_at ? Date.parse(h.unassigned_at) : now;
+    const packets = packetTimes.filter(p => p.ring_id === h.ring_id && p.startMs < toMs && p.endMs > fromMs);
+    return {
+      judge_id: h.judge_id,
+      judge_name: `${h.first_name} ${h.last_name}`,
+      ata_number: h.ata_number,
+      ring_number: h.ring_number,
+      position: h.position,
+      assigned_at: h.assigned_at,
+      unassigned_at: h.unassigned_at,
+      packets: packets.map(p => p.session_number),
+      competitors: packets.reduce((sum, p) => sum + (p.competitor_count || 0), 0),
+      // Only the part of each packet the judge was seated for
+      minutes: Math.round(packets.reduce((sum, p) => sum + Math.min(p.endMs, toMs) - Math.max(p.startMs, fromMs), 0) / 60000)
+    };
+  });
+
+  const byJudge = new Map();
+  assignments.forEach(a => {
+    const judge = byJudge.get(a.judge_id) || {
+      judge_name: a.judge_name, ata_number: a.ata_number, packets: 0, competitors: 0, minutes: 0,
+      by_position: { 'Center': 0, 'Corner A': 0, 'Corner B': 0 }, rings: new Set()
+    };
+    judge.packets += a.packets.length;
+    judge.competitors += a.competitors;
+    judge.minutes += a.minutes;
+    judge.by_position[a.position] = (judge.by_position[a.position] || 0) + a.packets.length;
+    judge.rings.add(a.ring_number);
+    byJudge.set(a.judge_id, judge);
+  });
+  const summary = [...byJudge.values()]
+    .map(j => ({ ...j, rings: [...j.rings].sort((x, y) => x - y) }))
+    .sort((x, y) => y.packets - x.packets || x.judge_name.localeCompare(y.judge_name));
+
+  return { summary, assignments };
+};
+
 // Tournament Report Endpoint
 app.get('/api/tournaments/:id/report', (req, res) => {
   const { id } = req.params;
@@ -1168,12 +1231,14 @@ app.get('/api/tournaments/:id/report', (req, res) => {
               total_rings: 0,
               completed_sessions: 0
             },
-            rings: []
+            rings: [],
+            judges: { summary: [], assignments: [] }
           });
         }
         
         db.all(
-          `SELECT ring_id, session_number, start_time, end_time, ${SESSION_DETAIL_FIELDS.join(', ')}
+          `SELECT ring_id, session_number, start_time, end_time, server_start_time, server_end_time,
+                  ${SESSION_DETAIL_FIELDS.join(', ')}
            FROM ring_sessions
            WHERE ring_id IN (${ringIds.join(',')})
            ORDER BY ring_id, session_number`,
@@ -1226,18 +1291,34 @@ app.get('/api/tournaments/:id/report', (req, res) => {
             // Calculate total completed sessions
             const completedSessions = sessions.filter(s => s.start_time && s.end_time).length;
             
-            res.json({
-              tournament: {
-                id: tournament.id,
-                name: tournament.name,
-                status: tournament.status,
-                timezone: tournament.timezone,
-                created_at: tournament.created_at,
-                total_rings: rings.length,
-                completed_sessions: completedSessions
-              },
-              rings: ringsWithData
-            });
+            db.all(
+              `SELECT h.*, j.first_name, j.last_name, j.ata_number, r.ring_number
+               FROM judge_assignment_history h
+               JOIN judges j ON j.id = h.judge_id
+               JOIN rings r ON r.id = h.ring_id
+               WHERE h.tournament_id = ?
+               ORDER BY j.last_name, j.first_name, h.assigned_at`,
+              [id],
+              (err, history) => {
+                if (err) {
+                  return res.status(500).json({ error: err.message });
+                }
+                
+                res.json({
+                  tournament: {
+                    id: tournament.id,
+                    name: tournament.name,
+                    status: tournament.status,
+                    timezone: tournament.timezone,
+                    created_at: tournament.created_at,
+                    total_rings: rings.length,
+                    completed_sessions: completedSessions
+                  },
+                  rings: ringsWithData,
+                  judges: summarizeJudging(history, sessions)
+                });
+              }
+            );
           }
         );
       }
